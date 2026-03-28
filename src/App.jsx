@@ -11,7 +11,6 @@ import RewardsSummary from './components/RewardsSummary';
 import Gemdex from './components/Gemdex';
 import Inventory from './components/Inventory';
 import DebugPanel from './components/DebugPanel';
-import './App.css';
 
 function GameContent() {
   const { state } = useGame();
