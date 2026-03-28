@@ -84,7 +84,7 @@ export default function Discover() {
     <div className="flex flex-col gap-8 pt-4 h-full">
       {/* Header */}
       <div className="w-full flex justify-between items-center">
-        <h2 className="text-4xl font-bold text-yellow-500 m-0" style={{ textShadow: '0 0 20px rgba(255, 217, 61, 0.3)' }}>
+        <h2 className="text-4xl font-bold text-yellow-500 m-0 text-glow-yellow">
           Discover
         </h2>
         <div className="flex gap-6">
