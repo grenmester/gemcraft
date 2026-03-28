@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useGame, GAME_PHASES } from '../context/GameContext';
 import { Gem } from '../models/Gem';
 import gemsData from '../data/gems.json';
-import './Discover.css';
 
 const SHIFT_TIERS = [
   { threshold: 0, rate: 0, label: 'No Idle Collection', color: '#666' },
@@ -15,6 +14,7 @@ const SHIFT_TIERS = [
 
 export default function Discover() {
   const { state, dispatch } = useGame();
+  const { discoverState } = state;
   const [lastMinedGem, setLastMinedGem] = useState(null);
   const [idleGems, setIdleGems] = useState([]);
 
@@ -74,95 +74,158 @@ export default function Discover() {
     dispatch({ type: 'SET_PHASE', payload: GAME_PHASES.MENU });
   };
 
+  const handleSelectLocation = () => {
+    dispatch({ type: 'SELECT_LOCATION', payload: null });
+  };
+
+  const activeTab = discoverState?.activeTab || 'idle';
+
   return (
-    <div className="discover screen">
-      <div className="discover-header">
-        <h2 className="discover-title">Discover</h2>
-        <div className="resources-bar">
-          <div className="resource-item">
-            <span className="resource-icon">💎</span>
-            <span className="resource-value">{coins}</span>
+    <div className="flex flex-col gap-8 pt-4 h-full">
+      {/* Header */}
+      <div className="w-full flex justify-between items-center">
+        <h2 className="text-4xl font-bold text-yellow-500 m-0" style={{ textShadow: '0 0 20px rgba(255, 217, 61, 0.3)' }}>
+          Discover
+        </h2>
+        <div className="flex gap-6">
+          <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-lg">
+            <span className="text-xl">💎</span>
+            <span className="text-lg font-bold text-yellow-500">{coins}</span>
           </div>
-          <div className="resource-item">
-            <span className="resource-icon">🎒</span>
-            <span className="resource-value">{inventoryCount}/{inventoryCapacity}</span>
+          <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-lg">
+            <span className="text-xl">🎒</span>
+            <span className="text-lg font-bold text-yellow-500">{inventoryCount}/{inventoryCapacity}</span>
           </div>
         </div>
       </div>
 
-      <div className="discover-sections">
-        <section className="discover-section shift-section">
-          <h3 className="section-title">⭐ Shift Tier: {currentTier.label}</h3>
-          
-          <div className="shift-info">
-            <div className="shift-rate">
-              <span className="rate-value">{currentTier.rate}</span>
-              <span className="rate-label">gems/hr when idle</span>
-            </div>
-            
-            {nextTier && (
-              <div className="shift-progress">
-                <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ 
-                      width: `${progressToNext}%`,
-                      backgroundColor: currentTier.color
-                    }}
-                  />
-                </div>
-                <span className="progress-text">
-                  {shiftPoints} / {nextTier.threshold} Shift Points to {nextTier.label}
-                </span>
-              </div>
-            )}
-            
-            {currentTier.rate > 0 && (
-              <p className="shift-description" style={{ color: currentTier.color }}>
-                You're earning {currentTier.rate} gems per hour of idle time!
-              </p>
-            )}
-            
-            {currentTier.rate === 0 && (
-              <p className="shift-description" style={{ color: '#e74c3c' }}>
-                Play mini-games to earn Shift Points and unlock idle collection!
-              </p>
-            )}
-          </div>
-
-          {idleGems.length > 0 && (
-            <div className="idle-gems-ready">
-              <p>{idleGems.length} gem(s) ready to collect!</p>
-              <button className="btn btn-primary" onClick={collectIdleGems}>
-                Collect Gems
-              </button>
-            </div>
-          )}
-        </section>
-
-        <section className="discover-section panning-section">
-          <h3 className="section-title">🔍 Panning (Active)</h3>
-          <p className="section-description">
-            Play the mini-game to earn gems and Shift Points!
-          </p>
-          <button 
-            className="btn btn-gold panning-btn"
-            onClick={handleStartPanning}
-          >
-            Start Panning
-          </button>
-          <button 
-            className="btn btn-secondary"
-            onClick={() => dispatch({ type: 'SET_PHASE', payload: 'location_map' })}
-          >
-            🗺️ World Map
-          </button>
-        </section>
+      {/* Tab Buttons */}
+      <div className="flex gap-2 mb-2">
+        <button 
+          className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+            activeTab === 'idle' 
+              ? 'bg-yellow-500 text-black' 
+              : 'bg-slate-700 text-slate-300'
+          }`}
+          onClick={() => dispatch({ type: 'SET_DISCOVER_TAB', payload: 'idle' })}
+        >
+          ⏰ Idle
+        </button>
+        <button 
+          className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+            activeTab === 'panning' 
+              ? 'bg-yellow-500 text-black' 
+              : 'bg-slate-700 text-slate-300'
+          }`}
+          onClick={() => dispatch({ type: 'SET_DISCOVER_TAB', payload: 'panning' })}
+        >
+          🔍 Panning
+        </button>
       </div>
 
-      <button className="btn btn-secondary back-btn" onClick={handleBack}>
-        ← Back to Menu
-      </button>
+      {/* Tab Content */}
+      {activeTab === 'idle' ? (
+        /* Idle Tab Content */
+        <div className="flex flex-col gap-6 max-w-xl mx-auto w-full">
+          {/* Shift Tier Section */}
+          <section className="bg-slate-800 rounded-xl p-6 flex flex-col gap-4 shadow-md">
+            <h3 className="text-2xl text-white m-0">⭐ Shift Tier: {currentTier.label}</h3>
+            
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl font-bold text-yellow-500">{currentTier.rate}</span>
+                <span className="text-slate-400">gems/hr when idle</span>
+              </div>
+              
+              {nextTier && (
+                <div className="flex flex-col gap-2">
+                  <div className="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full transition-all duration-300"
+                      style={{ 
+                        width: `${progressToNext}%`,
+                        backgroundColor: currentTier.color
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-slate-400 text-center">
+                    {shiftPoints} / {nextTier.threshold} Shift Points to {nextTier.label}
+                  </span>
+                </div>
+              )}
+              
+              {currentTier.rate > 0 && (
+                <p className="text-sm" style={{ color: currentTier.color }}>
+                  You're earning {currentTier.rate} gems per hour of idle time!
+                </p>
+              )}
+              
+              {currentTier.rate === 0 && (
+                <p className="text-sm" style={{ color: '#e74c3c' }}>
+                  Play mini-games to earn Shift Points and unlock idle collection!
+                </p>
+              )}
+            </div>
+          </section>
+
+          {/* Idle Gems Collection */}
+          {idleGems.length > 0 && (
+            <section className="bg-slate-800 rounded-xl p-6 flex flex-col gap-4 shadow-md">
+              <div className="flex items-center justify-between">
+                <p className="text-lg text-slate-300 m-0">
+                  {idleGems.length} gem(s) ready to collect!
+                </p>
+                <button className="px-6 py-3 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 transition-colors" onClick={collectIdleGems}>
+                  Collect Gems
+                </button>
+              </div>
+            </section>
+          )}
+
+          {/* Back Button */}
+          <button 
+            className="px-6 py-3 bg-slate-700 text-slate-300 font-semibold rounded-lg hover:bg-slate-600 transition-colors"
+            onClick={handleBack}
+          >
+            ← Back to Menu
+          </button>
+        </div>
+      ) : (
+        /* Panning Tab Content */
+        <div className="flex flex-col items-center gap-6 max-w-xl mx-auto w-full">
+          <section className="bg-slate-800 rounded-xl p-8 flex flex-col items-center gap-6 shadow-md w-full">
+            <h3 className="text-2xl text-white m-0">🔍 Panning</h3>
+            
+            <p className="text-slate-400 text-center m-0">
+              Select a mine location to start panning for gems and Shift Points!
+            </p>
+            
+            <div className="flex flex-col gap-3 w-full">
+              <button 
+                className="w-full px-6 py-4 bg-yellow-500 text-black text-lg font-bold rounded-lg hover:bg-yellow-400 transition-colors shadow-md"
+                onClick={handleSelectLocation}
+              >
+                🌍 Select Mine Location
+              </button>
+              
+              <button 
+                className="w-full px-6 py-3 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 transition-colors"
+                onClick={handleStartPanning}
+              >
+                🔍 Start Panning (Quick)
+              </button>
+            </div>
+          </section>
+
+          {/* Back Button */}
+          <button 
+            className="px-6 py-3 bg-slate-700 text-slate-300 font-semibold rounded-lg hover:bg-slate-600 transition-colors"
+            onClick={handleBack}
+          >
+            ← Back to Menu
+          </button>
+        </div>
+      )}
     </div>
   );
 }
