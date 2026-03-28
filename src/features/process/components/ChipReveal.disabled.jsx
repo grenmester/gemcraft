@@ -1,8 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
-import { useGame, GAME_PHASES } from '../context/GameContext';
-import { getScoreTier, calculateRewards } from '../constants';
+import { useGame, GAME_PHASES } from '../../../context/GameContext';
+import { getScoreTier, calculateRewards } from '../../../constants';
 import MinigameResults from './MinigameResults';
-import './ChipReveal.css';
 
 const GAME_DURATION = 45000;
 const MAX_SCORE = 200;
@@ -181,9 +180,9 @@ export default function ChipReveal() {
   }, []);
 
   return (
-    <div className="chip-reveal screen">
-      <div className="minigame-header">
-        <h2 className="minigame-title">Chip & Reveal</h2>
+    <div className="flex flex-col h-screen bg-[#0a0a0f]">
+      <div className="flex justify-between items-center px-5 py-4 bg-black/50">
+        <h2 className="text-[#228B22] text-xl m-0">Chip & Reveal</h2>
         {gameState === 'playing' && (
           <div className="minigame-stats">
             <div className="stat">
@@ -198,18 +197,18 @@ export default function ChipReveal() {
         )}
       </div>
 
-      <div className="minigame-container">
+      <div className="flex-1 relative overflow-hidden">
         <canvas 
           ref={canvasRef} 
-          className="minigame-canvas"
+          className="w-full h-full cursor-pointer"
           onClick={handleClick}
         />
         {gameState === 'ready' && (
-          <div className="minigame-overlay">
-            <div className="overlay-content">
-              <h3>Chip & Reveal</h3>
-              <p>Tap crystals when they flash to reveal them!</p>
-              <p>Avoid empty areas (-5 points)</p>
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+            <div className="text-center text-white max-w-[300px]">
+              <h3 className="text-[28px] mb-4 text-[#228B22]">Chip & Reveal</h3>
+              <p className="mb-2 text-[#aaa]">Tap crystals when they flash to reveal them!</p>
+              <p className="mb-2 text-[#aaa]">Avoid empty areas (-5 points)</p>
               <button className="btn btn-gold" onClick={startGame}>
                 Start Game
               </button>
@@ -225,7 +224,7 @@ export default function ChipReveal() {
         )}
       </div>
 
-      <button className="btn btn-secondary back-btn" onClick={handleBack}>
+      <button className="btn btn-secondary mx-5 my-4" onClick={handleBack}>
         ← Back
       </button>
     </div>

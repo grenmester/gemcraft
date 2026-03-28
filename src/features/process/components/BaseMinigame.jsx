@@ -1,10 +1,9 @@
 // src/components/BaseMinigame.jsx
 
 import { useState, useCallback, useRef } from 'react';
-import { useGame, GAME_PHASES } from '../context/GameContext';
-import { getScoreTier, calculateRewards } from '../constants';
+import { useGame, GAME_PHASES } from '../../../context/GameContext';
+import { getScoreTier, calculateRewards } from '../../../constants';
 import MinigameResults from './MinigameResults';
-import './BaseMinigame.css';
 
 export default function BaseMinigame({ 
   title,
@@ -85,9 +84,9 @@ export default function BaseMinigame({
   };
 
   return (
-    <div className="base-minigame screen">
-      <div className="minigame-header">
-        <h2 className="minigame-title">{title}</h2>
+    <div className="flex flex-col h-screen bg-[#0a0a0f]">
+      <div className="flex justify-between items-center px-5 py-4 bg-black/50">
+        <h2 className="text-[#ffd93d] text-xl m-0">{title}</h2>
         {gameState === 'playing' && (
           <div className="minigame-stats">
             <div className="stat">
@@ -102,15 +101,15 @@ export default function BaseMinigame({
         )}
       </div>
 
-      <div className="minigame-container">
+      <div className="flex-1 relative overflow-hidden">
         {typeof children === 'function' 
           ? children(props) 
           : children}
         
         {gameState === 'ready' && (
-          <div className="minigame-overlay">
-            <div className="overlay-content">
-              <h3>{title}</h3>
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+            <div className="text-center text-white">
+              <h3 className="text-[28px] mb-6 text-[#ffd93d]">{title}</h3>
               <button className="btn btn-gold" onClick={startGame}>
                 Start Game
               </button>
@@ -127,7 +126,7 @@ export default function BaseMinigame({
         )}
       </div>
 
-      <button className="btn btn-secondary back-btn" onClick={handleBack}>
+      <button className="btn btn-secondary mx-5 my-4" onClick={handleBack}>
         ← Back
       </button>
     </div>

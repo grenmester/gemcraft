@@ -1,7 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { useGame, GAME_PHASES } from '../context/GameContext';
-import gemsData from '../data/gems.json';
-import './Minigame.css';
+import { useGame, GAME_PHASES } from '../../../context/GameContext';
+import gemsData from '../../../data/gems.json';
 
 const GAME_DURATION = 15000;
 const SPAWN_INTERVAL = 600;
@@ -374,38 +373,38 @@ export default function Minigame() {
   }, []);
 
   return (
-    <div className="minigame screen">
-      <div className="minigame-header">
-        <h2 className="minigame-title">Gem Panning</h2>
+    <div className="flex flex-col gap-4 p-4">
+      <div className="flex justify-between items-center w-full max-w-xl">
+        <h2 className="text-amber-400 m-0">Gem Panning</h2>
         {gameState === 'playing' && (
-          <div className="minigame-stats">
-            <div className="stat">
-              <span className="stat-label">Score</span>
-              <span className="stat-value">{score}</span>
+          <div className="flex gap-6">
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-gray-400 uppercase">Score</span>
+              <span className="text-2xl font-bold text-white">{score}</span>
             </div>
-            <div className="stat">
-              <span className="stat-label">Time</span>
-              <span className="stat-value">{timeLeft}s</span>
+            <div className="flex flex-col items-center">
+              <span className="text-xs text-gray-400 uppercase">Time</span>
+              <span className="text-2xl font-bold text-white">{timeLeft}s</span>
             </div>
           </div>
         )}
       </div>
 
-      <div className="minigame-container" ref={containerRef}>
-        <canvas ref={canvasRef} className="minigame-canvas" />
+      <div className="relative w-full max-w-xl h-[400px] bg-slate-800 rounded-lg overflow-hidden shadow-xl" ref={containerRef}>
+        <canvas ref={canvasRef} className="block w-full h-full touch-none" />
 
         {gameState === 'ready' && (
-          <div className="minigame-overlay">
-            <div className="overlay-content">
-              <h3>Ready to Pan?</h3>
-              <p>Swipe to catch gems and avoid debris!</p>
-              <div className="rules">
-                <div className="rule">
-                  <span className="rule-icon gem-icon">💎</span>
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/90 backdrop-blur-sm">
+            <div className="text-center p-8">
+              <h3 className="text-[1.75rem] text-amber-400 mb-2">Ready to Pan?</h3>
+              <p className="text-gray-400 mb-6">Swipe to catch gems and avoid debris!</p>
+              <div className="flex flex-col gap-3 mb-6">
+                <div className="flex items-center justify-center gap-2 text-white">
+                  <span className="text-xl text-emerald-400">💎</span>
                   <span>Gems = +10 points</span>
                 </div>
-                <div className="rule">
-                  <span className="rule-icon debris-icon">🪨</span>
+                <div className="flex items-center justify-center gap-2 text-white">
+                  <span className="text-xl text-[#8b7355]">🪨</span>
                   <span>Debris = -5 points</span>
                 </div>
               </div>
@@ -417,32 +416,32 @@ export default function Minigame() {
         )}
 
         {gameState === 'finished' && finalResults && (
-          <div className="minigame-overlay">
-            <div className="overlay-content results">
-              <h3>Panning Complete!</h3>
-              <div className="final-score">
-                <span className="score-label">Final Score</span>
-                <span className="score-value">{finalResults.score}</span>
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/90 backdrop-blur-sm">
+            <div className="flex flex-col gap-4 text-center p-8">
+              <h3 className="text-[1.75rem] text-amber-400 mb-2">Panning Complete!</h3>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-sm text-gray-400 uppercase">Final Score</span>
+                <span className="text-[3rem] font-bold text-amber-400">{finalResults.score}</span>
               </div>
-              <div className="tier-label">
+              <div className="text-lg font-bold text-purple-400">
                 {finalResults.tierLabel}
               </div>
-              <div className="rewards">
-                <div className="reward">
-                  <span className="reward-icon">🪙</span>
+              <div className="flex flex-col gap-2 my-2">
+                <div className="flex items-center justify-center gap-2 text-lg text-white">
+                  <span className="text-2xl">🪙</span>
                   <span>+{finalResults.coinReward} Coins</span>
                 </div>
-                <div className="reward">
-                  <span className="reward-icon">💎</span>
+                <div className="flex items-center justify-center gap-2 text-lg text-white">
+                  <span className="text-2xl">💎</span>
                   <span>+{finalResults.gemReward} Gems</span>
                 </div>
-                <div className="reward shift-reward">
-                  <span className="reward-icon">⭐</span>
+                <div className="flex items-center justify-center gap-2 text-lg text-white">
+                  <span className="text-2xl">⭐</span>
                   <span>+{finalResults.shiftPointsEarned} Shift Points</span>
                 </div>
               </div>
               {finalResults.hasBonus && (
-                <div className="bonus-notice">
+                <div className="p-3 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 rounded-lg font-bold animate-pulse">
                   🎉 1.5x Bonus Applied! (Score &gt; 100)
                 </div>
               )}
@@ -454,7 +453,7 @@ export default function Minigame() {
         )}
       </div>
 
-      <button className="btn btn-secondary back-btn" onClick={handleBack}>
+      <button className="btn btn-secondary mt-auto" onClick={handleBack}>
         ← Back to Discover
       </button>
     </div>

@@ -65,6 +65,86 @@
   .btn-gold {
     @apply bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 font-bold hover:shadow-lg hover:shadow-yellow-400/25 active:scale-95;
   }
+
+  .screen {
+    @apply flex flex-col h-screen;
+  }
+
+  .stat {
+    @apply flex flex-col items-center;
+  }
+
+  .stat-label {
+    @apply text-xs text-gray-400 uppercase;
+  }
+
+  .stat-value {
+    @apply text-2xl font-bold text-white;
+  }
+
+  .minigame-stats {
+    @apply flex gap-6;
+  }
+
+  .minigame-header {
+    @apply flex justify-between items-center w-full max-w-xl;
+  }
+
+  .minigame-title {
+    @apply text-amber-400 m-0;
+  }
+
+  .minigame-container {
+    @apply relative w-full max-w-xl h-[400px] bg-slate-800 rounded-lg overflow-hidden shadow-xl;
+  }
+
+  .minigame-canvas {
+    @apply block w-full h-full touch-none;
+  }
+
+  .minigame-overlay {
+    @apply absolute inset-0 flex items-center justify-center bg-slate-900/90 backdrop-blur-sm;
+  }
+
+  .overlay-content {
+    @apply text-center p-8;
+  }
+
+  .overlay-content h3 {
+    @apply text-[1.75rem] text-amber-400 mb-2;
+  }
+
+  .overlay-content p {
+    @apply text-gray-400 mb-6;
+  }
+
+  .results {
+    @apply flex flex-col gap-4;
+  }
+
+  .final-score {
+    @apply flex flex-col items-center gap-1;
+  }
+
+  .score-label {
+    @apply text-sm text-gray-400 uppercase;
+  }
+
+  .score-value {
+    @apply text-[3rem] font-bold text-amber-400;
+  }
+
+  .rewards {
+    @apply flex flex-col gap-2 my-2;
+  }
+
+  .reward {
+    @apply flex items-center justify-center gap-2 text-lg text-white;
+  }
+
+  .bonus-notice {
+    @apply p-3 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 rounded-lg font-bold animate-pulse;
+  }
 }
 
 @layer utilities {
@@ -74,5 +154,9 @@
 
   .text-glow-yellow {
     text-shadow: 0 0 20px rgba(255, 217, 61, 0.3);
+  }
+
+  .border-l-3 {
+    border-left-width: 3px;
   }
 }
