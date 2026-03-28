@@ -1,6 +1,5 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import { Player } from '../models/Player.js';
-import { Inventory } from '../models/Inventory.js';
 import { Gem } from '../models/Gem.js';
 import gemsData from '../data/gems.json';
 
@@ -26,15 +25,36 @@ export const REMOVE_FROM_INVENTORY = 'REMOVE_FROM_INVENTORY';
 
 const STORAGE_KEY = 'gemstone_game_save';
 
+const MIGRATION_VERSION = 2;
+
 const initialPlayer = new Player();
-const initialInventory = new Inventory();
 
 const initialState = {
   player: initialPlayer.toJSON(),
-  inventory: { capacity: initialInventory.capacity, items: [] },
+  migrationVersion: MIGRATION_VERSION,
   phase: GAME_PHASES.MENU,
   activeMinigame: null
 };
+
+function migrateState(state) {
+  let migrated = { ...state };
+  
+  if (!migrated.migrationVersion || migrated.migrationVersion < 2) {
+    migrated = {
+      ...migrated,
+      migrationVersion: MIGRATION_VERSION,
+      player: {
+        ...migrated.player,
+        inventory: migrated.player?.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: migrated.player?.coins || 100 } },
+        locationProgress: migrated.player?.locationProgress || {},
+        highScores: migrated.player?.highScores || {}
+      }
+    };
+    delete migrated.inventory;
+  }
+  
+  return migrated;
+}
 
 function gameReducer(state, action) {
   switch (action.type) {
@@ -225,7 +245,7 @@ export function GameProvider({ children }) {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        return { ...initial, ...parsed };
+        return migrateState({ ...initial, ...parsed });
       }
     } catch (e) {
       console.warn('Failed to load saved game:', e);
