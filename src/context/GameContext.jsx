@@ -12,10 +12,8 @@ export const SET_PHASE = 'SET_PHASE';
 export const SET_MINIGAME = 'SET_MINIGAME';
 export const ADD_GEM = 'ADD_GEM';
 export const ADD_COINS = 'ADD_COINS';
-export const ADD_SHIFT_POINTS = 'ADD_SHIFT_POINTS';
 export const LOAD_STATE = 'LOAD_STATE';
 export const DEBUG_ADD_GEM = 'DEBUG_ADD_GEM';
-export const DEBUG_SET_SHIFT = 'DEBUG_SET_SHIFT';
 export const DEBUG_UNLOCK_ALL_LOCATIONS = 'DEBUG_UNLOCK_ALL_LOCATIONS';
 export const DEBUG_MAX_INVENTORY = 'DEBUG_MAX_INVENTORY';
 export const DEBUG_RESET = 'DEBUG_RESET';
@@ -46,7 +44,7 @@ const initialState = {
     activeTab: 'idle',       // 'idle' | 'panning'
     selectedLocation: null,  // 'TIER_1' | 'TIER_1_B' | ... | null
     selectedArea: null,      // 'area_1' | 'area_2' | 'area_3' | null
-    lastRewards: null        // { coins, shift, gems } | null
+    lastRewards: null        // { coins, gems } | null
   }
 };
 
@@ -119,15 +117,6 @@ function gameReducer(state, action) {
         }
       };
 
-    case ADD_SHIFT_POINTS:
-      return {
-        ...state,
-        player: {
-          ...state.player,
-          shiftPoints: (state.player.shiftPoints || 0) + action.payload
-        }
-      };
-
     case LOAD_STATE:
       return { ...initialState, ...action.payload, discoverState: { ...initialState.discoverState, ...(action.payload?.discoverState || {}) } };
 
@@ -161,23 +150,8 @@ function gameReducer(state, action) {
       };
     }
 
-    case DEBUG_SET_SHIFT:
-      return {
-        ...state,
-        player: {
-          ...state.player,
-          shiftPoints: action.payload
-        }
-      };
-
     case DEBUG_UNLOCK_ALL_LOCATIONS:
-      return {
-        ...state,
-        player: {
-          ...state.player,
-          shiftPoints: 5000
-        }
-      };
+      return state;
 
     case DEBUG_MAX_INVENTORY: {
       const maxGems = 100;

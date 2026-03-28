@@ -11,9 +11,9 @@ export const RARITY_TIERS = {
 
 // Reward multipliers by difficulty
 export const REWARD_MULTIPLIERS = {
-  1: { coins: 1.0, gems: 1.0, shift: 1 },
-  2: { coins: 1.5, gems: 1.5, shift: 2 },
-  3: { coins: 2.0, gems: 2.0, shift: 3 },
+  1: { coins: 1.0, gems: 1.0 },
+  2: { coins: 1.5, gems: 1.5 },
+  3: { coins: 2.0, gems: 2.0 },
 };
 
 // Main loot tables organized by location tier
@@ -32,7 +32,7 @@ export const LOOT_TABLES = {
           { id: 'amethyst', weight: 25, rarity: 'COMMON' },
           { id: 'garnet', weight: 5, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 50, gems: 1, shift: 1 },
+        baseRewards: { coins: 50, gems: 1 },
       },
       area_2: {
         name: 'Pebble Banks',
@@ -42,7 +42,7 @@ export const LOOT_TABLES = {
           { id: 'amethyst', weight: 30, rarity: 'COMMON' },
           { id: 'garnet', weight: 10, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 60, gems: 1, shift: 1 },
+        baseRewards: { coins: 60, gems: 1 },
       },
       area_3: {
         name: 'Sandy Flats',
@@ -52,7 +52,7 @@ export const LOOT_TABLES = {
           { id: 'amethyst', weight: 35, rarity: 'COMMON' },
           { id: 'garnet', weight: 15, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 75, gems: 1, shift: 1 },
+        baseRewards: { coins: 75, gems: 1 },
       },
     },
   },
@@ -72,7 +72,7 @@ export const LOOT_TABLES = {
           { id: 'citrine', weight: 15, rarity: 'UNCOMMON' },
           { id: 'rose_quartz', weight: 5, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 65, gems: 1, shift: 1 },
+        baseRewards: { coins: 65, gems: 1 },
       },
       area_2: {
         name: 'Rose Valley',
@@ -83,7 +83,7 @@ export const LOOT_TABLES = {
           { id: 'citrine', weight: 20, rarity: 'UNCOMMON' },
           { id: 'garnet', weight: 5, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 70, gems: 1, shift: 1 },
+        baseRewards: { coins: 70, gems: 1 },
       },
       area_3: {
         name: 'Golden Ridge',
@@ -94,7 +94,7 @@ export const LOOT_TABLES = {
           { id: 'amethyst', weight: 25, rarity: 'COMMON' },
           { id: 'rose_quartz', weight: 10, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 85, gems: 2, shift: 1 },
+        baseRewards: { coins: 85, gems: 2 },
       },
     },
   },
@@ -114,7 +114,7 @@ export const LOOT_TABLES = {
           { id: 'moonstone', weight: 15, rarity: 'UNCOMMON' },
           { id: 'amethyst', weight: 5, rarity: 'COMMON' },
         ],
-        baseRewards: { coins: 70, gems: 1, shift: 1 },
+        baseRewards: { coins: 70, gems: 1 },
       },
       area_2: {
         name: 'Stone Valley',
@@ -125,7 +125,7 @@ export const LOOT_TABLES = {
           { id: 'quartz_clear', weight: 20, rarity: 'COMMON' },
           { id: 'amethyst', weight: 10, rarity: 'COMMON' },
         ],
-        baseRewards: { coins: 90, gems: 1, shift: 1 },
+        baseRewards: { coins: 90, gems: 1 },
       },
       area_3: {
         name: 'Moonlit Peak',
@@ -136,7 +136,7 @@ export const LOOT_TABLES = {
           { id: 'amethyst', weight: 15, rarity: 'COMMON' },
           { id: 'quartz_clear', weight: 5, rarity: 'COMMON' },
         ],
-        baseRewards: { coins: 100, gems: 2, shift: 2 },
+        baseRewards: { coins: 100, gems: 2 },
       },
     },
   },
@@ -156,7 +156,7 @@ export const LOOT_TABLES = {
           { id: 'garnet', weight: 15, rarity: 'COMMON' },
           { id: 'citrine', weight: 10, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 120, gems: 2, shift: 2 },
+        baseRewards: { coins: 120, gems: 2 },
       },
       area_2: {
         name: 'Amber Shore',
@@ -167,7 +167,7 @@ export const LOOT_TABLES = {
           { id: 'citrine', weight: 15, rarity: 'UNCOMMON' },
           { id: 'garnet', weight: 10, rarity: 'COMMON' },
         ],
-        baseRewards: { coins: 130, gems: 2, shift: 2 },
+        baseRewards: { coins: 130, gems: 2 },
       },
       area_3: {
         name: 'Topaz Cove',
@@ -178,7 +178,7 @@ export const LOOT_TABLES = {
           { id: 'amethyst', weight: 15, rarity: 'COMMON' },
           { id: 'garnet', weight: 10, rarity: 'COMMON' },
         ],
-        baseRewards: { coins: 150, gems: 2, shift: 2 },
+        baseRewards: { coins: 150, gems: 2 },
       },
     },
   },
@@ -198,7 +198,7 @@ export const LOOT_TABLES = {
           { id: 'morganite', weight: 20, rarity: 'UNCOMMON' },
           { id: 'topaz', weight: 10, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 160, gems: 2, shift: 2 },
+        baseRewards: { coins: 160, gems: 2 },
       },
       area_2: {
         name: 'Beryl Veins',
@@ -209,7 +209,7 @@ export const LOOT_TABLES = {
           { id: 'tourmaline', weight: 20, rarity: 'UNCOMMON' },
           { id: 'topaz', weight: 10, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 175, gems: 2, shift: 2 },
+        baseRewards: { coins: 175, gems: 2 },
       },
       area_3: {
         name: 'Bahia Deep',
@@ -220,7 +220,7 @@ export const LOOT_TABLES = {
           { id: 'morganite', weight: 25, rarity: 'UNCOMMON' },
           { id: 'topaz', weight: 10, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 200, gems: 3, shift: 3 },
+        baseRewards: { coins: 200, gems: 3 },
       },
     },
   },
@@ -240,7 +240,7 @@ export const LOOT_TABLES = {
           { id: 'garnet', weight: 30, rarity: 'COMMON' },
           { id: 'tourmaline', weight: 20, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 180, gems: 2, shift: 2 },
+        baseRewards: { coins: 180, gems: 2 },
       },
       area_2: {
         name: 'Blue River',
@@ -251,7 +251,7 @@ export const LOOT_TABLES = {
           { id: 'tourmaline', weight: 20, rarity: 'UNCOMMON' },
           { id: 'garnet', weight: 10, rarity: 'COMMON' },
         ],
-        baseRewards: { coins: 220, gems: 2, shift: 2 },
+        baseRewards: { coins: 220, gems: 2 },
       },
       area_3: {
         name: 'Montana Ridge',
@@ -262,7 +262,7 @@ export const LOOT_TABLES = {
           { id: 'tourmaline', weight: 15, rarity: 'UNCOMMON' },
           { id: 'garnet', weight: 10, rarity: 'COMMON' },
         ],
-        baseRewards: { coins: 250, gems: 3, shift: 3 },
+        baseRewards: { coins: 250, gems: 3 },
       },
     },
   },
@@ -282,7 +282,7 @@ export const LOOT_TABLES = {
           { id: 'tourmaline', weight: 25, rarity: 'UNCOMMON' },
           { id: 'aquamarine', weight: 20, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 280, gems: 3, shift: 3 },
+        baseRewards: { coins: 280, gems: 3 },
       },
       area_2: {
         name: 'Topaz Plains',
@@ -293,7 +293,7 @@ export const LOOT_TABLES = {
           { id: 'aquamarine', weight: 20, rarity: 'UNCOMMON' },
           { id: 'tourmaline', weight: 15, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 300, gems: 3, shift: 3 },
+        baseRewards: { coins: 300, gems: 3 },
       },
       area_3: {
         name: 'Imperial Depths',
@@ -304,7 +304,7 @@ export const LOOT_TABLES = {
           { id: 'tourmaline', weight: 15, rarity: 'UNCOMMON' },
           { id: 'aquamarine', weight: 10, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 350, gems: 3, shift: 3 },
+        baseRewards: { coins: 350, gems: 3 },
       },
     },
   },
@@ -324,7 +324,7 @@ export const LOOT_TABLES = {
           { id: 'yogo_sapphire', weight: 20, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 20, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 320, gems: 3, shift: 3 },
+        baseRewards: { coins: 320, gems: 3 },
       },
       area_2: {
         name: 'Burmese Deep',
@@ -335,7 +335,7 @@ export const LOOT_TABLES = {
           { id: 'imperial_topaz', weight: 20, rarity: 'RARE' },
           { id: 'yogo_sapphire', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 380, gems: 3, shift: 3 },
+        baseRewards: { coins: 380, gems: 3 },
       },
       area_3: {
         name: 'Mogok Peak',
@@ -346,7 +346,7 @@ export const LOOT_TABLES = {
           { id: 'sapphire', weight: 15, rarity: 'RARE' },
           { id: 'yogo_sapphire', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 400, gems: 4, shift: 3 },
+        baseRewards: { coins: 400, gems: 4 },
       },
     },
   },
@@ -366,7 +366,7 @@ export const LOOT_TABLES = {
           { id: 'emerald', weight: 20, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 25, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 350, gems: 3, shift: 3 },
+        baseRewards: { coins: 350, gems: 3 },
       },
       area_2: {
         name: 'Ratnapura',
@@ -377,7 +377,7 @@ export const LOOT_TABLES = {
           { id: 'imperial_topaz', weight: 25, rarity: 'RARE' },
           { id: 'emerald', weight: 15, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 400, gems: 4, shift: 3 },
+        baseRewards: { coins: 400, gems: 4 },
       },
       area_3: {
         name: 'Island Deep',
@@ -388,7 +388,7 @@ export const LOOT_TABLES = {
           { id: 'sapphire', weight: 25, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 20, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 450, gems: 4, shift: 3 },
+        baseRewards: { coins: 450, gems: 4 },
       },
     },
   },
@@ -408,7 +408,7 @@ export const LOOT_TABLES = {
           { id: 'sapphire', weight: 15, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 15, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 480, gems: 4, shift: 3 },
+        baseRewards: { coins: 480, gems: 4 },
       },
       area_2: {
         name: 'Muzo Core',
@@ -419,7 +419,7 @@ export const LOOT_TABLES = {
           { id: 'ruby', weight: 12, rarity: 'RARE' },
           { id: 'sapphire', weight: 8, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 520, gems: 4, shift: 3 },
+        baseRewards: { coins: 520, gems: 4 },
       },
       area_3: {
         name: 'Chivor Deep',
@@ -430,7 +430,7 @@ export const LOOT_TABLES = {
           { id: 'imperial_topaz', weight: 15, rarity: 'RARE' },
           { id: 'sapphire', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 580, gems: 5, shift: 3 },
+        baseRewards: { coins: 580, gems: 5 },
       },
     },
   },
@@ -450,7 +450,7 @@ export const LOOT_TABLES = {
           { id: 'emerald', weight: 15, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 15, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 550, gems: 4, shift: 3 },
+        baseRewards: { coins: 550, gems: 4 },
       },
       area_2: {
         name: 'Padder Peaks',
@@ -461,7 +461,7 @@ export const LOOT_TABLES = {
           { id: 'emerald', weight: 15, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 620, gems: 5, shift: 3 },
+        baseRewards: { coins: 620, gems: 5 },
       },
       area_3: {
         name: 'Snow Leopard Trail',
@@ -472,7 +472,7 @@ export const LOOT_TABLES = {
           { id: 'emerald', weight: 15, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 700, gems: 5, shift: 3 },
+        baseRewards: { coins: 700, gems: 5 },
       },
     },
   },
@@ -492,7 +492,7 @@ export const LOOT_TABLES = {
           { id: 'ruby', weight: 20, rarity: 'RARE' },
           { id: 'emerald', weight: 15, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 750, gems: 5, shift: 3 },
+        baseRewards: { coins: 750, gems: 5 },
       },
       area_2: {
         name: 'Argyle Depths',
@@ -503,7 +503,7 @@ export const LOOT_TABLES = {
           { id: 'sapphire', weight: 18, rarity: 'RARE' },
           { id: 'emerald', weight: 12, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 850, gems: 5, shift: 3 },
+        baseRewards: { coins: 850, gems: 5 },
       },
       area_3: {
         name: 'Diamond Heart',
@@ -514,7 +514,7 @@ export const LOOT_TABLES = {
           { id: 'sapphire', weight: 15, rarity: 'RARE' },
           { id: 'emerald', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 1000, gems: 6, shift: 3 },
+        baseRewards: { coins: 1000, gems: 6 },
       },
     },
   },
@@ -534,7 +534,7 @@ export const LOOT_TABLES = {
           { id: 'ruby', weight: 15, rarity: 'RARE' },
           { id: 'sapphire', weight: 15, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 1200, gems: 6, shift: 3 },
+        baseRewards: { coins: 1200, gems: 6 },
       },
       area_2: {
         name: 'Golconda Core',
@@ -545,7 +545,7 @@ export const LOOT_TABLES = {
           { id: 'ruby', weight: 12, rarity: 'RARE' },
           { id: 'sapphire', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 1500, gems: 6, shift: 3 },
+        baseRewards: { coins: 1500, gems: 6 },
       },
       area_3: {
         name: 'Legendary Vault',
@@ -556,7 +556,7 @@ export const LOOT_TABLES = {
           { id: 'emerald', weight: 10, rarity: 'RARE' },
           { id: 'sapphire', weight: 8, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 2000, gems: 7, shift: 3 },
+        baseRewards: { coins: 2000, gems: 7 },
       },
     },
   },
@@ -576,7 +576,7 @@ export const LOOT_TABLES = {
           { id: 'sapphire', weight: 15, rarity: 'RARE' },
           { id: 'ruby', weight: 15, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 1800, gems: 6, shift: 3 },
+        baseRewards: { coins: 1800, gems: 6 },
       },
       area_2: {
         name: 'Merelani Hills',
@@ -587,7 +587,7 @@ export const LOOT_TABLES = {
           { id: 'ruby', weight: 15, rarity: 'RARE' },
           { id: 'sapphire', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 2200, gems: 7, shift: 3 },
+        baseRewards: { coins: 2200, gems: 7 },
       },
       area_3: {
         name: 'Deep Desert',
@@ -598,7 +598,7 @@ export const LOOT_TABLES = {
           { id: 'ruby', weight: 10, rarity: 'RARE' },
           { id: 'sapphire', weight: 7, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 2800, gems: 7, shift: 3 },
+        baseRewards: { coins: 2800, gems: 7 },
       },
     },
   },
@@ -619,7 +619,7 @@ export const LOOT_TABLES = {
           { id: 'tanzanite', weight: 15, rarity: 'LEGENDARY' },
           { id: 'ruby', weight: 10, rarity: 'EPIC' },
         ],
-        baseRewards: { coins: 3000, gems: 7, shift: 3 },
+        baseRewards: { coins: 3000, gems: 7 },
       },
       area_2: {
         name: 'Hidden Palace',
@@ -631,7 +631,7 @@ export const LOOT_TABLES = {
           { id: 'tanzanite', weight: 10, rarity: 'LEGENDARY' },
           { id: 'ruby', weight: 5, rarity: 'EPIC' },
         ],
-        baseRewards: { coins: 4000, gems: 8, shift: 3 },
+        baseRewards: { coins: 4000, gems: 8 },
       },
       area_3: {
         name: 'Dragon\'s Hoard',
@@ -643,7 +643,7 @@ export const LOOT_TABLES = {
           { id: 'tanzanite', weight: 7, rarity: 'LEGENDARY' },
           { id: 'ruby', weight: 3, rarity: 'EPIC' },
         ],
-        baseRewards: { coins: 5000, gems: 8, shift: 3 },
+        baseRewards: { coins: 5000, gems: 8 },
       },
     },
   },
@@ -668,7 +668,7 @@ export const getGemById = (gemId) => {
  * @param {string} areaKey - The area within that location (e.g., 'area_1')
  * @param {number} gemCount - Number of gems to roll for (default: 1)
  * @param {number} difficulty - Difficulty multiplier (1-3)
- * @returns {object} Object containing coins, gems array, and shift count
+ * @returns {object} Object containing coins and gems array
  */
 export const rollLoot = (locationKey, areaKey, gemCount = 1, difficulty = 1) => {
   const location = LOOT_TABLES[locationKey];
@@ -685,7 +685,6 @@ export const rollLoot = (locationKey, areaKey, gemCount = 1, difficulty = 1) => 
 
   // Calculate base rewards with multipliers
   const coins = Math.floor(area.baseRewards.coins * multipliers.coins);
-  const shift = area.baseRewards.shift * multipliers.shift;
 
   // Roll for gems based on weighted chances
   const gems = [];
@@ -717,7 +716,6 @@ export const rollLoot = (locationKey, areaKey, gemCount = 1, difficulty = 1) => 
   return {
     coins,
     gems,
-    shift,
     location: location.name,
     area: area.name,
   };

@@ -41,15 +41,6 @@ export default function DebugPanel() {
     dispatch({ type: 'ADD_COINS', payload: amount });
   };
 
-  const handleMaxShiftPoints = () => {
-    dispatch({ type: 'DEBUG_SET_SHIFT', payload: 500 });
-  };
-
-  const handleSetLevel = (level) => {
-    const shiftPoints = level * 100;
-    dispatch({ type: 'DEBUG_SET_SHIFT', payload: shiftPoints });
-  };
-
   const handleUnlockAllLocations = () => {
     dispatch({ type: 'DEBUG_UNLOCK_ALL_LOCATIONS' });
   };
@@ -75,7 +66,6 @@ export default function DebugPanel() {
             <h4 className="m-0 mb-2 text-xs uppercase tracking-wide text-gray-400">Current Stats</h4>
             <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
               <span className="whitespace-nowrap">💎 {state.player.coins?.toLocaleString() || 0}</span>
-              <span className="whitespace-nowrap">✨ Shift: {state.player.shiftPoints || 0}</span>
               <span className="whitespace-nowrap">📦 Gems: {state.player.gems?.length || 0}</span>
               <span className="whitespace-nowrap">📖 Gemdex: {state.player.gemdex?.length || 0}/{gemsData.gems.length}</span>
             </div>
@@ -87,17 +77,12 @@ export default function DebugPanel() {
               <button onClick={() => handleAddCoins(1000)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">+1K Coins</button>
               <button onClick={() => handleAddCoins(10000)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">+10K Coins</button>
               <button onClick={() => handleAddCoins(100000)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">+100K Coins</button>
-              <button onClick={handleMaxShiftPoints} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Max Shift (500)</button>
             </div>
           </div>
 
           <div className="border-b border-slate-700 pb-3">
             <h4 className="m-0 mb-2 text-xs uppercase tracking-wide text-gray-400">Progression</h4>
             <div className="flex flex-wrap gap-2">
-              <button onClick={() => handleSetLevel(5)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Level 5</button>
-              <button onClick={() => handleSetLevel(10)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Level 10</button>
-              <button onClick={() => handleSetLevel(25)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Level 25</button>
-              <button onClick={() => handleSetLevel(50)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Level 50</button>
               <button onClick={handleUnlockAllLocations} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Unlock All Locations</button>
             </div>
           </div>
