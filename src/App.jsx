@@ -1,8 +1,8 @@
 import { GameProvider, useGame, GAME_PHASES } from './context/GameContext';
 import Menu from './components/Menu';
+import Discover from './components/Discover';
 import './App.css';
 
-const Discover = () => <div className="screen"><h2>Discover</h2></div>;
 const Process = () => <div className="screen"><h2>Process</h2></div>;
 const Craft = () => <div className="screen"><h2>Craft</h2></div>;
 const Sell = () => <div className="screen"><h2>Sell</h2></div>;
@@ -10,6 +10,7 @@ const Minigame = () => <div className="screen"><h2>Minigame</h2></div>;
 
 function GameContent() {
   const { state } = useGame();
+  const coins = state.player?.coins || 0;
   
   switch (state.phase) {
     case GAME_PHASES.MENU:
@@ -42,7 +43,7 @@ function App() {
         <footer className="app-footer">
           <div className="coins-display">
             <span className="coin-icon">💎</span>
-            <span className="coin-amount">0</span>
+            <span className="coin-amount">{coins}</span>
           </div>
         </footer>
       </div>
