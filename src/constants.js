@@ -33,7 +33,8 @@ export const GAME_PHASES = {
   PROCESS: 'process',
   CRAFT: 'craft',
   SELL: 'sell',
-  MINIGAME: 'minigame'
+  MINIGAME: 'minigame',
+  TIER_1_B: 'TIER_1_B'
 };
 
 export { MINIGAME_TYPES, SCORE_TIERS, getScoreTier, calculateRewards } from './data/minigames.js';
