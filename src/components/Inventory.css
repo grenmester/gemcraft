@@ -47,6 +47,13 @@
   border-color: var(--accent-gold);
 }
 
+.tab-btn:focus-visible,
+.sort-select:focus,
+.filter-input:focus {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+
 .tab-icon {
   font-size: 1.25rem;
 }
@@ -153,5 +160,10 @@
   
   .inventory-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .inventory-controls {
+    flex-direction: column;
+    gap: var(--spacing-sm);
   }
 }

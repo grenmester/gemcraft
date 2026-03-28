@@ -38,14 +38,19 @@ export default function Inventory() {
     }
     
     if (activeTab === 'equipment') {
-      return Object.values(EQUIPMENT).map(eq => ({
-        id: eq.id,
-        name: eq.name,
-        quantity: 1,
-        owned: inventory.equipment?.includes(eq.id) || playerLevel >= eq.unlockLevel && eq.id === 'NONE',
-        unlockLevel: eq.unlockLevel,
-        cost: eq.cost
-      }));
+      return Object.values(EQUIPMENT).map(eq => {
+        // Special case: 'NONE' equipment is considered owned when player level meets unlock requirement
+        const noneEquipmentOwned = eq.id === 'NONE' && playerLevel >= eq.unlockLevel;
+        const isOwned = inventory.equipment?.includes(eq.id) || noneEquipmentOwned;
+        return {
+          id: eq.id,
+          name: eq.name,
+          quantity: 1,
+          owned: isOwned,
+          unlockLevel: eq.unlockLevel,
+          cost: eq.cost
+        };
+      });
     }
     
     const invItems = inventory[activeTab] || [];
@@ -59,7 +64,7 @@ export default function Inventory() {
         type: gemData?.type || 'unknown'
       };
     });
-  }, [activeTab, inventory, state.player.coins, state.player.shiftPoints, playerLevel]);
+  }, [activeTab, inventory, state.player.coins, state.player.shiftPoints]);
   
   const filteredItems = useMemo(() => {
     let result = [...items];
