@@ -23,9 +23,17 @@ export const BUY_EQUIPMENT = 'BUY_EQUIPMENT';
 export const ADD_TO_INVENTORY = 'ADD_TO_INVENTORY';
 export const REMOVE_FROM_INVENTORY = 'REMOVE_FROM_INVENTORY';
 
+// Discover state actions
+export const SET_DISCOVER_TAB = 'SET_DISCOVER_TAB';
+export const SELECT_LOCATION = 'SELECT_LOCATION';
+export const SELECT_AREA = 'SELECT_AREA';
+export const SET_REWARDS = 'SET_REWARDS';
+export const CLEAR_REWARDS = 'CLEAR_REWARDS';
+export const CLEAR_DISCOVER_SELECTION = 'CLEAR_DISCOVER_SELECTION';
+
 const STORAGE_KEY = 'gemstone_game_save';
 
-const MIGRATION_VERSION = 2;
+const MIGRATION_VERSION = 3;
 
 const initialPlayer = new Player();
 
@@ -33,7 +41,13 @@ const initialState = {
   player: initialPlayer.toJSON(),
   migrationVersion: MIGRATION_VERSION,
   phase: GAME_PHASES.MENU,
-  activeMinigame: null
+  activeMinigame: null,
+  discoverState: {
+    activeTab: 'idle',       // 'idle' | 'panning'
+    selectedLocation: null,  // 'TIER_1' | 'TIER_1_B' | ... | null
+    selectedArea: null,      // 'area_1' | 'area_2' | 'area_3' | null
+    lastRewards: null        // { coins, shift, gems } | null
+  }
 };
 
 function migrateState(state) {
@@ -51,6 +65,20 @@ function migrateState(state) {
       }
     };
     delete migrated.inventory;
+  }
+  
+  // Migration to version 3: Add discoverState
+  if (migrated.migrationVersion < 3) {
+    migrated = {
+      ...migrated,
+      migrationVersion: MIGRATION_VERSION,
+      discoverState: migrated.discoverState || {
+        activeTab: 'idle',
+        selectedLocation: null,
+        selectedArea: null,
+        lastRewards: null
+      }
+    };
   }
   
   return migrated;
@@ -101,7 +129,7 @@ function gameReducer(state, action) {
       };
 
     case LOAD_STATE:
-      return { ...initialState, ...action.payload };
+      return { ...initialState, ...action.payload, discoverState: { ...initialState.discoverState, ...(action.payload?.discoverState || {}) } };
 
     case DEBUG_ADD_GEM: {
       const gem = action.payload instanceof Gem ? action.payload : new Gem(action.payload);
@@ -231,6 +259,64 @@ function gameReducer(state, action) {
         }
       };
     }
+
+    // Discover state actions
+    case SET_DISCOVER_TAB:
+      return {
+        ...state,
+        discoverState: {
+          ...state.discoverState,
+          activeTab: action.payload
+        }
+      };
+
+    case SELECT_LOCATION:
+      return {
+        ...state,
+        discoverState: {
+          ...state.discoverState,
+          selectedLocation: action.payload,
+          selectedArea: null
+        }
+      };
+
+    case SELECT_AREA:
+      return {
+        ...state,
+        discoverState: {
+          ...state.discoverState,
+          selectedArea: action.payload
+        }
+      };
+
+    case SET_REWARDS:
+      return {
+        ...state,
+        discoverState: {
+          ...state.discoverState,
+          lastRewards: action.payload
+        }
+      };
+
+    case CLEAR_REWARDS:
+      return {
+        ...state,
+        discoverState: {
+          ...state.discoverState,
+          lastRewards: null
+        }
+      };
+
+    case CLEAR_DISCOVER_SELECTION:
+      return {
+        ...state,
+        discoverState: {
+          activeTab: 'idle',
+          selectedLocation: null,
+          selectedArea: null,
+          lastRewards: null
+        }
+      };
 
     default:
       return state
