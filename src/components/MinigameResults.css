@@ -1,0 +1,99 @@
+/* src/components/MinigameResults.css */
+
+.results-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.results-card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid #ffd93d;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+
+.results-title {
+  font-size: 24px;
+  color: #ffd93d;
+  margin-bottom: 8px;
+}
+
+.results-tier {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
+.results-score {
+  margin-bottom: 24px;
+}
+
+.score-display {
+  font-size: 48px;
+  font-weight: bold;
+}
+
+.score-current {
+  color: #ffd93d;
+}
+
+.score-divider {
+  color: #666;
+  margin: 0 8px;
+}
+
+.score-max {
+  color: #888;
+}
+
+.score-percentage {
+  font-size: 20px;
+  color: #4ecdc4;
+}
+
+.results-rewards {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.reward-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.reward-icon {
+  font-size: 32px;
+}
+
+.reward-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.reward-label {
+  font-size: 12px;
+  color: #888;
+}
+
+.reward-item.shift .reward-value {
+  color: #ffd93d;
+}
+
+.results-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
