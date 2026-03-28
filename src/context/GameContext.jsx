@@ -5,6 +5,7 @@ import { Gem } from '../models/Gem.js';
 import gemsData from '../data/gems.json';
 
 import { GAME_PHASES } from '../constants.js';
+import { EQUIPMENT } from '../data/equipment.js';
 
 export { GAME_PHASES };
 
@@ -138,6 +139,78 @@ function gameReducer(state, action) {
 
     case DEBUG_RESET:
       return { ...initialState };
+
+    case BUY_EQUIPMENT: {
+      const eq = action.payload;
+      const eqData = EQUIPMENT[eq];
+      if (!eqData) return state;
+      const cost = eqData.cost;
+      if (state.player.coins < cost) return state;
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          coins: state.player.coins - cost,
+          inventory: {
+            ...state.player.inventory,
+            equipment: [...(state.player.inventory?.equipment || []), eq]
+          }
+        }
+      };
+    }
+
+    case ADD_TO_INVENTORY: {
+      const { category, gemId, quantity = 1 } = action.payload;
+      const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+      const items = [...(inv[category] || [])];
+      const existing = items.find(i => i.gemId === gemId);
+      
+      if (existing) {
+        const idx = items.indexOf(existing);
+        items[idx] = { ...existing, quantity: existing.quantity + quantity };
+      } else {
+        items.push({ gemId, quantity });
+      }
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          inventory: {
+            ...inv,
+            [category]: items
+          }
+        }
+      };
+    }
+
+    case REMOVE_FROM_INVENTORY: {
+      const { category, gemId, quantity = 1 } = action.payload;
+      const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+      const items = [...(inv[category] || [])];
+      const existingIndex = items.findIndex(i => i.gemId === gemId);
+      
+      if (existingIndex >= 0) {
+        const existing = items[existingIndex];
+        const newQuantity = existing.quantity - quantity;
+        if (newQuantity <= 0) {
+          items.splice(existingIndex, 1);
+        } else {
+          items[existingIndex] = { ...existing, quantity: newQuantity };
+        }
+      }
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          inventory: {
+            ...inv,
+            [category]: items
+          }
+        }
+      };
+    }
 
     default:
       return state
