@@ -1,0 +1,31 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "Gemstone Collector" [level=1] [ref=e6]
+  - main [ref=e7]:
+    - generic [ref=e172]:
+      - generic [ref=e173]:
+        - heading "Gemstone" [level=1] [ref=e174]
+        - paragraph [ref=e175]: Build your gem empire
+      - navigation [ref=e176]:
+        - button "🔍 Discover" [ref=e177]:
+          - generic [ref=e178]: 🔍
+          - generic [ref=e179]: Discover
+        - button "⚙️ Process" [ref=e180]:
+          - generic [ref=e181]: ⚙️
+          - generic [ref=e182]: Process
+        - button "💎 Craft" [ref=e183]:
+          - generic [ref=e184]: 💎
+          - generic [ref=e185]: Craft
+        - button "💰 Sell" [ref=e186]:
+          - generic [ref=e187]: 💰
+          - generic [ref=e188]: Sell
+        - button "📖 Gemdex" [ref=e189]:
+          - generic [ref=e190]: 📖
+          - generic [ref=e191]: Gemdex
+        - button "🎒 Inventory" [ref=e192]:
+          - generic [ref=e193]: 🎒
+          - generic [ref=e194]: Inventory
+  - contentinfo [ref=e31]:
+    - generic [ref=e32]:
+      - generic [ref=e33]: 💎
+      - generic [ref=e34]: "100"

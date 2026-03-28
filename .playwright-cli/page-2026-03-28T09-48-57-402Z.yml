@@ -1,0 +1,31 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "Gemstone Collector" [level=1] [ref=e6]
+  - main [ref=e7]:
+    - generic [ref=e568]:
+      - generic [ref=e569]:
+        - heading "Discover" [level=2] [ref=e570]
+        - generic [ref=e571]:
+          - generic [ref=e572]:
+            - generic [ref=e573]: 💎
+            - generic [ref=e574]: "250"
+          - generic [ref=e575]:
+            - generic [ref=e576]: 🎒
+            - generic [ref=e577]: 0/20
+      - generic [ref=e578]:
+        - generic [ref=e579]:
+          - 'heading "⭐ Shift Tier: No Idle Collection" [level=3] [ref=e580]'
+          - generic [ref=e581]:
+            - generic [ref=e582]: 0gems/hr when idle
+            - generic [ref=e586]: 4 / 10 Shift Points to Tier 1
+            - paragraph [ref=e587]: Play mini-games to earn Shift Points and unlock idle collection!
+        - generic [ref=e588]:
+          - heading "🔍 Panning (Active)" [level=3] [ref=e589]
+          - paragraph [ref=e590]: Play the mini-game to earn gems and Shift Points!
+          - button "Start Panning" [ref=e591] [cursor=pointer]
+          - button "🗺️ World Map" [ref=e592] [cursor=pointer]
+      - button "← Back to Menu" [ref=e593] [cursor=pointer]
+  - contentinfo [ref=e31]:
+    - generic [ref=e32]:
+      - generic [ref=e33]: 💎
+      - generic [ref=e34]: "250"

@@ -1,0 +1,34 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "Gemstone Collector" [level=1] [ref=e6]
+  - main [ref=e7]:
+    - generic [ref=e220]:
+      - generic [ref=e221]:
+        - heading "Unknown Location" [level=2] [ref=e222]
+        - generic [ref=e223]: Testing Mode
+      - generic [ref=e224]:
+        - paragraph [ref=e225]: Select a reward tier to simulate completing this location's minigame.
+        - generic [ref=e226]:
+          - button "Low Reward 💰 50 coins 💎 1 gem(s) ⭐ 1 shift point(s)" [ref=e227] [cursor=pointer]:
+            - generic [ref=e228]: Low Reward
+            - generic [ref=e229]:
+              - generic [ref=e230]: 💰 50 coins
+              - generic [ref=e231]: 💎 1 gem(s)
+              - generic [ref=e232]: ⭐ 1 shift point(s)
+          - button "Medium Reward 💰 100 coins 💎 2 gem(s) ⭐ 3 shift point(s)" [ref=e233] [cursor=pointer]:
+            - generic [ref=e234]: Medium Reward
+            - generic [ref=e235]:
+              - generic [ref=e236]: 💰 100 coins
+              - generic [ref=e237]: 💎 2 gem(s)
+              - generic [ref=e238]: ⭐ 3 shift point(s)
+          - button "High Reward 💰 200 coins 💎 3 gem(s) ⭐ 8 shift point(s)" [ref=e239] [cursor=pointer]:
+            - generic [ref=e240]: High Reward
+            - generic [ref=e241]:
+              - generic [ref=e242]: 💰 200 coins
+              - generic [ref=e243]: 💎 3 gem(s)
+              - generic [ref=e244]: ⭐ 8 shift point(s)
+      - button "← Back to Map" [ref=e245]
+  - contentinfo [ref=e31]:
+    - generic [ref=e32]:
+      - generic [ref=e33]: 💎
+      - generic [ref=e34]: "100"
