@@ -67,11 +67,11 @@ export default function Discover() {
   };
 
   const handleStartPanning = () => {
-    dispatch({ type: SET_PHASE, payload: GAME_PHASES.MINIGAME });
+    dispatch({ type: 'SET_PHASE', payload: GAME_PHASES.MINIGAME });
   };
 
   const handleBack = () => {
-    dispatch({ type: SET_PHASE, payload: GAME_PHASES.MENU });
+    dispatch({ type: 'SET_PHASE', payload: GAME_PHASES.MENU });
   };
 
   return (
@@ -150,6 +150,12 @@ export default function Discover() {
             onClick={handleStartPanning}
           >
             Start Panning
+          </button>
+          <button 
+            className="btn btn-secondary"
+            onClick={() => dispatch({ type: 'SET_PHASE', payload: 'location_map' })}
+          >
+            🗺️ World Map
           </button>
         </section>
       </div>

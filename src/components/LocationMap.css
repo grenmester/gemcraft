@@ -1,0 +1,93 @@
+.location-map.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  padding: 20px;
+}
+
+.location-map .map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.location-map .map-header h2 {
+  color: #ffd93d;
+  margin: 0;
+}
+
+.location-map .player-info {
+  display: flex;
+  gap: 16px;
+  color: #aaa;
+}
+
+.location-map .locations-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  overflow-y: auto;
+  padding-bottom: 80px;
+}
+
+.location-map .location-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.location-map .location-card.unlocked:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.location-map .location-card.selected {
+  border-color: var(--location-color);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.location-map .location-card.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.location-map .location-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.location-map .location-name {
+  color: var(--location-color);
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.location-map .location-level {
+  font-size: 12px;
+  color: #888;
+}
+
+.location-map .location-actions {
+  position: fixed;
+  bottom: 80px;
+  left: 0;
+  right: 0;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+}
+
+.location-map .back-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+}

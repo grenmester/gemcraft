@@ -7,6 +7,7 @@ import Sell from './components/Sell';
 import Minigame from './components/Minigame';
 import ChipReveal from './components/ChipReveal';
 import SieveSort from './components/SieveSort';
+import LocationMap from './components/LocationMap';
 import './App.css';
 
 function GameContent() {
@@ -38,6 +39,9 @@ function GameContent() {
       break;
     case GAME_PHASES.TIER_1_C:
       phaseContent = <SieveSort />;
+      break;
+    case 'location_map':
+      phaseContent = <LocationMap />;
       break;
     default:
       phaseContent = <Menu />;
