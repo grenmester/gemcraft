@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
-import { useGame } from '../context/GameContext';
-import gemsData from '../data/gems.json';
-import { EQUIPMENT } from '../data/equipment.js';
+import { useGame } from '../../../context/GameContext';
+import gemsData from '../../../data/gems.json';
+import { EQUIPMENT } from '../../../data/equipment.js';
 
 const TABS = [
   { id: 'minerals', label: 'Raw Minerals', icon: '🪨' },

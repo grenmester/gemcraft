@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
-import { useGame, GAME_PHASES, SET_PHASE } from '../context/GameContext';
-import gemsData from '../data/gems.json';
-import { LOCATION_TIERS } from '../data/locations';
-import { getGemSources } from '../data/lootTables';
+import { useGame, GAME_PHASES, SET_PHASE } from '../../../context/GameContext';
+import gemsData from '../../../data/gems.json';
+import { LOCATION_TIERS } from '../../../data/locations';
+import { getGemSources } from '../../../data/lootTables';
 
 const MINERAL_FAMILIES = {
   quartz: { name: 'Quartz', color: '#e8e8e8' },
@@ -95,7 +95,7 @@ export default function Gemdex() {
   };
 
   return (
-    <div className="gemdex min-h-screen p-4 md:p-8 max-w-3xl mx-auto">
+    <div className="font-serif min-h-screen p-4 md:p-8 max-w-3xl mx-auto">
       <header className="flex items-center justify-between mb-4 pb-4 border-b-2 border-amber-700">
         <button onClick={handleBack} className="bg-transparent border border-amber-700 text-amber-900 px-4 py-2 font-serif cursor-pointer transition-all hover:bg-amber-700 hover:text-amber-50">← Back</button>
         <h1 className="font-serif text-2xl m-0 text-amber-900" style={{ textShadow: '1px 1px 1px rgba(184, 115, 51, 0.3)' }}>Gemdex</h1>

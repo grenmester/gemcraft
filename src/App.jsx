@@ -8,8 +8,8 @@ import LocationSelector from './components/LocationSelector';
 import SubareaSelector from './components/SubareaSelector';
 import RewardsSelector from './components/RewardsSelector';
 import RewardsSummary from './components/RewardsSummary';
-import Gemdex from './components/Gemdex';
-import Inventory from './components/Inventory';
+import Gemdex from './features/inventory/components/Gemdex';
+import Inventory from './features/inventory/components/Inventory';
 import DebugPanel from './components/DebugPanel';
 
 function GameContent() {
