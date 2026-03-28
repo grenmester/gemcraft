@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useGame, GAME_PHASES, SET_REWARDS } from '../../../context/GameContext';
-import { rollLoot } from '../../../data/lootTables';
+import { useGame, GAME_PHASES, SET_REWARDS, ADD_MINERAL, ADD_TO_INVENTORY } from '../../../context/GameContext';
+import { rollLoot, getItemById } from '../../../data/lootTables';
+import { EQUIPMENT } from '../../../data/equipment';
 
 export default function TempMinigame() {
   const { state, dispatch } = useGame();
@@ -17,16 +18,44 @@ export default function TempMinigame() {
   };
 
   const handleCompleteArea = () => {
-    // Roll for rewards
-    const rewards = rollLoot(location, area, 2, 1);
-    
+    // Get player's equipment for bonus calculation
+    const playerEquipment = state.player?.inventory?.equipment || [];
+    const activeEquipment = playerEquipment.filter(eqId => EQUIPMENT[eqId]);
+
+    // Roll for rewards with equipment bonuses
+    const { coins, items } = rollLoot(location, area, 2, 1, {
+      equipmentIds: activeEquipment,
+    });
+
+    // Separate gems and minerals
+    const gems = [];
+    const minerals = [];
+
+    items.forEach(item => {
+      const itemData = getItemById(item.id);
+      if (itemData?.category === 'Gem') {
+        gems.push(item);
+        dispatch({ type: ADD_TO_INVENTORY, payload: { category: 'gems', gemId: item.id, quantity: 1 } });
+      } else if (itemData?.category === 'Mineral') {
+        minerals.push(item);
+        dispatch({ type: ADD_MINERAL, payload: { mineralId: item.id, quantity: 1 } });
+      }
+    });
+
     // Update state with rewards
     dispatch({
       type: SET_REWARDS,
-      payload: rewards
+      payload: {
+        coins,
+        gems,
+        minerals,
+        items,
+        location,
+        area
+      }
     });
-    
-    setCurrentRewards(rewards);
+
+    setCurrentRewards({ coins, gems, minerals, items, location, area });
     setShowRewards(true);
   };
 
@@ -55,23 +84,21 @@ export default function TempMinigame() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 mb-6">
-            <span className="text-3xl">⭐</span>
-            <div>
-              <div className="text-xl font-bold text-purple-400">+{currentRewards.shift}</div>
-              <div className="text-sm text-slate-400">shift points</div>
-            </div>
-          </div>
-
           <div>
-            <h3 className="text-lg font-bold text-white mb-3">Gems Found ({currentRewards.gems?.length || 0})</h3>
+            <h3 className="text-lg font-bold text-white mb-3">
+              Items Found ({currentRewards.items?.length || 0})
+            </h3>
             <div className="grid grid-cols-2 gap-3">
-              {currentRewards.gems?.map((gem, index) => (
-                <div key={`${gem.id}-${index}`} className="bg-slate-900 rounded-lg p-3 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">💎</div>
+              {currentRewards.items?.map((item, index) => (
+                <div key={`${item.id}-${index}`} className="bg-slate-900 rounded-lg p-3 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">
+                    {item.category === 'Gem' ? '✨' : '💎'}
+                  </div>
                   <div>
-                    <div className="font-bold text-white text-sm">{gem.name || gem.id}</div>
-                    <div className="text-xs font-semibold text-gray-400">{gem.rarity}</div>
+                    <div className="font-bold text-white text-sm">{item.name || item.id}</div>
+                    <div className="text-xs font-semibold" style={{ color: item.rarityTier?.color || '#9CA3AF' }}>
+                      {item.rarity}
+                    </div>
                   </div>
                 </div>
               ))}

@@ -1,4 +1,5 @@
 import itemsData from './items.json';
+import { EQUIPMENT } from './equipment.js';
 
 // ============================================
 // ITEM LOOKUP (replaces gems.json dependency)
@@ -7,6 +8,30 @@ import itemsData from './items.json';
 const itemsById = Object.fromEntries(itemsData.items.map(item => [item.id, item]));
 
 export const getItemById = (itemId) => itemsById[itemId];
+
+// ============================================
+// EQUIPMENT BONUS CALCULATION
+// ============================================
+
+/**
+ * Calculate total equipment bonuses from equipped items
+ * @param {string[]} equipmentIds - Array of equipment IDs the player has equipped
+ * @returns {{ dropRateBonus: number, extraItems: number }}
+ */
+export const calculateEquipmentBonus = (equipmentIds = []) => {
+  let dropRateBonus = 0;
+  let extraItems = 0;
+
+  for (const eqId of equipmentIds) {
+    const equipment = EQUIPMENT[eqId];
+    if (equipment?.effect) {
+      dropRateBonus += equipment.effect.dropRateBonus || 0;
+      extraItems += equipment.effect.extraItems || 0;
+    }
+  }
+
+  return { dropRateBonus, extraItems };
+};
 
 // ============================================
 // RARITY TIER DEFINITIONS
@@ -704,9 +729,13 @@ export const LOOT_TABLES = {
  * @param {string} areaKey - The area within that location (e.g., 'area_1')
  * @param {number} itemCount - Number of items to roll for (default: 1)
  * @param {number} difficulty - Difficulty multiplier (1-3)
+ * @param {Object} options - Optional settings
+ * @param {string[]} options.equipmentIds - Array of equipment IDs for bonus calculation
+ * @param {number} options.dropRateBonus - Direct drop rate bonus (overrides equipmentIds if provided)
+ * @param {number} options.extraItems - Direct extra items count (overrides equipmentIds if provided)
  * @returns {object} Object containing coins and items array
  */
-export const rollLoot = (locationKey, areaKey, itemCount = 1, difficulty = 1) => {
+export const rollLoot = (locationKey, areaKey, itemCount = 1, difficulty = 1, options = {}) => {
   const location = LOOT_TABLES[locationKey];
   if (!location) {
     throw new Error(`Invalid location: ${locationKey}`);
@@ -719,14 +748,31 @@ export const rollLoot = (locationKey, areaKey, itemCount = 1, difficulty = 1) =>
 
   const multipliers = REWARD_MULTIPLIERS[difficulty] || REWARD_MULTIPLIERS[1];
 
+  // Calculate equipment bonuses
+  let dropRateBonus = options.dropRateBonus ?? 0;
+  let extraItems = options.extraItems ?? 0;
+
+  // If equipmentIds provided, calculate bonuses from them
+  if (options.equipmentIds && options.equipmentIds.length > 0) {
+    const equipmentBonus = calculateEquipmentBonus(options.equipmentIds);
+    dropRateBonus = Math.max(dropRateBonus, equipmentBonus.dropRateBonus);
+    extraItems = Math.max(extraItems, equipmentBonus.extraItems);
+  }
+
   // Calculate base rewards with multipliers
   const coins = Math.floor(area.baseRewards.coins * multipliers.coins);
+
+  // Apply equipment bonuses to item count
+  // dropRateBonus is a percentage multiplier (e.g., 0.10 = 10% more items)
+  // extraItems is a flat addition
+  const bonusItemCount = Math.ceil(itemCount * dropRateBonus);
+  const totalItemCount = itemCount + bonusItemCount + extraItems;
 
   // Roll for items based on weighted chances
   const items = [];
   const totalWeight = area.items.reduce((sum, item) => sum + item.weight, 0);
 
-  for (let i = 0; i < itemCount; i++) {
+  for (let i = 0; i < totalItemCount; i++) {
     let roll = Math.random() * totalWeight;
 
     for (const itemEntry of area.items) {
@@ -754,6 +800,13 @@ export const rollLoot = (locationKey, areaKey, itemCount = 1, difficulty = 1) =>
     items,
     location: location.name,
     area: area.name,
+    // Include bonus info for debugging/display
+    bonusesApplied: {
+      dropRateBonus,
+      extraItems,
+      baseItemCount: itemCount,
+      totalItemCount,
+    },
   };
 };
 

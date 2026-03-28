@@ -1,5 +1,6 @@
 import { useGame, SELECT_AREA, SET_REWARDS, ADD_MINERAL, ADD_TO_INVENTORY } from '../../../context/GameContext';
-import { LOOT_TABLES, rollLoot, REWARD_MULTIPLIERS, getItemById } from '../../../data/lootTables';
+import { LOOT_TABLES, rollLoot, REWARD_MULTIPLIERS, getItemById, calculateEquipmentBonus } from '../../../data/lootTables';
+import { EQUIPMENT } from '../../../data/equipment';
 
 const DIFFICULTY_CONFIG = {
   1: { label: 'Easy', color: '#4CAF50', multiplier: 1.0 },
@@ -19,7 +20,15 @@ export default function RewardsSelector() {
 
     const multiplier = REWARD_MULTIPLIERS[difficulty];
     const itemsToRoll = Math.floor(area.baseRewards.items * multiplier.items);
-    const { coins, items } = rollLoot(locationKey, areaKey, itemsToRoll, difficulty);
+
+    // Get player's equipment for bonus calculation
+    const playerEquipment = state.player?.inventory?.equipment || [];
+    // Find the best equipment the player has (for drop rate bonuses)
+    const activeEquipment = playerEquipment.filter(eqId => EQUIPMENT[eqId]);
+
+    const { coins, items, bonusesApplied } = rollLoot(locationKey, areaKey, itemsToRoll, difficulty, {
+      equipmentIds: activeEquipment,
+    });
 
     const coinsEarned = Math.floor(area.baseRewards.coins * multiplier.coins);
 
@@ -52,7 +61,8 @@ export default function RewardsSelector() {
         minerals,
         items, // Keep full items array for reference
         area: area.name,
-        location: location.name
+        location: location.name,
+        bonusesApplied, // Include bonus info for display
       }
     });
   };
