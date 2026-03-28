@@ -1,5 +1,5 @@
-import { useGame, SELECT_LOCATION, SELECT_AREA } from '../context/GameContext';
-import { LOOT_TABLES } from '../data/lootTables';
+import { useGame, SELECT_LOCATION, SELECT_AREA } from '../../../context/GameContext';
+import { LOOT_TABLES } from '../../../data/lootTables';
 
 function DifficultyStars({ difficulty }) {
   return (

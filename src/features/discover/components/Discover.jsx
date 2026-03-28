@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useGame, GAME_PHASES } from '../context/GameContext';
-import { Gem } from '../models/Gem';
-import gemsData from '../data/gems.json';
+import { useGame, GAME_PHASES } from '../../../context/GameContext';
+import { Gem } from '../../../models/Gem';
+import gemsData from '../../../data/gems.json';
 
 const SHIFT_TIERS = [
   { threshold: 0, rate: 0, label: 'No Idle Collection', color: '#666' },

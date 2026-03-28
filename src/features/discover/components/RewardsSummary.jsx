@@ -1,5 +1,5 @@
-import { useGame, CLEAR_DISCOVER_SELECTION, GAME_PHASES } from '../context/GameContext';
-import { getGemById } from '../data/lootTables';
+import { useGame, CLEAR_DISCOVER_SELECTION, GAME_PHASES } from '../../../context/GameContext';
+import { getGemById } from '../../../data/lootTables';
 
 export default function RewardsSummary() {
   const { state, dispatch } = useGame();

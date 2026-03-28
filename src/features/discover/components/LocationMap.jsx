@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useGame, GAME_PHASES } from '../context/GameContext';
-import { LOCATION_TIERS, getUnlockedLocations } from '../constants';
-import { checkLocationRequirements, getRequirementIcon } from '../utils/requirements';
+import { useGame, GAME_PHASES } from '../../../context/GameContext';
+import { LOCATION_TIERS, getUnlockedLocations } from '../../../constants';
+import { checkLocationRequirements, getRequirementIcon } from '../../../utils/requirements';
 
 const SHIFT_POINTS_PER_LEVEL = 100;
 

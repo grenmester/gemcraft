@@ -1,5 +1,5 @@
-import { useGame, SELECT_AREA, SET_REWARDS } from '../context/GameContext';
-import { LOOT_TABLES, rollLoot, REWARD_MULTIPLIERS, getGemById } from '../data/lootTables';
+import { useGame, SELECT_AREA, SET_REWARDS } from '../../../context/GameContext';
+import { LOOT_TABLES, rollLoot, REWARD_MULTIPLIERS, getGemById } from '../../../data/lootTables';
 
 const DIFFICULTY_CONFIG = {
   1: { label: 'Easy', color: '#4CAF50', multiplier: 1.0 },

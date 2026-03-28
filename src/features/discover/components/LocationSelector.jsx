@@ -1,5 +1,5 @@
-import { useGame, CLEAR_DISCOVER_SELECTION, SELECT_LOCATION } from '../context/GameContext';
-import { LOOT_TABLES } from '../data/lootTables';
+import { useGame, CLEAR_DISCOVER_SELECTION, SELECT_LOCATION } from '../../../context/GameContext';
+import { LOOT_TABLES } from '../../../data/lootTables';
 
 export function LocationSelector() {
   const { state, dispatch } = useGame();
