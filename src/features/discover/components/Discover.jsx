@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGame, GAME_PHASES } from '../../../context/GameContext';
+import { useDiscover } from '../hooks/useDiscover';
 import { Gem } from '../../../models/Gem';
 import gemsData from '../../../data/gems.json';
 
@@ -14,7 +15,7 @@ const SHIFT_TIERS = [
 
 export default function Discover() {
   const { state, dispatch } = useGame();
-  const { discoverState } = state;
+  const { discoverState, setActiveTab } = useDiscover();
   const [lastMinedGem, setLastMinedGem] = useState(null);
   const [idleGems, setIdleGems] = useState([]);
 
@@ -107,7 +108,7 @@ export default function Discover() {
               ? 'bg-yellow-500 text-black' 
               : 'bg-slate-700 text-slate-300'
           }`}
-          onClick={() => dispatch({ type: 'SET_DISCOVER_TAB', payload: 'idle' })}
+          onClick={() => setActiveTab('idle')}
         >
           ⏰ Idle
         </button>
@@ -117,7 +118,7 @@ export default function Discover() {
               ? 'bg-yellow-500 text-black' 
               : 'bg-slate-700 text-slate-300'
           }`}
-          onClick={() => dispatch({ type: 'SET_DISCOVER_TAB', payload: 'panning' })}
+          onClick={() => setActiveTab('panning')}
         >
           🔍 Panning
         </button>
