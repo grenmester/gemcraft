@@ -1,7 +1,7 @@
 import { GameProvider, useGame, GAME_PHASES } from './context/GameContext';
+import Menu from './components/Menu';
 import './App.css';
 
-const Menu = () => <div className="screen"><h2>Menu</h2></div>;
 const Discover = () => <div className="screen"><h2>Discover</h2></div>;
 const Process = () => <div className="screen"><h2>Process</h2></div>;
 const Craft = () => <div className="screen"><h2>Craft</h2></div>;
