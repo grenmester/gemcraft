@@ -161,7 +161,7 @@ export default function Discover() {
               )}
               
               {currentTier.rate === 0 && (
-                <p className="text-sm" style={{ color: '#e74c3c' }}>
+                <p className="text-sm text-red-500">
                   Play mini-games to earn Shift Points and unlock idle collection!
                 </p>
               )}
