@@ -32,7 +32,7 @@ export default function RewardsSelector() {
       dispatch({ type: 'DEBUG_ADD_GEM', payload: gem });
     });
     
-    // Store for summary screen
+    // Store for summary screen - App.jsx routing will show RewardsSummary when lastRewards is set
     dispatch({ 
       type: SET_REWARDS, 
       payload: { 
@@ -43,10 +43,6 @@ export default function RewardsSelector() {
         location: location.name
       } 
     });
-
-    // Navigate back to location to see rewards summary
-    dispatch({ type: SELECT_AREA, payload: null });
-    dispatch({ type: SELECT_AREA, payload: areaKey });
   };
   
   const handleBack = () => {

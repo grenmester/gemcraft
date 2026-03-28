@@ -133,16 +133,30 @@ function gameReducer(state, action) {
 
     case DEBUG_ADD_GEM: {
       const gem = action.payload instanceof Gem ? action.payload : new Gem(action.payload);
-      const newGems = [...state.player.gems, gem];
       const newGemdex = state.player.gemdex.some(g => g.id === gem.id)
         ? state.player.gemdex
         : [...state.player.gemdex, gem];
+      
+      // Add to inventory structure (gems array)
+      const inventory = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: state.player.coins || 100 } };
+      const gems = [...(inventory.gems || [])];
+      const existingGem = gems.find(g => g.gemId === gem.id);
+      
+      if (existingGem) {
+        existingGem.quantity += 1;
+      } else {
+        gems.push({ gemId: gem.id, quantity: 1 });
+      }
+      
       return {
         ...state,
         player: {
           ...state.player,
-          gems: newGems,
-          gemdex: newGemdex
+          gemdex: newGemdex,
+          inventory: {
+            ...inventory,
+            gems
+          }
         }
       };
     }
