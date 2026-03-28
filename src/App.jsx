@@ -6,6 +6,7 @@ import Craft from './components/Craft';
 import Sell from './components/Sell';
 import Minigame from './components/Minigame';
 import ChipReveal from './components/ChipReveal';
+import SieveSort from './components/SieveSort';
 import './App.css';
 
 function GameContent() {
@@ -34,6 +35,9 @@ function GameContent() {
       break;
     case GAME_PHASES.TIER_1_B:
       phaseContent = <ChipReveal />;
+      break;
+    case GAME_PHASES.TIER_1_C:
+      phaseContent = <SieveSort />;
       break;
     default:
       phaseContent = <Menu />;
