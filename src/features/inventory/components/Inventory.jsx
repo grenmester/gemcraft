@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { useGame } from '../../../context/GameContext';
+import { useGame, SET_PHASE, GAME_PHASES } from '../../../context/GameContext';
+import { useInventory } from '../hooks/useInventory';
 import gemsData from '../../../data/gems.json';
 import { EQUIPMENT } from '../../../data/equipment.js';
 
@@ -18,12 +19,12 @@ const SORT_OPTIONS = [
 
 export default function Inventory() {
   const { state, dispatch } = useGame();
+  const { inventory, coins } = useInventory();
   const [activeTab, setActiveTab] = useState('minerals');
   const [sortBy, setSortBy] = useState('name');
   const [filter, setFilter] = useState('');
-  
+
   const playerLevel = Math.floor((state.player.shiftPoints || 0) / 100);
-  const inventory = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
   
   const items = useMemo(() => {
     if (activeTab === 'currency') {
@@ -31,7 +32,7 @@ export default function Inventory() {
         id: 'currency',
         name: 'Currency',
         quantity: 1,
-        coins: state.player.coins,
+        coins: coins,
         shiftPoints: state.player.shiftPoints || 0
       }];
     }
@@ -62,7 +63,7 @@ export default function Inventory() {
         type: gemData?.type || 'unknown'
       };
     });
-  }, [activeTab, inventory, state.player.coins, state.player.shiftPoints]);
+  }, [activeTab, inventory, coins, state.player.shiftPoints]);
   
   const filteredItems = useMemo(() => {
     let result = [...items];
@@ -89,7 +90,7 @@ export default function Inventory() {
   }, [items, filter, sortBy]);
   
   const handleBack = () => {
-    dispatch({ type: 'SET_PHASE', payload: 'MENU' });
+    dispatch({ type: SET_PHASE, payload: GAME_PHASES.MENU });
   };
   
   return (

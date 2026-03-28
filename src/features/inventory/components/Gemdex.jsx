@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useGame, GAME_PHASES, SET_PHASE } from '../../../context/GameContext';
+import { useInventory } from '../hooks/useInventory';
 import gemsData from '../../../data/gems.json';
 import { LOCATION_TIERS } from '../../../data/locations';
 import { getGemSources } from '../../../data/lootTables';
@@ -43,13 +44,14 @@ const GEM_FACTS = {
 
 export default function Gemdex() {
   const { state, dispatch } = useGame();
+  const { gemdex } = useInventory();
   const [selectedGem, setSelectedGem] = useState(null);
   const [filter, setFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name');
 
   const discoveredGemIds = useMemo(() => {
-    return new Set(state.player.gemdex?.map(g => g.id) || []);
-  }, [state.player.gemdex]);
+    return new Set(gemdex.map(g => g.id));
+  }, [gemdex]);
 
   const stats = useMemo(() => {
     const total = gemsData.gems.length;
