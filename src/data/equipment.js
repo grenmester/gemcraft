@@ -1,16 +1,102 @@
 export const EQUIPMENT = {
-  NONE: { id: 'NONE', name: 'None', cost: 0, unlockLevel: 0 },
-  BASIC_PICKAXE: { id: 'BASIC_PICKAXE', name: 'Basic Pickaxe', cost: 0, unlockLevel: 5 },
-  DIAMOND_DRILL: { id: 'DIAMOND_DRILL', name: 'Diamond Drill', cost: 500, unlockLevel: 15 },
-  HEAVY_MACHINERY: { id: 'HEAVY_MACHINERY', name: 'Heavy Machinery', cost: 2000, unlockLevel: 40 },
-  MINING_DYNASTY: { id: 'MINING_DYNASTY', name: 'Mining Dynasty', cost: 5000, unlockLevel: 55 },
-  ELITE_OPERATIONS: { id: 'ELITE_OPERATIONS', name: 'Elite Operations', cost: 15000, unlockLevel: 70 }
+  NONE: {
+    id: 'NONE',
+    name: 'None',
+    cost: 0,
+    unlockLevel: 0,
+    effect: { dropRateBonus: 0, extraItems: 0 },
+    unlocks: ['TIER_1'],
+    description: 'No equipment equipped'
+  },
+  BASIC_PICKAXE: {
+    id: 'BASIC_PICKAXE',
+    name: 'Basic Pickaxe',
+    cost: 100,
+    unlockLevel: 2,
+    effect: { dropRateBonus: 0.10, extraItems: 0 },
+    unlocks: ['TIER_1_B', 'TIER_1_C'],
+    description: '+10% drop rate. Unlocks TIER_1_B and TIER_1_C.',
+    craftRecipe: null // Purchase only
+  },
+  IRON_PICKAXE: {
+    id: 'IRON_PICKAXE',
+    name: 'Iron Pickaxe',
+    cost: 500,
+    unlockLevel: 5,
+    effect: { dropRateBonus: 0.20, extraItems: 0 },
+    unlocks: ['TIER_2_A', 'TIER_2_B'],
+    description: '+20% drop rate. Unlocks TIER_2_A and TIER_2_B.',
+    craftRecipe: { materials: { hematite: 5 }, coins: 200 }
+  },
+  STEEL_DRILL: {
+    id: 'STEEL_DRILL',
+    name: 'Steel Drill',
+    cost: 2000,
+    unlockLevel: 10,
+    effect: { dropRateBonus: 0.30, extraItems: 1 },
+    unlocks: ['TIER_2_C', 'TIER_3_A'],
+    description: '+30% drop rate, +1 extra item. Unlocks TIER_2_C and TIER_3_A.',
+    craftRecipe: { materials: { hematite: 10, pyrite: 5 }, coins: 500 }
+  },
+  DIAMOND_DRILL: {
+    id: 'DIAMOND_DRILL',
+    name: 'Diamond Drill',
+    cost: 5000,
+    unlockLevel: 20,
+    effect: { dropRateBonus: 0.40, extraItems: 1 },
+    unlocks: ['TIER_3_B', 'TIER_3_C'],
+    description: '+40% drop rate, +1 extra item. Unlocks TIER_3_B and TIER_3_C.',
+    craftRecipe: { materials: { clear_quartz: 20, fluorite: 10 }, coins: 1000 }
+  },
+  HEAVY_MACHINERY: {
+    id: 'HEAVY_MACHINERY',
+    name: 'Heavy Machinery',
+    cost: 15000,
+    unlockLevel: 35,
+    effect: { dropRateBonus: 0.50, extraItems: 2 },
+    unlocks: ['TIER_4_A', 'TIER_4_B'],
+    description: '+50% drop rate, +2 extra items. Unlocks TIER_4_A and TIER_4_B.',
+    craftRecipe: { materials: { malachite: 10, azurite: 5 }, coins: 3000 }
+  },
+  ELITE_OPERATIONS: {
+    id: 'ELITE_OPERATIONS',
+    name: 'Elite Operations',
+    cost: 50000,
+    unlockLevel: 50,
+    effect: { dropRateBonus: 0.60, extraItems: 2 },
+    unlocks: ['TIER_4_C', 'TIER_5_A', 'TIER_5_B', 'TIER_5_C'],
+    description: '+60% drop rate, +2 extra items. Unlocks TIER_4_C and all TIER_5 zones.',
+    craftRecipe: { materials: { lapis_lazuli: 5, labradorite: 5 }, coins: 10000 }
+  }
 };
 
+// Helper functions
 export const getEquipmentById = (id) => EQUIPMENT[id];
 
 export const getOwnedEquipment = (level, ownedIds = []) => {
-  return Object.values(EQUIPMENT).filter(eq => 
-    eq.unlockLevel <= level && (eq.id === 'NONE' || ownedIds.includes(eq.id))
+  return Object.values(EQUIPMENT).filter(eq =>
+    eq.unlockLevel <= level &&
+    (eq.id === 'NONE' || ownedIds.includes(eq.id))
   );
+};
+
+export const canAffordEquipment = (coins, equipmentId) => {
+  const eq = EQUIPMENT[equipmentId];
+  return coins >= eq.cost;
+};
+
+export const canCraftEquipment = (inventory, equipmentId) => {
+  const eq = EQUIPMENT[equipmentId];
+  if (!eq.craftRecipe) return false;
+
+  for (const [materialId, required] of Object.entries(eq.craftRecipe.materials)) {
+    const owned = inventory.minerals?.find(m => m.id === materialId)?.quantity || 0;
+    if (owned < required) return false;
+  }
+
+  return (inventory.currency?.coins || 0) >= eq.craftRecipe.coins;
+};
+
+export const getEquipmentForZone = (zoneId) => {
+  return Object.values(EQUIPMENT).filter(eq => eq.unlocks.includes(zoneId));
 };
