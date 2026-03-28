@@ -1,16 +1,16 @@
 import { GameProvider, useGame, GAME_PHASES } from './context/GameContext';
-import Menu from './components/Menu';
+import Menu from './shared/components/Menu';
 import Discover from './components/Discover';
-import Process from './components/Process';
-import Craft from './components/Craft';
-import Sell from './components/Sell';
+import Process from './features/process/components/Process';
+import Craft from './features/craft/components/Craft';
+import Sell from './features/sell/components/Sell';
 import LocationSelector from './components/LocationSelector';
 import SubareaSelector from './components/SubareaSelector';
 import RewardsSelector from './components/RewardsSelector';
 import RewardsSummary from './components/RewardsSummary';
 import Gemdex from './features/inventory/components/Gemdex';
 import Inventory from './features/inventory/components/Inventory';
-import DebugPanel from './components/DebugPanel';
+import DebugPanel from './shared/components/DebugPanel';
 
 function GameContent() {
   const { state } = useGame();

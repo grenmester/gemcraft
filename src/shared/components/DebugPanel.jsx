@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useGame } from '../context/GameContext';
-import gemsData from '../data/gems.json';
+import { useGame } from '../../context/GameContext';
+import gemsData from '../../data/gems.json';
 
 export const DEBUG_KEY = 'debug_mode';
 

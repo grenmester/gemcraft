@@ -1,4 +1,4 @@
-import { useGame, GAME_PHASES, SET_PHASE } from '../context/GameContext';
+import { useGame, GAME_PHASES, SET_PHASE } from '../../context/GameContext';
 
 const menuButtons = [
   { label: 'Discover', phase: GAME_PHASES.DISCOVER, icon: '🔍' },
