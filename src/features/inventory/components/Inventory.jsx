@@ -1,42 +1,36 @@
 import { useState, useMemo } from 'react';
 import { useGame, SET_PHASE, GAME_PHASES } from '../../../context/GameContext';
 import { useInventory } from '../hooks/useInventory';
-import gemsData from '../../../data/gems.json';
+import itemsData from '../../../data/items.json';
 import { EQUIPMENT } from '../../../data/equipment.js';
 
 const TABS = [
-  { id: 'minerals', label: 'Raw Minerals', icon: '🪨' },
   { id: 'gems', label: 'Gems', icon: '💎' },
-  { id: 'equipment', label: 'Equipment', icon: '🔧' },
-  { id: 'currency', label: 'Currency', icon: '💰' }
+  { id: 'minerals', label: 'Minerals', icon: '🪨' },
+  { id: 'equipment', label: 'Equipment', icon: '⚔️' }
 ];
 
 const SORT_OPTIONS = [
-  { id: 'name', label: 'Name' },
-  { id: 'value', label: 'Value' },
-  { id: 'quantity', label: 'Quantity' }
+  { id: 'quantity', label: 'Quantity' },
+  { id: 'value', label: 'Value' }
 ];
+
+const EMPTY_STATE_MESSAGES = {
+  gems: 'No gems collected yet. Explore locations to find precious gems!',
+  minerals: 'No minerals in inventory. Mine rocks to collect raw minerals.',
+  equipment: 'No equipment owned. Visit the shop to purchase tools.'
+};
 
 export default function Inventory() {
   const { state, dispatch } = useGame();
   const { inventory, coins } = useInventory();
-  const [activeTab, setActiveTab] = useState('minerals');
-  const [sortBy, setSortBy] = useState('name');
+  const [activeTab, setActiveTab] = useState('gems');
+  const [sortBy, setSortBy] = useState('quantity');
   const [filter, setFilter] = useState('');
 
   const playerLevel = Math.floor((state.player.shiftPoints || 0) / 100);
   
   const items = useMemo(() => {
-    if (activeTab === 'currency') {
-      return [{
-        id: 'currency',
-        name: 'Currency',
-        quantity: 1,
-        coins: coins,
-        shiftPoints: state.player.shiftPoints || 0
-      }];
-    }
-    
     if (activeTab === 'equipment') {
       return Object.values(EQUIPMENT).map(eq => {
         const noneEquipmentOwned = eq.id === 'NONE' && playerLevel >= eq.unlockLevel;
@@ -47,45 +41,57 @@ export default function Inventory() {
           quantity: 1,
           owned: isOwned,
           unlockLevel: eq.unlockLevel,
-          cost: eq.cost
+          cost: eq.cost,
+          icon: '⚔️'
         };
       });
     }
-    
-    const invItems = inventory[activeTab] || [];
+
+    // For gems and minerals tabs, get items from the correct inventory category
+    // gems tab shows items with category "Gem", minerals tab shows "Mineral"
+    const categoryMap = {
+      gems: 'gems',
+      minerals: 'minerals'
+    };
+
+    const invCategory = categoryMap[activeTab];
+    const invItems = inventory[invCategory] || [];
+
     return invItems.map(invItem => {
-      const gemData = gemsData.gems.find(g => g.id === invItem.gemId);
+      const itemData = itemsData.items.find(item => item.id === invItem.gemId);
+      const icon = itemData?.category === 'Gem' ? '💎' : '🪨';
       return {
-        ...invItem,
-        name: gemData?.name || invItem.gemId,
-        value: gemData?.value || 0,
-        hardness: gemData?.hardness || 0,
-        type: gemData?.type || 'unknown'
+        id: invItem.gemId,
+        gemId: invItem.gemId,
+        name: itemData?.name || invItem.gemId,
+        quantity: invItem.quantity,
+        value: itemData?.value || 0,
+        hardness: itemData?.hardness || 0,
+        rarity: itemData?.rarity || 'Unknown',
+        category: itemData?.category || 'Unknown',
+        icon
       };
     });
-  }, [activeTab, inventory, coins, state.player.shiftPoints]);
+  }, [activeTab, inventory, playerLevel]);
   
   const filteredItems = useMemo(() => {
     let result = [...items];
-    
+
     if (filter) {
       const lower = filter.toLowerCase();
       result = result.filter(item => item.name.toLowerCase().includes(lower));
     }
-    
+
     result.sort((a, b) => {
       switch (sortBy) {
-        case 'name':
-          return a.name.localeCompare(b.name);
         case 'value':
           return (b.value || 0) - (a.value || 0);
         case 'quantity':
-          return (b.quantity || 0) - (a.quantity || 0);
         default:
-          return 0;
+          return (b.quantity || 0) - (a.quantity || 0);
       }
     });
-    
+
     return result;
   }, [items, filter, sortBy]);
   
@@ -140,33 +146,27 @@ export default function Inventory() {
       
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 w-full">
         {filteredItems.length === 0 ? (
-          <div className="col-span-full text-center py-12 text-gray-400">
-            No items in {TABS.find(t => t.id === activeTab)?.label}
+          <div className="col-span-full text-center py-12 px-4">
+            <div className="text-4xl mb-3">{TABS.find(t => t.id === activeTab)?.icon}</div>
+            <p className="text-gray-400 text-sm">{EMPTY_STATE_MESSAGES[activeTab]}</p>
           </div>
         ) : (
           filteredItems.map(item => (
-            <div 
-              key={item.id} 
+            <div
+              key={item.id}
               className={`
-                bg-slate-800 border-2 border-slate-700 rounded-lg p-3 text-center transition-all hover:border-yellow-400
+                bg-slate-800 border-2 border-slate-700 rounded-lg p-3 text-center transition-all hover:border-yellow-400 hover:scale-105
                 ${activeTab === 'equipment' && !item.owned ? 'opacity-50' : ''}
               `}
             >
               <div className="text-3xl mb-2">
-                {activeTab === 'currency' ? '💰' : 
-                 activeTab === 'equipment' ? '🔧' : '💎'}
+                {item.icon}
               </div>
-              <div className="font-semibold mb-1">{item.name}</div>
-              {activeTab !== 'equipment' && activeTab !== 'currency' && (
+              <div className="font-semibold mb-1 text-sm">{item.name}</div>
+              {activeTab !== 'equipment' && (
                 <>
                   <div className="text-sm text-teal-400">x{item.quantity}</div>
                   <div className="text-xs text-yellow-400">{item.value}💎</div>
-                </>
-              )}
-              {activeTab === 'currency' && (
-                <>
-                  <div className="text-sm">💎 {item.coins?.toLocaleString()}</div>
-                  <div className="text-sm">✨ {item.shiftPoints}</div>
                 </>
               )}
               {activeTab === 'equipment' && (
