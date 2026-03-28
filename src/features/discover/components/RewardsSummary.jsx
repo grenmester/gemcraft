@@ -1,5 +1,5 @@
 import { useGame, CLEAR_DISCOVER_SELECTION, GAME_PHASES } from '../../../context/GameContext';
-import { getGemById } from '../../../data/lootTables';
+import { getItemById } from '../../../data/lootTables';
 
 export default function RewardsSummary() {
   const { state, dispatch } = useGame();
@@ -27,6 +27,11 @@ export default function RewardsSummary() {
     LEGENDARY: '#FF9800'
   };
 
+  // Separate gems and minerals for display
+  const gems = rewards.gems || [];
+  const minerals = rewards.minerals || [];
+  const totalItems = gems.length + minerals.length;
+
   return (
     <div className="flex flex-col h-full items-center justify-center p-6">
       {/* Header */}
@@ -46,38 +51,81 @@ export default function RewardsSummary() {
           </div>
         </div>
 
-        {/* Shift points */}
+        {/* Items found summary */}
         <div className="flex items-center gap-4 mb-6">
-          <span className="text-3xl">⭐</span>
+          <span className="text-3xl">📦</span>
           <div>
-            <div className="text-xl font-bold text-purple-400">+{rewards.shift}</div>
-            <div className="text-sm text-slate-400">shift points</div>
+            <div className="text-xl font-bold text-emerald-400">+{totalItems}</div>
+            <div className="text-sm text-slate-400">items found</div>
           </div>
         </div>
 
         {/* Gems */}
-        <div>
-          <h3 className="text-lg font-bold text-white mb-3">Gems Found ({rewards.gems?.length || 0})</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {rewards.gems?.map((gem, index) => {
-              const gemData = getGemById(gem.id);
-              return (
-                <div key={`${gem.id}-${index}`} className="bg-slate-900 rounded-lg p-3 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">💎</div>
-                  <div>
-                    <div className="font-bold text-white text-sm">{gemData?.name || gem.id}</div>
-                    <div
-                      className="text-xs font-semibold"
-                      style={{ color: rarityColors[gem.rarity] }}
-                    >
-                      {gem.rarity}
+        {gems.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-purple-400 mb-3">
+              ✨ Gems ({gems.length})
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              {gems.map((gem, index) => {
+                const gemData = getItemById(gem.id);
+                return (
+                  <div key={`gem-${gem.id}-${index}`} className="bg-slate-900 rounded-lg p-3 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-purple-900/50 flex items-center justify-center text-xl">
+                      ✨
+                    </div>
+                    <div>
+                      <div className="font-bold text-white text-sm">{gemData?.name || gem.id}</div>
+                      <div
+                        className="text-xs font-semibold"
+                        style={{ color: rarityColors[gem.rarity] }}
+                      >
+                        {gem.rarity}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Minerals */}
+        {minerals.length > 0 && (
+          <div>
+            <h3 className="text-lg font-bold text-blue-400 mb-3">
+              💎 Minerals ({minerals.length})
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              {minerals.map((mineral, index) => {
+                const mineralData = getItemById(mineral.id);
+                return (
+                  <div key={`mineral-${mineral.id}-${index}`} className="bg-slate-900 rounded-lg p-3 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-900/50 flex items-center justify-center text-xl">
+                      💎
+                    </div>
+                    <div>
+                      <div className="font-bold text-white text-sm">{mineralData?.name || mineral.id}</div>
+                      <div
+                        className="text-xs font-semibold"
+                        style={{ color: rarityColors[mineral.rarity] }}
+                      >
+                        {mineral.rarity}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* No items found message */}
+        {totalItems === 0 && (
+          <div className="text-center py-4 text-slate-500">
+            No items found this time. Better luck next expedition!
+          </div>
+        )}
       </div>
 
       {/* Navigation buttons */}

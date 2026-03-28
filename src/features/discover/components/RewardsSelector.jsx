@@ -1,5 +1,5 @@
-import { useGame, SELECT_AREA, SET_REWARDS } from '../../../context/GameContext';
-import { LOOT_TABLES, rollLoot, REWARD_MULTIPLIERS, getGemById } from '../../../data/lootTables';
+import { useGame, SELECT_AREA, SET_REWARDS, ADD_MINERAL, ADD_TO_INVENTORY } from '../../../context/GameContext';
+import { LOOT_TABLES, rollLoot, REWARD_MULTIPLIERS, getItemById } from '../../../data/lootTables';
 
 const DIFFICULTY_CONFIG = {
   1: { label: 'Easy', color: '#4CAF50', multiplier: 1.0 },
@@ -18,33 +18,45 @@ export default function RewardsSelector() {
     if (!area || !locationKey || !areaKey) return;
 
     const multiplier = REWARD_MULTIPLIERS[difficulty];
-    const gemsToRoll = Math.floor(area.baseRewards.gems * multiplier.gems);
-    const { gems, coins, shift } = rollLoot(locationKey, areaKey, gemsToRoll, difficulty);
-    
+    const itemsToRoll = Math.floor(area.baseRewards.items * multiplier.items);
+    const { coins, items } = rollLoot(locationKey, areaKey, itemsToRoll, difficulty);
+
     const coinsEarned = Math.floor(area.baseRewards.coins * multiplier.coins);
-    const shiftEarned = Math.floor(area.baseRewards.shift * multiplier.shift);
-    
-    // Add rewards to player
+
+    // Add coins to player
     dispatch({ type: 'ADD_COINS', payload: coinsEarned });
-    dispatch({ type: 'ADD_SHIFT_POINTS', payload: shiftEarned });
-    
-    gems.forEach(gem => {
-      dispatch({ type: 'DEBUG_ADD_GEM', payload: gem });
+
+    // Separate gems and minerals for proper dispatch
+    const gems = [];
+    const minerals = [];
+
+    items.forEach(item => {
+      const itemData = getItemById(item.id);
+      if (itemData?.category === 'Gem') {
+        gems.push(item);
+        // Add gem to inventory
+        dispatch({ type: ADD_TO_INVENTORY, payload: { category: 'gems', gemId: item.id, quantity: 1 } });
+      } else if (itemData?.category === 'Mineral') {
+        minerals.push(item);
+        // Add mineral to inventory using ADD_MINERAL action
+        dispatch({ type: ADD_MINERAL, payload: { mineralId: item.id, quantity: 1 } });
+      }
     });
-    
-    // Store for summary screen - App.jsx routing will show RewardsSummary when lastRewards is set
-    dispatch({ 
-      type: SET_REWARDS, 
-      payload: { 
-        coins: coinsEarned, 
-        shift: shiftEarned, 
+
+    // Store for summary screen - includes both gems and minerals
+    dispatch({
+      type: SET_REWARDS,
+      payload: {
+        coins: coinsEarned,
         gems,
+        minerals,
+        items, // Keep full items array for reference
         area: area.name,
         location: location.name
-      } 
+      }
     });
   };
-  
+
   const handleBack = () => {
     dispatch({ type: SELECT_AREA, payload: null });
   };
@@ -53,7 +65,7 @@ export default function RewardsSelector() {
     return (
       <div className="flex flex-col h-screen bg-gradient-to-br from-slate-950 to-slate-800 items-center justify-center">
         <p className="text-gray-400">No area selected</p>
-        <button 
+        <button
           className="mt-4 bg-slate-700 text-white font-semibold px-6 py-3 rounded-lg hover:bg-slate-600 transition-colors"
           onClick={handleBack}
         >
@@ -70,6 +82,10 @@ export default function RewardsSelector() {
     multiplier: DIFFICULTY_CONFIG[d].multiplier,
     unlocked: d <= area.difficulty
   }));
+
+  // Separate items into gems and minerals for display
+  const previewGems = area.items.filter(i => getItemById(i.id)?.category === 'Gem').slice(0, 2);
+  const previewMinerals = area.items.filter(i => getItemById(i.id)?.category === 'Mineral').slice(0, 2);
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-950 to-slate-800">
@@ -96,19 +112,44 @@ export default function RewardsSelector() {
         {/* Expected loot preview */}
         <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/10 w-full max-w-md">
           <p className="text-sm text-slate-400 mb-2">Possible finds:</p>
-          <div className="flex flex-wrap gap-2">
-            {area.gems.slice(0, 4).map((gem, idx) => {
-              const gemData = getGemById(gem.id);
-              return (
-                <span 
-                  key={idx}
-                  className="px-2 py-1 bg-white/10 rounded text-xs text-slate-300"
-                >
-                  {gemData?.name || gem.id}
-                </span>
-              );
-            })}
-          </div>
+          
+          {/* Gems */}
+          {previewGems.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {previewGems.map((item, idx) => {
+                const itemData = getItemById(item.id);
+                return (
+                  <span
+                    key={`gem-${idx}`}
+                    className="px-2 py-1 bg-purple-900/30 rounded text-xs text-purple-300"
+                  >
+                    ✨ {itemData?.name || item.id}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+          
+          {/* Minerals */}
+          {previewMinerals.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {previewMinerals.map((item, idx) => {
+                const itemData = getItemById(item.id);
+                return (
+                  <span
+                    key={`mineral-${idx}`}
+                    className="px-2 py-1 bg-blue-900/30 rounded text-xs text-blue-300"
+                  >
+                    💎 {itemData?.name || item.id}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+          
+          {area.items.length > 4 && (
+            <p className="text-xs text-slate-500 mt-2">+{area.items.length - 4} more items</p>
+          )}
         </div>
 
         {/* Base rewards display */}
@@ -120,12 +161,8 @@ export default function RewardsSelector() {
               <p className="text-sm text-slate-300">{area.baseRewards.coins}</p>
             </div>
             <div className="text-center">
-              <span className="text-xl">💎</span>
-              <p className="text-sm text-slate-300">{area.baseRewards.gems} gems</p>
-            </div>
-            <div className="text-center">
-              <span className="text-xl">⭐</span>
-              <p className="text-sm text-slate-300">{area.baseRewards.shift}</p>
+              <span className="text-xl">📦</span>
+              <p className="text-sm text-slate-300">{area.baseRewards.items} item{area.baseRewards.items !== 1 ? 's' : ''}</p>
             </div>
           </div>
         </div>
@@ -137,8 +174,8 @@ export default function RewardsSelector() {
               key={key}
               className={`
                 flex flex-col items-center p-5 rounded-xl transition-all w-full
-                ${unlocked 
-                  ? 'bg-white/5 border-2 cursor-pointer hover:bg-white/10 hover:-translate-y-0.5 active:translate-y-0' 
+                ${unlocked
+                  ? 'bg-white/5 border-2 cursor-pointer hover:bg-white/10 hover:-translate-y-0.5 active:translate-y-0'
                   : 'bg-white/5 border-2 border-slate-700 cursor-not-allowed opacity-50'
                 }
               `}
@@ -154,7 +191,7 @@ export default function RewardsSelector() {
                   </span>
                 )}
               </div>
-              
+
               {unlocked && (
                 <>
                   <p className="text-xs text-slate-400 mb-3">
@@ -165,10 +202,7 @@ export default function RewardsSelector() {
                       💰 {Math.floor(area.baseRewards.coins * multiplier)} coins
                     </span>
                     <span className="text-gray-200 text-sm">
-                      💎 {Math.floor(area.baseRewards.gems * multiplier)} gems
-                    </span>
-                    <span className="text-gray-200 text-sm">
-                      ⭐ {Math.floor(area.baseRewards.shift * (key === 1 ? 1 : key === 2 ? 2 : 3))} shift
+                      📦 {Math.ceil(area.baseRewards.items * multiplier)} items
                     </span>
                   </div>
                 </>
@@ -178,7 +212,7 @@ export default function RewardsSelector() {
         </div>
       </div>
 
-      <button 
+      <button
         className="bg-slate-700 text-white font-semibold px-6 py-3 mx-4 mb-4 rounded-lg hover:bg-slate-600 transition-colors"
         onClick={handleBack}
       >

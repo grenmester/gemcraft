@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useGame, GAME_PHASES } from '../../../context/GameContext';
-import { LOCATION_TIERS, getUnlockedLocations } from '../../../constants';
-import { checkLocationRequirements, getRequirementIcon } from '../../../shared/utils/requirements';
+import { LOCATION_TIERS, getUnlockedLocations } from '../../../data/locations';
+import { canUnlockZone, getZoneRequirements } from '../../../shared/utils/zoneUnlock';
+import { getItemById } from '../../../data/items';
+import { getEquipmentById } from '../../../data/equipment';
 
 const SHIFT_POINTS_PER_LEVEL = 100;
 
@@ -11,12 +13,22 @@ export default function LocationMap() {
   const [expandedLocation, setExpandedLocation] = useState(null);
 
   const playerLevel = Math.floor((state.player.shiftPoints || 0) / SHIFT_POINTS_PER_LEVEL);
-  const unlockedLocations = getUnlockedLocations(playerLevel);
+  
+  // Create player object for zone unlock checks
+  const player = {
+    level: playerLevel,
+    inventory: state.player?.inventory || { minerals: [], gems: [], equipment: [] }
+  };
+  
+  const unlockedZones = state.unlockedZones || [];
 
   const locationEntries = Object.entries(LOCATION_TIERS);
 
   const handleLocationSelect = (locationKey) => {
-    if (unlockedLocations.includes(locationKey)) {
+    const zoneStatus = canUnlockZone(player, locationKey);
+    const isUnlocked = zoneStatus.unlocked || unlockedZones.includes(locationKey);
+    
+    if (isUnlocked) {
       setSelectedLocation(locationKey);
       setExpandedLocation(null);
     } else {
@@ -33,13 +45,13 @@ export default function LocationMap() {
     dispatch({ type: 'SET_PHASE', payload: GAME_PHASES.DISCOVER });
   };
 
-  const renderRequirementProgress = (requirement) => {
+  const renderRequirementProgress = (requirement, locationKey) => {
     if (requirement.type === 'level') {
-      const progress = Math.min(100, (requirement.current / requirement.needed) * 100);
+      const progress = Math.min(100, (requirement.current / requirement.required) * 100);
       return (
         <div className="w-full flex flex-col gap-1 mt-1" key={requirement.type}>
           <span className="text-[0.65rem] text-gray-400">
-            {getRequirementIcon('level')} Level {requirement.current}/{requirement.needed}
+            ⭐ Level {requirement.current}/{requirement.required}
           </span>
           <div className="w-full h-1.5 bg-white/10 rounded overflow-hidden">
             <div className="h-full bg-gradient-to-r from-red-400 to-yellow-400 rounded transition-all duration-300" style={{ width: `${progress}%` }} />
@@ -48,10 +60,25 @@ export default function LocationMap() {
       );
     }
     if (requirement.type === 'equipment') {
+      const eqData = getEquipmentById(requirement.required);
       return (
         <div className={`text-[0.65rem] flex items-center gap-1 ${requirement.met ? 'text-teal-400' : 'text-red-400'}`} key={requirement.type}>
-          {getRequirementIcon('equipment')} {requirement.equipmentId}
+          🔧 {eqData?.name || requirement.required}
           {requirement.met ? ' ✓' : ' ✗'}
+        </div>
+      );
+    }
+    if (requirement.type === 'material') {
+      const itemData = getItemById(requirement.id);
+      const progress = Math.min(100, (requirement.current / requirement.required) * 100);
+      return (
+        <div className="w-full flex flex-col gap-1 mt-1" key={`material-${requirement.id}`}>
+          <span className="text-[0.65rem] text-gray-400">
+            💎 {itemData?.name || requirement.id}: {requirement.current}/{requirement.required}
+          </span>
+          <div className="w-full h-1.5 bg-white/10 rounded overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-blue-400 to-cyan-400 rounded transition-all duration-300" style={{ width: `${progress}%` }} />
+          </div>
         </div>
       );
     }
@@ -70,10 +97,11 @@ export default function LocationMap() {
 
       <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 overflow-y-auto pb-24 md:pb-28">
         {locationEntries.map(([key, location]) => {
-          const isUnlocked = unlockedLocations.includes(key);
+          const zoneStatus = canUnlockZone(player, key);
+          const isUnlocked = zoneStatus.unlocked || unlockedZones.includes(key);
           const isSelected = selectedLocation === key;
           const isExpanded = expandedLocation === key;
-          const requirements = checkLocationRequirements(location, state.player);
+          const requirements = zoneStatus.requirements;
 
           return (
             <div
@@ -92,7 +120,7 @@ export default function LocationMap() {
                 {isUnlocked ? '🗺️' : '🔒'}
               </div>
               <div className="font-bold text-sm" style={{ color: location.color }}>{location.name}</div>
-              
+
               {isUnlocked ? (
                 <div className="text-xs text-gray-500">Lv. {location.unlockLevel}</div>
               ) : (
@@ -100,18 +128,34 @@ export default function LocationMap() {
                   <div className="text-xs font-bold text-red-400">
                     Lv. {playerLevel}/{location.unlockLevel}
                   </div>
-                  {requirements.requirements.map(renderRequirementProgress)}
+                  {requirements.map(req => renderRequirementProgress(req, key))}
                 </>
               )}
 
               {isExpanded && !isUnlocked && (
                 <div className="mt-2 pt-2 border-t border-white/10 w-full">
-                  {requirements.requirements.map((req, i) => {
+                  {requirements.map((req, i) => {
                     if (req.type === 'level') {
-                      const needed = req.needed - req.current;
+                      const needed = (req.required - req.current) * SHIFT_POINTS_PER_LEVEL;
                       return (
                         <div key={i} className="text-[0.65rem] text-red-400 text-center">
                           Need {needed} more shift points to unlock
+                        </div>
+                      );
+                    }
+                    if (req.type === 'equipment') {
+                      const eqData = getEquipmentById(req.required);
+                      return (
+                        <div key={i} className="text-[0.65rem] text-red-400 text-center">
+                          Need: {eqData?.name || req.required}
+                        </div>
+                      );
+                    }
+                    if (req.type === 'material') {
+                      const itemData = getItemById(req.id);
+                      return (
+                        <div key={i} className="text-[0.65rem] text-red-400 text-center">
+                          Need: {itemData?.name || req.id} x{req.required - req.current}
                         </div>
                       );
                     }
