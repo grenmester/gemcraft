@@ -1,46 +1,56 @@
 .location-map.screen {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100dvh;
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-  padding: 20px;
+  padding: var(--spacing-lg);
 }
 
 .location-map .map-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
 }
 
 .location-map .map-header h2 {
   color: #ffd93d;
   margin: 0;
+  font-size: var(--font-size-xl);
 }
 
 .location-map .player-info {
   display: flex;
-  gap: 16px;
+  gap: var(--spacing-md);
   color: #aaa;
+  font-size: var(--font-size-sm);
 }
 
 .location-map .locations-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: var(--spacing-md);
   overflow-y: auto;
-  padding-bottom: 80px;
+  padding-bottom: calc(80px + var(--spacing-xl));
 }
 
 .location-map .location-card {
   background: rgba(255, 255, 255, 0.05);
   border: 2px solid transparent;
   border-radius: 12px;
-  padding: 20px;
+  padding: var(--spacing-lg);
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
 }
 
 .location-map .location-card.unlocked:hover {
@@ -59,35 +69,98 @@
 }
 
 .location-map .location-icon {
-  font-size: 32px;
-  margin-bottom: 8px;
+  font-size: clamp(1.5rem, 4vw, 2rem);
 }
 
 .location-map .location-name {
   color: var(--location-color);
   font-weight: bold;
-  margin-bottom: 4px;
+  font-size: var(--font-size-sm);
 }
 
 .location-map .location-level {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: #888;
 }
 
 .location-map .location-actions {
   position: fixed;
-  bottom: 80px;
-  left: 0;
-  right: 0;
-  padding: 16px 20px;
+  bottom: calc(70px + var(--spacing-lg));
+  left: var(--spacing-lg);
+  right: var(--spacing-lg);
+  padding: var(--spacing-md);
   background: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
+  border-radius: var(--border-radius);
 }
 
 .location-map .back-btn {
   position: fixed;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
+  bottom: var(--spacing-lg);
+  left: var(--spacing-lg);
+  right: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+  .location-map .locations-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: var(--spacing-sm);
+  }
+  
+  .location-map .location-card {
+    padding: var(--spacing-md);
+    min-height: 90px;
+  }
+}
+
+@media (max-width: 480px) {
+  .location-map.screen {
+    padding: var(--spacing-md);
+  }
+  
+  .location-map .map-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .location-map .player-info {
+    justify-content: center;
+  }
+  
+  .location-map .locations-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm);
+    padding-bottom: calc(120px + var(--spacing-lg));
+  }
+  
+  .location-map .location-card {
+    padding: var(--spacing-sm);
+    min-height: 80px;
+  }
+  
+  .location-map .location-name {
+    font-size: var(--font-size-xs);
+  }
+  
+  .location-map .location-actions {
+    left: var(--spacing-md);
+    right: var(--spacing-md);
+    bottom: calc(60px + var(--spacing-md));
+  }
+  
+  .location-map .back-btn {
+    left: var(--spacing-md);
+    right: var(--spacing-md);
+    bottom: var(--spacing-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  .location-map .locations-grid {
+    grid-template-columns: repeat(5, 1fr);
+    max-width: 900px;
+    margin: 0 auto;
+  }
 }

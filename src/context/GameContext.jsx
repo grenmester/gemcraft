@@ -2,6 +2,7 @@ import { createContext, useContext, useReducer, useEffect } from 'react';
 import { Player } from '../models/Player.js';
 import { Inventory } from '../models/Inventory.js';
 import { Gem } from '../models/Gem.js';
+import gemsData from '../data/gems.json';
 
 import { GAME_PHASES } from '../constants.js';
 
@@ -13,6 +14,11 @@ export const ADD_GEM = 'ADD_GEM';
 export const ADD_COINS = 'ADD_COINS';
 export const ADD_SHIFT_POINTS = 'ADD_SHIFT_POINTS';
 export const LOAD_STATE = 'LOAD_STATE';
+export const DEBUG_ADD_GEM = 'DEBUG_ADD_GEM';
+export const DEBUG_SET_SHIFT = 'DEBUG_SET_SHIFT';
+export const DEBUG_UNLOCK_ALL_LOCATIONS = 'DEBUG_UNLOCK_ALL_LOCATIONS';
+export const DEBUG_MAX_INVENTORY = 'DEBUG_MAX_INVENTORY';
+export const DEBUG_RESET = 'DEBUG_RESET';
 
 const STORAGE_KEY = 'gemstone_game_save';
 
@@ -73,8 +79,65 @@ function gameReducer(state, action) {
     case LOAD_STATE:
       return { ...initialState, ...action.payload };
 
+    case DEBUG_ADD_GEM: {
+      const gem = action.payload instanceof Gem ? action.payload : new Gem(action.payload);
+      const newGems = [...state.player.gems, gem];
+      const newGemdex = state.player.gemdex.some(g => g.id === gem.id)
+        ? state.player.gemdex
+        : [...state.player.gemdex, gem];
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          gems: newGems,
+          gemdex: newGemdex
+        }
+      };
+    }
+
+    case DEBUG_SET_SHIFT:
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          shiftPoints: action.payload
+        }
+      };
+
+    case DEBUG_UNLOCK_ALL_LOCATIONS:
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          shiftPoints: 5000
+        }
+      };
+
+    case DEBUG_MAX_INVENTORY: {
+      const maxGems = 100;
+      const currentCount = state.player.gems?.length || 0;
+      const needed = maxGems - currentCount;
+      if (needed <= 0) return state;
+      const sampleGems = gemsData.gems.slice(0, Math.min(needed, gemsData.gems.length));
+      const newGems = [...state.player.gems];
+      for (let i = 0; i < needed; i++) {
+        const gemTemplate = sampleGems[i % sampleGems.length];
+        newGems.push(new Gem({ ...gemTemplate, instanceId: `debug_${Date.now()}_${i}` }));
+      }
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          gems: newGems
+        }
+      };
+    }
+
+    case DEBUG_RESET:
+      return { ...initialState };
+
     default:
-      return state;
+      return state
   }
 }
 

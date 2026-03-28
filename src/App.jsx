@@ -9,6 +9,7 @@ import ChipReveal from './components/ChipReveal';
 import SieveSort from './components/SieveSort';
 import LocationMap from './components/LocationMap';
 import Gemdex from './components/Gemdex';
+import DebugPanel from './components/DebugPanel';
 import './App.css';
 
 function GameContent() {
@@ -74,6 +75,7 @@ function App() {
           <h1>Gemstone Collector</h1>
         </header>
         <GameContent />
+        <DebugPanel />
       </div>
     </GameProvider>
   );
