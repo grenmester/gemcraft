@@ -7,7 +7,10 @@ export class Player {
     gemdex = [],
     pathProgress = 0,
     shiftPoints = 0,
-    calibrationMultiplier = 1.0
+    calibrationMultiplier = 1.0,
+    inventory = { minerals: [], gems: [], equipment: [], currency: { coins: 100 } },
+    locationProgress = {},
+    highScores = {}
   } = {}) {
     this.coins = coins;
     this.gems = gems;
@@ -15,6 +18,9 @@ export class Player {
     this.pathProgress = pathProgress;
     this.shiftPoints = shiftPoints;
     this.calibrationMultiplier = calibrationMultiplier;
+    this.inventory = inventory;
+    this.locationProgress = locationProgress;
+    this.highScores = highScores;
   }
 
   addGem(gemData) {
@@ -42,7 +48,10 @@ export class Player {
       gemdex: this.gemdex,
       pathProgress: this.pathProgress,
       shiftPoints: this.shiftPoints,
-      calibrationMultiplier: this.calibrationMultiplier
+      calibrationMultiplier: this.calibrationMultiplier,
+      inventory: this.inventory,
+      locationProgress: this.locationProgress,
+      highScores: this.highScores
     };
   }
 }
