@@ -1,29 +1,74 @@
 @import "tailwindcss";
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@theme {
+  --color-gem-common: #9ca3af;
+  --color-gem-uncommon: #22c55e;
+  --color-gem-rare: #3b82f6;
+  --color-gem-epic: #a855f7;
+  --color-gem-legendary: #f59e0b;
+  --color-ruby: #e11d48;
+  --color-emerald: #059669;
+  --color-sapphire: #2563eb;
+  --color-topaz: #d97706;
+  --color-amethyst: #7c3aed;
+  --color-gold: #ca8a04;
+  --color-silver: #64748b;
+  --color-bronze: #b45309;
+  --color-mine-dark: #1c1917;
+  --color-mine-medium: #292524;
+  --color-mine-light: #44403c;
 }
 
-html, body {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #1a1a2e;
+    color: #eee;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+  }
 }
 
-body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #1a1a2e;
-  color: #eee;
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow-x: hidden;
+@layer components {
+  .btn {
+    @apply px-6 py-3 font-semibold rounded-lg transition-all cursor-pointer select-none;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    min-height: 44px;
+  }
+
+  .btn-primary {
+    @apply bg-red-500 text-white hover:bg-red-400 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-slate-700 text-white hover:bg-teal-500 active:scale-95;
+  }
+
+  .btn-gold {
+    @apply bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 font-bold hover:shadow-lg hover:shadow-yellow-400/25 active:scale-95;
+  }
 }
 
-#root {
-  min-height: 100vh;
-  min-height: 100dvh;
-  width: 100%;
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
 }
