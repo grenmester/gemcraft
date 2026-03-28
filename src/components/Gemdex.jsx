@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useGame, GAME_PHASES, SET_PHASE } from '../context/GameContext';
 import gemsData from '../data/gems.json';
 import { LOCATION_TIERS } from '../data/locations';
+import { getGemSources } from '../data/lootTables';
 
 const MINERAL_FAMILIES = {
   quartz: { name: 'Quartz', color: '#e8e8e8' },
@@ -152,6 +153,15 @@ export default function Gemdex() {
               <h3 className="m-0 mb-1 text-sm font-serif">{gem.discovered ? gem.name : '???'}</h3>
               {gem.discovered && <span className="block text-xs text-amber-700/70 mb-1">{gem.family.name}</span>}
               {gem.discovered && <span className="block text-sm font-bold text-amber-700">${gem.value}</span>}
+              <div className="text-xs text-slate-500 mt-1">
+                {(() => {
+                  const sources = getGemSources(gem.id);
+                  if (sources.length > 0) {
+                    return `Found in ${sources[0].location.name}`;
+                  }
+                  return 'Undiscovered';
+                })()}
+              </div>
             </div>
           </div>
         ))}
@@ -195,6 +205,38 @@ export default function Gemdex() {
                   </div>
                 );
               })}
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-amber-900/30">
+              <h4 className="text-sm font-bold text-amber-200 mb-2">📍 Found In:</h4>
+              {(() => {
+                const sources = getGemSources(selectedGem.id);
+                if (sources.length === 0) {
+                  return <p className="text-sm text-slate-500">Not yet discovered in any location</p>;
+                }
+                return (
+                  <ul className="space-y-1">
+                    {sources.map((source, idx) => (
+                      <li key={idx} className="text-sm text-slate-300 flex items-start gap-2">
+                        <span style={{ color: source.location.color }}>●</span>
+                        <span>
+                          <span className="font-semibold">{source.location.name}</span>
+                          <span className="text-slate-500"> - {source.area.name}</span>
+                          <span 
+                            className="ml-2 text-xs font-semibold"
+                            style={{ color: source.rarity === 'COMMON' ? '#A0A0A0' : 
+                                         source.rarity === 'UNCOMMON' ? '#4CAF50' : 
+                                         source.rarity === 'RARE' ? '#2196F3' : 
+                                         source.rarity === 'EPIC' ? '#9C27B0' : '#FF9800' }}
+                          >
+                            {source.rarity}
+                          </span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                );
+              })()}
             </div>
 
             <div className="bg-amber-700/10 p-4 rounded-lg border-l-3 border-amber-700">
