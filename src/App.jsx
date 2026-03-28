@@ -9,6 +9,7 @@ import ChipReveal from './components/ChipReveal';
 import SieveSort from './components/SieveSort';
 import LocationMap from './components/LocationMap';
 import Gemdex from './components/Gemdex';
+import Inventory from './components/Inventory';
 import DebugPanel from './components/DebugPanel';
 import './App.css';
 
@@ -47,6 +48,9 @@ function GameContent() {
       break;
     case 'gemdex':
       phaseContent = <Gemdex />;
+      break;
+    case 'inventory':
+      phaseContent = <Inventory />;
       break;
     default:
       phaseContent = <Menu />;
