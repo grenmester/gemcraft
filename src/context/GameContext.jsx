@@ -5,6 +5,7 @@ import gemsData from '../data/gems.json';
 
 import { GAME_PHASES } from '../constants.js';
 import { EQUIPMENT } from '../data/equipment.js';
+import { LOCATION_TIERS } from '../data/locations.js';
 
 export { GAME_PHASES };
 
@@ -21,6 +22,16 @@ export const BUY_EQUIPMENT = 'BUY_EQUIPMENT';
 export const ADD_TO_INVENTORY = 'ADD_TO_INVENTORY';
 export const REMOVE_FROM_INVENTORY = 'REMOVE_FROM_INVENTORY';
 
+// Mineral actions
+export const ADD_MINERAL = 'ADD_MINERAL';
+export const REMOVE_MINERAL = 'REMOVE_MINERAL';
+
+// Equipment actions
+export const ADD_EQUIPMENT = 'ADD_EQUIPMENT';
+
+// Zone actions
+export const UNLOCK_ZONE = 'UNLOCK_ZONE';
+
 // Discover state actions
 export const SET_DISCOVER_TAB = 'SET_DISCOVER_TAB';
 export const SELECT_LOCATION = 'SELECT_LOCATION';
@@ -31,7 +42,7 @@ export const CLEAR_DISCOVER_SELECTION = 'CLEAR_DISCOVER_SELECTION';
 
 const STORAGE_KEY = 'gemstone_game_save';
 
-const MIGRATION_VERSION = 3;
+const MIGRATION_VERSION = 4;
 
 const initialPlayer = new Player();
 
@@ -45,12 +56,13 @@ const initialState = {
     selectedLocation: null,  // 'TIER_1' | 'TIER_1_B' | ... | null
     selectedArea: null,      // 'area_1' | 'area_2' | 'area_3' | null
     lastRewards: null        // { coins, gems } | null
-  }
+  },
+  unlockedZones: [] // Array of location tier keys player can access
 };
 
 function migrateState(state) {
   let migrated = { ...state };
-  
+
   if (!migrated.migrationVersion || migrated.migrationVersion < 2) {
     migrated = {
       ...migrated,
@@ -64,7 +76,7 @@ function migrateState(state) {
     };
     delete migrated.inventory;
   }
-  
+
   // Migration to version 3: Add discoverState
   if (migrated.migrationVersion < 3) {
     migrated = {
@@ -78,7 +90,16 @@ function migrateState(state) {
       }
     };
   }
-  
+
+  // Migration to version 4: Add unlockedZones
+  if (migrated.migrationVersion < 4) {
+    migrated = {
+      ...migrated,
+      migrationVersion: MIGRATION_VERSION,
+      unlockedZones: migrated.unlockedZones || []
+    };
+  }
+
   return migrated;
 }
 
@@ -150,8 +171,51 @@ function gameReducer(state, action) {
       };
     }
 
-    case DEBUG_UNLOCK_ALL_LOCATIONS:
-      return state;
+case DEBUG_UNLOCK_ALL_LOCATIONS: {
+  // Unlock all zones (all tier keys from LOCATION_TIERS)
+  const allZoneKeys = Object.keys(LOCATION_TIERS);
+  
+  // Give all equipment (excluding NONE)
+  const allEquipmentIds = Object.keys(EQUIPMENT).filter(id => id !== 'NONE');
+  const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+  const existingEquipment = inv.equipment || [];
+  const newEquipment = [...new Set([...existingEquipment, ...allEquipmentIds])];
+  
+  // Give some minerals for testing
+  const testMinerals = [
+    { id: 'clear_quartz', quantity: 50 },
+    { id: 'hematite', quantity: 50 },
+    { id: 'pyrite', quantity: 50 },
+    { id: 'fluorite', quantity: 50 },
+    { id: 'obsidian', quantity: 50 },
+    { id: 'lapis_lazuli', quantity: 30 },
+    { id: 'malachite', quantity: 30 },
+    { id: 'azurite', quantity: 30 },
+    { id: 'labradorite', quantity: 20 },
+    { id: 'celestite', quantity: 20 }
+  ];
+  const existingMinerals = inv.minerals || [];
+  const newMinerals = testMinerals.map(tm => {
+    const existing = existingMinerals.find(m => m.id === tm.id);
+    if (existing) {
+      return { ...existing, quantity: existing.quantity + tm.quantity };
+    }
+    return tm;
+  });
+  
+  return {
+    ...state,
+    unlockedZones: allZoneKeys,
+    player: {
+      ...state.player,
+      inventory: {
+        ...inv,
+        equipment: newEquipment,
+        minerals: newMinerals
+      }
+    }
+  };
+}
 
     case DEBUG_MAX_INVENTORY: {
       const maxGems = 100;
@@ -246,9 +310,98 @@ function gameReducer(state, action) {
           }
         }
       };
-    }
+}
 
-    // Discover state actions
+// Mineral-specific actions (convenience wrappers)
+case ADD_MINERAL: {
+  const { mineralId, quantity = 1 } = action.payload;
+  const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+  const minerals = [...(inv.minerals || [])];
+  const existing = minerals.find(m => m.id === mineralId || m.gemId === mineralId);
+  
+  if (existing) {
+    const idx = minerals.indexOf(existing);
+    minerals[idx] = { ...existing, quantity: existing.quantity + quantity };
+  } else {
+    minerals.push({ id: mineralId, quantity });
+  }
+  
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      inventory: {
+        ...inv,
+        minerals
+      }
+    }
+  };
+}
+
+case REMOVE_MINERAL: {
+  const { mineralId, quantity = 1 } = action.payload;
+  const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+  const minerals = [...(inv.minerals || [])];
+  const existingIndex = minerals.findIndex(m => m.id === mineralId || m.gemId === mineralId);
+  
+  if (existingIndex >= 0) {
+    const existing = minerals[existingIndex];
+    const newQuantity = existing.quantity - quantity;
+    if (newQuantity <= 0) {
+      minerals.splice(existingIndex, 1);
+    } else {
+      minerals[existingIndex] = { ...existing, quantity: newQuantity };
+    }
+  }
+  
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      inventory: {
+        ...inv,
+        minerals
+      }
+    }
+  };
+}
+
+case ADD_EQUIPMENT: {
+  const equipmentId = action.payload;
+  const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+  const equipment = [...(inv.equipment || [])];
+  
+  if (!equipment.includes(equipmentId)) {
+    equipment.push(equipmentId);
+  }
+  
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      inventory: {
+        ...inv,
+        equipment
+      }
+    }
+  };
+}
+
+case UNLOCK_ZONE: {
+  const zoneId = action.payload;
+  const unlockedZones = state.unlockedZones || [];
+  
+  if (unlockedZones.includes(zoneId)) {
+    return state;
+  }
+  
+  return {
+    ...state,
+    unlockedZones: [...unlockedZones, zoneId]
+  };
+}
+
+// Discover state actions
     case SET_DISCOVER_TAB:
       return {
         ...state,
