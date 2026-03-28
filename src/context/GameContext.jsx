@@ -11,6 +11,7 @@ export const SET_PHASE = 'SET_PHASE';
 export const SET_MINIGAME = 'SET_MINIGAME';
 export const ADD_GEM = 'ADD_GEM';
 export const ADD_COINS = 'ADD_COINS';
+export const ADD_SHIFT_POINTS = 'ADD_SHIFT_POINTS';
 export const LOAD_STATE = 'LOAD_STATE';
 
 const STORAGE_KEY = 'gemstone_game_save';
@@ -57,6 +58,15 @@ function gameReducer(state, action) {
         player: {
           ...state.player,
           coins: state.player.coins + action.payload
+        }
+      };
+
+    case ADD_SHIFT_POINTS:
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          shiftPoints: (state.player.shiftPoints || 0) + action.payload
         }
       };
 

@@ -6,13 +6,15 @@ export class Player {
     gems = [],
     gemdex = [],
     pathProgress = 0,
-    calibrationBonus = 1.0
+    shiftPoints = 0,
+    calibrationMultiplier = 1.0
   } = {}) {
     this.coins = coins;
     this.gems = gems;
     this.gemdex = gemdex;
     this.pathProgress = pathProgress;
-    this.calibrationBonus = calibrationBonus;
+    this.shiftPoints = shiftPoints;
+    this.calibrationMultiplier = calibrationMultiplier;
   }
 
   addGem(gemData) {
@@ -29,13 +31,18 @@ export class Player {
     }
   }
 
+  addShiftPoints(points) {
+    this.shiftPoints += points;
+  }
+
   toJSON() {
     return {
       coins: this.coins,
       gems: this.gems,
       gemdex: this.gemdex,
       pathProgress: this.pathProgress,
-      calibrationBonus: this.calibrationBonus
+      shiftPoints: this.shiftPoints,
+      calibrationMultiplier: this.calibrationMultiplier
     };
   }
 }

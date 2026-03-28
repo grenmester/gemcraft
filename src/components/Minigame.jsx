@@ -7,6 +7,14 @@ const GAME_DURATION = 15000;
 const SPAWN_INTERVAL = 600;
 const GEM_CHANCE = 0.7;
 
+const SCORE_TIERS = [
+  { minScore: 0, maxScore: 30, shiftPoints: 1, label: 'Below Average' },
+  { minScore: 31, maxScore: 60, shiftPoints: 3, label: 'Average' },
+  { minScore: 61, maxScore: 100, shiftPoints: 5, label: 'Good' },
+  { minScore: 101, maxScore: 150, shiftPoints: 8, label: 'Excellent' },
+  { minScore: 151, maxScore: Infinity, shiftPoints: 15, label: 'Mastery!' },
+];
+
 const GEM_COLORS = ['#ff6b6b', '#4ecdc4', '#ffd93d', '#9b59b6', '#3498db', '#2ecc71'];
 const DEBRIS_COLOR = '#8b7355';
 
@@ -237,6 +245,16 @@ export default function Minigame() {
     game.animationId = requestAnimationFrame(gameLoop);
   }, [spawnItem, gameLoop]);
 
+  const calculateShiftPoints = (score) => {
+    const tier = SCORE_TIERS.find(t => score >= t.minScore && score <= t.maxScore);
+    return tier ? tier.shiftPoints : 1;
+  };
+
+  const getScoreTierLabel = (score) => {
+    const tier = SCORE_TIERS.find(t => score >= t.minScore && score <= t.maxScore);
+    return tier ? tier.label : 'Unknown';
+  };
+
   const endGame = useCallback(() => {
     const game = gameRef.current;
 
@@ -256,13 +274,17 @@ export default function Minigame() {
     const multiplier = hasBonus ? 1.5 : 1;
     const coinReward = Math.floor(finalScore * multiplier);
     const gemReward = Math.floor(gemsFound * multiplier);
+    const shiftPointsEarned = calculateShiftPoints(finalScore);
+    const tierLabel = getScoreTierLabel(finalScore);
 
     setFinalResults({
       score: finalScore,
       gemsFound,
       coinReward,
       gemReward,
-      hasBonus
+      hasBonus,
+      shiftPointsEarned,
+      tierLabel
     });
     setGameState('finished');
 
@@ -274,7 +296,7 @@ export default function Minigame() {
       dispatch({
         type: 'ADD_GEM',
         payload: {
-          id: randomGem.id,
+          id: `${randomGem.id}_${Date.now()}_${i}`,
           name: randomGem.name,
           mohs: randomGem.hardness,
           color: randomGem.type,
@@ -283,6 +305,7 @@ export default function Minigame() {
         }
       });
     }
+    dispatch({ type: 'ADD_SHIFT_POINTS', payload: shiftPointsEarned });
   }, [dispatch]);
 
   const handlePointerDown = useCallback((e) => {
@@ -401,6 +424,9 @@ export default function Minigame() {
                 <span className="score-label">Final Score</span>
                 <span className="score-value">{finalResults.score}</span>
               </div>
+              <div className="tier-label">
+                {finalResults.tierLabel}
+              </div>
               <div className="rewards">
                 <div className="reward">
                   <span className="reward-icon">🪙</span>
@@ -409,6 +435,10 @@ export default function Minigame() {
                 <div className="reward">
                   <span className="reward-icon">💎</span>
                   <span>+{finalResults.gemReward} Gems</span>
+                </div>
+                <div className="reward shift-reward">
+                  <span className="reward-icon">⭐</span>
+                  <span>+{finalResults.shiftPointsEarned} Shift Points</span>
                 </div>
               </div>
               {finalResults.hasBonus && (
