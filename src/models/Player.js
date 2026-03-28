@@ -3,6 +3,7 @@ import { Gem } from './Gem.js';
 export class Player {
   constructor({
     coins = 100,
+    level = 1,
     gems = [],
     gemdex = [],
     pathProgress = 0,
@@ -13,6 +14,7 @@ export class Player {
     highScores = {}
   } = {}) {
     this.coins = coins;
+    this.level = level;
     this.gems = gems;
     this.gemdex = gemdex;
     this.pathProgress = pathProgress;
@@ -44,6 +46,7 @@ export class Player {
   toJSON() {
     return {
       coins: this.coins,
+      level: this.level,
       gems: this.gems,
       gemdex: this.gemdex,
       pathProgress: this.pathProgress,
