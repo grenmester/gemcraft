@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { useGame } from '../context/GameContext';
 import gemsData from '../data/gems.json';
 import { EQUIPMENT } from '../data/equipment.js';
-import './Inventory.css';
 
 const TABS = [
   { id: 'minerals', label: 'Raw Minerals', icon: '🪨' },
@@ -39,7 +38,6 @@ export default function Inventory() {
     
     if (activeTab === 'equipment') {
       return Object.values(EQUIPMENT).map(eq => {
-        // Special case: 'NONE' equipment is considered owned when player level meets unlock requirement
         const noneEquipmentOwned = eq.id === 'NONE' && playerLevel >= eq.unlockLevel;
         const isOwned = inventory.equipment?.includes(eq.id) || noneEquipmentOwned;
         return {
@@ -95,31 +93,36 @@ export default function Inventory() {
   };
   
   return (
-    <div className="inventory screen">
-      <div className="inventory-header">
-        <button className="btn btn-secondary" onClick={handleBack}>← Back</button>
-        <h2>INVENTORY</h2>
+    <div className="flex-1 flex flex-col items-center p-4 md:p-6 w-full max-w-3xl mx-auto">
+      <div className="flex justify-between items-center w-full mb-6">
+        <button className="bg-slate-700 text-white font-semibold px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors" onClick={handleBack}>← Back</button>
+        <h2 className="text-xl md:text-2xl font-bold text-yellow-400 m-0">INVENTORY</h2>
         <div style={{ width: 80 }} />
       </div>
       
-      <div className="inventory-tabs">
+      <div className="flex flex-wrap gap-2 mb-6 w-full">
         {TABS.map(tab => (
           <button
             key={tab.id}
-            className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+            className={`
+              flex items-center gap-1 px-3 md:px-4 py-2 rounded-lg border-2 border-transparent cursor-pointer transition-all
+              ${activeTab === tab.id 
+                ? 'bg-yellow-400 text-slate-900 border-yellow-400' 
+                : 'bg-slate-700 text-gray-400 hover:bg-slate-600'}
+            `}
             onClick={() => setActiveTab(tab.id)}
           >
-            <span className="tab-icon">{tab.icon}</span>
-            <span className="tab-label">{tab.label}</span>
+            <span className="text-lg">{tab.icon}</span>
+            <span className="hidden sm:inline">{tab.label}</span>
           </button>
         ))}
       </div>
       
-      <div className="inventory-controls">
+      <div className="flex gap-4 mb-6 w-full sm:flex-row flex-col">
         <select 
           value={sortBy} 
           onChange={e => setSortBy(e.target.value)}
-          className="sort-select"
+          className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
         >
           {SORT_OPTIONS.map(opt => (
             <option key={opt.id} value={opt.id}>Sort: {opt.label}</option>
@@ -130,37 +133,43 @@ export default function Inventory() {
           placeholder="Filter..."
           value={filter}
           onChange={e => setFilter(e.target.value)}
-          className="filter-input"
+          className="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-gray-400"
         />
       </div>
       
-      <div className="inventory-grid">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 w-full">
         {filteredItems.length === 0 ? (
-          <div className="inventory-empty">
+          <div className="col-span-full text-center py-12 text-gray-400">
             No items in {TABS.find(t => t.id === activeTab)?.label}
           </div>
         ) : (
           filteredItems.map(item => (
-            <div key={item.id} className={`inventory-item ${activeTab === 'equipment' && !item.owned ? 'locked' : ''}`}>
-              <div className="item-icon">
+            <div 
+              key={item.id} 
+              className={`
+                bg-slate-800 border-2 border-slate-700 rounded-lg p-3 text-center transition-all hover:border-yellow-400
+                ${activeTab === 'equipment' && !item.owned ? 'opacity-50' : ''}
+              `}
+            >
+              <div className="text-3xl mb-2">
                 {activeTab === 'currency' ? '💰' : 
                  activeTab === 'equipment' ? '🔧' : '💎'}
               </div>
-              <div className="item-name">{item.name}</div>
+              <div className="font-semibold mb-1">{item.name}</div>
               {activeTab !== 'equipment' && activeTab !== 'currency' && (
                 <>
-                  <div className="item-quantity">x{item.quantity}</div>
-                  <div className="item-value">{item.value}💎</div>
+                  <div className="text-sm text-teal-400">x{item.quantity}</div>
+                  <div className="text-xs text-yellow-400">{item.value}💎</div>
                 </>
               )}
               {activeTab === 'currency' && (
                 <>
-                  <div className="item-coins">💎 {item.coins?.toLocaleString()}</div>
-                  <div className="item-shift">✨ {item.shiftPoints}</div>
+                  <div className="text-sm">💎 {item.coins?.toLocaleString()}</div>
+                  <div className="text-sm">✨ {item.shiftPoints}</div>
                 </>
               )}
               {activeTab === 'equipment' && (
-                <div className={`item-status ${item.owned ? 'owned' : ''}`}>
+                <div className={`text-xs ${item.owned ? 'text-teal-400' : 'text-gray-400'}`}>
                   {item.owned ? '✓ Owned' : `Level ${item.unlockLevel}`}
                 </div>
               )}

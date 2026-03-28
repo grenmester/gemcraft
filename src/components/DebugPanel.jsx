@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import gemsData from '../data/gems.json';
-import './DebugPanel.css';
 
 export const DEBUG_KEY = 'debug_mode';
 
@@ -64,62 +63,62 @@ export default function DebugPanel() {
   };
 
   return (
-    <div className="debug-panel">
-      <div className="debug-header" onClick={() => setIsOpen(!isOpen)}>
-        <span className="debug-title">🔧 Debug Mode</span>
-        <span className="debug-toggle">{isOpen ? '▼' : '▲'}</span>
+    <div className="fixed bottom-4 right-4 z-[9999] bg-slate-800 border-2 border-red-400 rounded-lg shadow-lg min-w-[280px] max-w-md text-sm" style={{ boxShadow: '0 8px 16px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 107, 107, 0.3)' }}>
+      <div className="flex justify-between items-center p-3 bg-slate-700 cursor-pointer select-none hover:bg-red-400 hover:text-white transition-colors" onClick={() => setIsOpen(!isOpen)}>
+        <span className="font-bold text-red-400 hover:text-white">🔧 Debug Mode</span>
+        <span className="text-xs opacity-70">{isOpen ? '▼' : '▲'}</span>
       </div>
       
       {isOpen && (
-        <div className="debug-content">
-          <div className="debug-section">
-            <h4>Current Stats</h4>
-            <div className="debug-stats">
-              <span>💎 {state.player.coins?.toLocaleString() || 0}</span>
-              <span>✨ Shift: {state.player.shiftPoints || 0}</span>
-              <span>📦 Gems: {state.player.gems?.length || 0}</span>
-              <span>📖 Gemdex: {state.player.gemdex?.length || 0}/{gemsData.gems.length}</span>
+        <div className="p-4 flex flex-col gap-4">
+          <div className="border-b border-slate-700 pb-3">
+            <h4 className="m-0 mb-2 text-xs uppercase tracking-wide text-gray-400">Current Stats</h4>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
+              <span className="whitespace-nowrap">💎 {state.player.coins?.toLocaleString() || 0}</span>
+              <span className="whitespace-nowrap">✨ Shift: {state.player.shiftPoints || 0}</span>
+              <span className="whitespace-nowrap">📦 Gems: {state.player.gems?.length || 0}</span>
+              <span className="whitespace-nowrap">📖 Gemdex: {state.player.gemdex?.length || 0}/{gemsData.gems.length}</span>
             </div>
           </div>
 
-          <div className="debug-section">
-            <h4>Resources</h4>
-            <div className="debug-buttons">
-              <button onClick={() => handleAddCoins(1000)}>+1K Coins</button>
-              <button onClick={() => handleAddCoins(10000)}>+10K Coins</button>
-              <button onClick={() => handleAddCoins(100000)}>+100K Coins</button>
-              <button onClick={handleMaxShiftPoints}>Max Shift (500)</button>
+          <div className="border-b border-slate-700 pb-3">
+            <h4 className="m-0 mb-2 text-xs uppercase tracking-wide text-gray-400">Resources</h4>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => handleAddCoins(1000)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">+1K Coins</button>
+              <button onClick={() => handleAddCoins(10000)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">+10K Coins</button>
+              <button onClick={() => handleAddCoins(100000)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">+100K Coins</button>
+              <button onClick={handleMaxShiftPoints} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Max Shift (500)</button>
             </div>
           </div>
 
-          <div className="debug-section">
-            <h4>Progression</h4>
-            <div className="debug-buttons">
-              <button onClick={() => handleSetLevel(5)}>Level 5</button>
-              <button onClick={() => handleSetLevel(10)}>Level 10</button>
-              <button onClick={() => handleSetLevel(25)}>Level 25</button>
-              <button onClick={() => handleSetLevel(50)}>Level 50</button>
-              <button onClick={handleUnlockAllLocations}>Unlock All Locations</button>
+          <div className="border-b border-slate-700 pb-3">
+            <h4 className="m-0 mb-2 text-xs uppercase tracking-wide text-gray-400">Progression</h4>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => handleSetLevel(5)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Level 5</button>
+              <button onClick={() => handleSetLevel(10)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Level 10</button>
+              <button onClick={() => handleSetLevel(25)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Level 25</button>
+              <button onClick={() => handleSetLevel(50)} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Level 50</button>
+              <button onClick={handleUnlockAllLocations} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Unlock All Locations</button>
             </div>
           </div>
 
-          <div className="debug-section">
-            <h4>Gems & Items</h4>
-            <div className="debug-buttons">
-              <button onClick={handleUnlockAllGems}>Unlock All Gems</button>
-              <button onClick={handleMaxInventory}>Max Inventory (100 gems)</button>
+          <div className="border-b border-slate-700 pb-3">
+            <h4 className="m-0 mb-2 text-xs uppercase tracking-wide text-gray-400">Gems & Items</h4>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={handleUnlockAllGems} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Unlock All Gems</button>
+              <button onClick={handleMaxInventory} className="px-3 py-1.5 text-xs bg-slate-700 border border-teal-400 rounded text-white hover:bg-teal-400 hover:text-slate-900 transition-all">Max Inventory (100 gems)</button>
             </div>
           </div>
 
-          <div className="debug-section danger">
-            <h4>Danger Zone</h4>
-            <div className="debug-buttons">
-              <button onClick={handleResetProgress} className="danger">Reset All Progress</button>
+          <div className="pb-3">
+            <h4 className="m-0 mb-2 text-xs uppercase tracking-wide text-red-400">Danger Zone</h4>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={handleResetProgress} className="px-3 py-1.5 text-xs bg-slate-700 border border-red-400 rounded text-red-400 hover:bg-red-400 hover:text-white transition-all">Reset All Progress</button>
             </div>
           </div>
 
-          <div className="debug-shortcuts">
-            <small>Shortcuts: Ctrl+Shift+D toggle | Ctrl+Shift+O open/close</small>
+          <div className="text-center text-gray-400 opacity-70 pt-2 text-xs">
+            Shortcuts: Ctrl+Shift+D toggle | Ctrl+Shift+O open/close
           </div>
         </div>
       )}

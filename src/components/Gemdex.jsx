@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { useGame, GAME_PHASES, SET_PHASE } from '../context/GameContext';
 import gemsData from '../data/gems.json';
 import { LOCATION_TIERS } from '../data/locations';
-import './Gemdex.css';
 
 const MINERAL_FAMILIES = {
   quartz: { name: 'Quartz', color: '#e8e8e8' },
@@ -95,103 +94,112 @@ export default function Gemdex() {
   };
 
   return (
-    <div className="gemdex screen">
-      <header className="gemdex-header">
-        <button onClick={handleBack}>← Back</button>
-        <h1 className="gemdex-title">Gemdex</h1>
-        <div className="gemdex-stats">
-          <span>{stats.discovered}</span>/<span>{stats.total}</span>
+    <div className="gemdex min-h-screen p-4 md:p-8 max-w-3xl mx-auto">
+      <header className="flex items-center justify-between mb-4 pb-4 border-b-2 border-amber-700">
+        <button onClick={handleBack} className="bg-transparent border border-amber-700 text-amber-900 px-4 py-2 font-serif cursor-pointer transition-all hover:bg-amber-700 hover:text-amber-50">← Back</button>
+        <h1 className="font-serif text-2xl m-0 text-amber-900" style={{ textShadow: '1px 1px 1px rgba(184, 115, 51, 0.3)' }}>Gemdex</h1>
+        <div className="font-bold text-lg">
+          <span className="text-amber-700">{stats.discovered}</span>/<span>{stats.total}</span>
         </div>
       </header>
 
-      <div className="gemdex-toolbar">
-        <div className="filter-tabs">
+      <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <div className="flex">
           {['all', 'discovered', 'undiscovered'].map(f => (
             <button
               key={f}
-              className={filter === f ? 'active' : ''}
+              className={`
+                bg-transparent border border-amber-700 text-amber-900 px-4 py-2 font-serif text-sm cursor-pointer transition-all
+                ${filter === f ? 'bg-amber-700 text-amber-50' : 'hover:bg-amber-700/20'}
+                ${f === 'all' ? 'rounded-l-lg' : ''}
+                ${f === 'undiscovered' ? 'rounded-r-lg' : ''}
+                ${f !== 'all' ? '-ml-px' : ''}
+              `}
               onClick={() => setFilter(f)}
             >
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
           ))}
         </div>
-        <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
+        <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="bg-amber-50 border border-amber-700 text-amber-900 px-4 py-2 font-serif text-sm cursor-pointer rounded">
           <option value="name">Name</option>
           <option value="value">Value</option>
           <option value="hardness">Hardness</option>
         </select>
       </div>
 
-      <div className="gemdex-progress">
-        <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${stats.percentage}%` }} />
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex-1 h-3 bg-amber-200 rounded overflow-hidden border border-amber-700">
+          <div className="h-full bg-gradient-to-r from-amber-700 to-amber-500 transition-all duration-300" style={{ width: `${stats.percentage}%` }} />
         </div>
-        <span>{stats.percentage}%</span>
+        <span className="font-bold min-w-[3rem] text-right">{stats.percentage}%</span>
       </div>
 
-      <div className="gemdex-grid">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 pb-8">
         {filteredGems.map(gem => (
           <div
             key={gem.id}
-            className={`gem-card ${gem.discovered ? 'discovered' : 'undiscovered'}`}
+            className={`
+              bg-amber-50 rounded-lg p-4 cursor-pointer transition-all shadow-sm border border-amber-300/50
+              ${gem.discovered ? 'hover:-translate-y-1 hover:shadow-md' : 'opacity-70 border-dashed'}
+            `}
             onClick={() => openGemDetail(gem)}
           >
-            <div className="gem-icon" style={{ backgroundColor: gem.family.color }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3 border-2 border-amber-700 text-amber-900" style={{ backgroundColor: gem.discovered ? gem.family.color : '#ccc' }}>
               {gem.discovered ? gem.name[0] : '?'}
             </div>
-            <div className="gem-info">
-              <h3>{gem.discovered ? gem.name : '???'}</h3>
-              {gem.discovered && <span className="gem-family">{gem.family.name}</span>}
-              {gem.discovered && <span className="gem-value">${gem.value}</span>}
+            <div className="text-center">
+              <h3 className="m-0 mb-1 text-sm font-serif">{gem.discovered ? gem.name : '???'}</h3>
+              {gem.discovered && <span className="block text-xs text-amber-700/70 mb-1">{gem.family.name}</span>}
+              {gem.discovered && <span className="block text-sm font-bold text-amber-700">${gem.value}</span>}
             </div>
           </div>
         ))}
       </div>
 
       {selectedGem && (
-        <div className="gem-detail-overlay" onClick={closeGemDetail}>
-          <div className="gem-detail-card" onClick={e => e.stopPropagation()}>
-            <button className="detail-close" onClick={closeGemDetail}>×</button>
-            <div className="detail-gem-icon" style={{ backgroundColor: selectedGem.family.color }}>
+        <div className="fixed inset-0 bg-amber-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={closeGemDetail}>
+          <div className="bg-amber-50 rounded-xl p-8 max-w-md w-full border-2 border-amber-700 shadow-xl relative max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <button className="absolute top-3 right-3 bg-transparent border-none text-3xl cursor-pointer text-amber-900 hover:text-amber-700 w-8 h-8 flex items-center justify-center" onClick={closeGemDetail}>×</button>
+            <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl font-bold mx-auto mb-4 border-3 border-amber-700 text-amber-900" style={{ backgroundColor: selectedGem.family.color }}>
               {selectedGem.name[0]}
             </div>
-            <h2>{selectedGem.name}</h2>
-            <span className="detail-family">{selectedGem.family.name}</span>
+            <h2 className="text-center font-serif text-2xl m-0 mb-1">{selectedGem.name}</h2>
+            <span className="block text-center text-amber-700/70 mb-6">{selectedGem.family.name}</span>
             
-            <div className="detail-stats">
-              <div><span>Value</span><span>${selectedGem.value}</span></div>
-              <div><span>Hardness</span><span>{selectedGem.hardness}</span></div>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="flex flex-col items-center p-3 bg-amber-700/10 rounded-lg"><span className="text-xs text-amber-700/70 uppercase tracking-wide">Value</span><span className="text-xl font-bold text-amber-900">${selectedGem.value}</span></div>
+              <div className="flex flex-col items-center p-3 bg-amber-700/10 rounded-lg"><span className="text-xs text-amber-700/70 uppercase tracking-wide">Hardness</span><span className="text-xl font-bold text-amber-900">{selectedGem.hardness}</span></div>
             </div>
 
-            <div className="detail-mohs-scale">
-              <h4>Mohs Hardness</h4>
-              <div className="mohs-bar">
+            <div className="mb-6">
+              <h4 className="font-serif m-0 mb-2 text-base">Mohs Hardness</h4>
+              <div className="flex gap-1 mb-1">
                 {[1,2,3,4,5,6,7,8,9,10].map(n => (
-                  <div key={n} className={selectedGem.hardness >= n ? 'active' : ''} />
+                  <div key={n} className={`flex-1 h-4 bg-amber-200 rounded-sm transition-colors ${selectedGem.hardness >= n ? 'bg-gradient-to-b from-cyan-200 to-gray-400' : ''}`} />
                 ))}
               </div>
-              <div className="mohs-labels"><span>Talc</span><span>Diamond</span></div>
+              <div className="flex justify-between text-xs text-amber-700/70"><span>Talc</span><span>Diamond</span></div>
             </div>
 
-            <div className="detail-locations">
-              <h4>Found At</h4>
+            <div className="mb-6">
+              <h4 className="font-serif m-0 mb-2 text-base">Found At</h4>
               {selectedGem.locations.map(locKey => {
                 const loc = LOCATION_TIERS[locKey];
                 const isUnlocked = state.player.shiftPoints >= loc.unlockLevel;
                 return (
-                  <div key={locKey} className={`location-tag ${isUnlocked ? '' : 'locked'}`}>
-                    <span style={{ backgroundColor: loc.color }} />
-                    <span>{loc.name}</span>
-                    {!isUnlocked && <span className="lock-icon">🔒</span>}
+                  <div key={locKey} className={`flex items-center gap-2 p-2 bg-amber-700/10 rounded mb-1 ${!isUnlocked ? 'opacity-60' : ''}`}>
+                    <span className="w-3 h-3 rounded-full border border-black/20" style={{ backgroundColor: loc.color }} />
+                    <span className="flex-1 text-sm">{loc.name}</span>
+                    {!isUnlocked && <span className="text-xs">🔒</span>}
                   </div>
                 );
               })}
             </div>
 
-            <div className="detail-fact">
-              <h4>Did You Know?</h4>
-              <p>{GEM_FACTS[selectedGem.id] || 'No facts available.'}</p>
+            <div className="bg-amber-700/10 p-4 rounded-lg border-l-3 border-amber-700">
+              <h4 className="font-serif m-0 mb-2 text-base">Did You Know?</h4>
+              <p className="m-0 text-sm leading-relaxed text-amber-800/80">{GEM_FACTS[selectedGem.id] || 'No facts available.'}</p>
             </div>
           </div>
         </div>

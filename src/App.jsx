@@ -52,13 +52,13 @@ function GameContent() {
   
   return (
     <>
-      <main className="app-main">
+      <main className="app-main flex-1 flex flex-col p-4 md:p-6 overflow-y-auto">
         {phaseContent}
       </main>
-      <footer className="app-footer">
-        <div className="coins-display">
-          <span className="coin-icon">💎</span>
-          <span className="coin-amount">{coins}</span>
+      <footer className="app-footer bg-slate-800 border-t border-slate-700 px-4 md:px-6 py-3 shrink-0">
+        <div className="flex items-center justify-center gap-2 text-lg font-bold text-yellow-400">
+          <span className="text-xl">💎</span>
+          <span>{coins}</span>
         </div>
       </footer>
     </>
@@ -68,9 +68,9 @@ function GameContent() {
 function App() {
   return (
     <GameProvider>
-      <div className="app">
-        <header className="app-header">
-          <h1>Gemstone Collector</h1>
+      <div className="min-h-screen flex flex-col bg-slate-900">
+        <header className="bg-slate-800 border-b border-slate-700 px-4 md:px-6 py-3 text-center shrink-0">
+          <h1 className="text-xl md:text-2xl font-bold text-yellow-400">Gemstone Collector</h1>
         </header>
         <GameContent />
         <DebugPanel />

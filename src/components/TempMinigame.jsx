@@ -1,7 +1,6 @@
 import { useGame, SET_PHASE } from '../context/GameContext';
 import gemsData from '../data/gems.json';
 import { LOCATION_TIERS } from '../constants';
-import './TempMinigame.css';
 
 const REWARD_CONFIG = {
   low: { coins: 50, gems: 1, shift: 1, label: 'Low', color: '#4CAF50' },
@@ -33,37 +32,37 @@ export default function TempMinigame() {
   };
 
   return (
-    <div className="temp-minigame screen">
-      <div className="temp-header">
-        <h2 className="temp-title">{location?.name || 'Unknown Location'}</h2>
-        <span className="temp-badge">Testing Mode</span>
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-950 to-slate-800">
+      <div className="flex justify-between items-center p-4 bg-black/50 border-b-2 border-yellow-400/30">
+        <h2 className="text-2xl font-bold text-yellow-400 m-0">{location?.name || 'Unknown Location'}</h2>
+        <span className="bg-gradient-to-br from-red-400 to-orange-600 text-white px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide">Testing Mode</span>
       </div>
 
-      <div className="temp-content">
-        <p className="temp-description">
+      <div className="flex-1 flex flex-col items-center p-8 overflow-y-auto">
+        <p className="text-gray-400 text-center mb-8 text-base max-w-md">
           Select a reward tier to simulate completing this location's minigame.
         </p>
 
-        <div className="reward-options">
+        <div className="flex flex-col gap-4 w-full max-w-md">
           {Object.entries(REWARD_CONFIG).map(([tier, config]) => (
             <button
               key={tier}
-              className="reward-btn"
-              style={{ '--reward-color': config.color }}
+              className="flex flex-col items-center p-5 bg-white/5 border-2 rounded-xl cursor-pointer transition-all hover:bg-white/10 hover:-translate-y-0.5 active:translate-y-0 w-full"
+              style={{ borderColor: config.color }}
               onClick={() => handleSelectReward(tier)}
             >
-              <span className="reward-tier">{config.label} Reward</span>
-              <div className="reward-details">
-                <span className="reward-item">💰 {config.coins} coins</span>
-                <span className="reward-item">💎 {config.gems} gem(s)</span>
-                <span className="reward-item">⭐ {config.shift} shift point(s)</span>
+              <span className="text-lg font-bold mb-3" style={{ color: config.color }}>{config.label} Reward</span>
+              <div className="flex flex-wrap justify-center gap-3">
+                <span className="text-gray-200 text-sm">💰 {config.coins} coins</span>
+                <span className="text-gray-200 text-sm">💎 {config.gems} gem(s)</span>
+                <span className="text-gray-200 text-sm">⭐ {config.shift} shift point(s)</span>
               </div>
             </button>
           ))}
         </div>
       </div>
 
-      <button className="btn btn-secondary back-btn" onClick={handleBack}>
+      <button className="bg-slate-700 text-white font-semibold px-6 py-3 mx-4 mb-4 rounded-lg hover:bg-slate-600 transition-colors" onClick={handleBack}>
         ← Back to Map
       </button>
     </div>
