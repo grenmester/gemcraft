@@ -4,8 +4,10 @@ import Discover from './components/Discover';
 import Process from './components/Process';
 import Craft from './components/Craft';
 import Sell from './components/Sell';
-import TempMinigame from './components/TempMinigame';
-import LocationMap from './components/LocationMap';
+import LocationSelector from './components/LocationSelector';
+import SubareaSelector from './components/SubareaSelector';
+import RewardsSelector from './components/RewardsSelector';
+import RewardsSummary from './components/RewardsSummary';
 import Gemdex from './components/Gemdex';
 import Inventory from './components/Inventory';
 import DebugPanel from './components/DebugPanel';
@@ -20,9 +22,31 @@ function GameContent() {
     case GAME_PHASES.MENU:
       phaseContent = <Menu />;
       break;
-    case GAME_PHASES.DISCOVER:
-      phaseContent = <Discover />;
+    case GAME_PHASES.DISCOVER: {
+      const { activeTab, selectedLocation, selectedArea, lastRewards } = state.discoverState || {};
+      
+      // If rewards exist, show summary
+      if (lastRewards) {
+        phaseContent = <RewardsSummary />;
+      }
+      // If area is selected, show rewards selector
+      else if (selectedArea) {
+        phaseContent = <RewardsSelector />;
+      }
+      // If location is selected (not null), show subarea selector
+      else if (selectedLocation) {
+        phaseContent = <SubareaSelector />;
+      }
+      // If activeTab is panning and no location selected, show location selector
+      else if (activeTab === 'panning' && !selectedLocation) {
+        phaseContent = <LocationSelector />;
+      }
+      // Default: show discover tabs
+      else {
+        phaseContent = <Discover />;
+      }
       break;
+    }
     case GAME_PHASES.PROCESS:
       phaseContent = <Process />;
       break;
@@ -35,10 +59,12 @@ function GameContent() {
     case GAME_PHASES.MINIGAME:
     case GAME_PHASES.TIER_1_B:
     case GAME_PHASES.TIER_1_C:
-      phaseContent = <TempMinigame />;
+      // Redirect to discover flow with panning tab
+      phaseContent = <Discover />;
       break;
     case 'location_map':
-      phaseContent = <LocationMap />;
+      // Redirect to location selector in discover
+      phaseContent = <LocationSelector />;
       break;
     case 'gemdex':
       phaseContent = <Gemdex />;
