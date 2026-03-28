@@ -1,6 +1,17 @@
-import gemsData from './gems.json';
+import itemsData from './items.json';
 
-// Rarity tier definitions with base percentages
+// ============================================
+// ITEM LOOKUP (replaces gems.json dependency)
+// ============================================
+
+const itemsById = Object.fromEntries(itemsData.items.map(item => [item.id, item]));
+
+export const getItemById = (itemId) => itemsById[itemId];
+
+// ============================================
+// RARITY TIER DEFINITIONS
+// ============================================
+
 export const RARITY_TIERS = {
   COMMON: { name: 'Common', baseChance: 0.60, color: '#9CA3AF' },
   UNCOMMON: { name: 'Uncommon', baseChance: 0.25, color: '#22C55E' },
@@ -11,48 +22,55 @@ export const RARITY_TIERS = {
 
 // Reward multipliers by difficulty
 export const REWARD_MULTIPLIERS = {
-  1: { coins: 1.0, gems: 1.0 },
-  2: { coins: 1.5, gems: 1.5 },
-  3: { coins: 2.0, gems: 2.0 },
+  1: { coins: 1.0, items: 1.0 },
+  2: { coins: 1.5, items: 1.5 },
+  3: { coins: 2.0, items: 2.0 },
 };
 
-// Main loot tables organized by location tier
+// ============================================
+// MAIN LOOT TABLES
+// ============================================
+
 export const LOOT_TABLES = {
   TIER_1: {
     name: 'River Panning',
     color: '#87CEEB',
     unlockLevel: 0,
-    description: 'Beginner waters with common gems',
+    type: 'mixed',
+    description: 'Beginner waters with common gems and minerals',
     areas: {
       area_1: {
         name: 'Shallow Waters',
         difficulty: 1,
-        gems: [
-          { id: 'quartz_clear', weight: 70, rarity: 'COMMON' },
+        items: [
+          { id: 'clear_quartz', weight: 45, rarity: 'COMMON' },
           { id: 'amethyst', weight: 25, rarity: 'COMMON' },
-          { id: 'garnet', weight: 5, rarity: 'UNCOMMON' },
+          { id: 'calcite', weight: 25, rarity: 'COMMON' },
+          { id: 'citrine', weight: 5, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 50, gems: 1 },
+        baseRewards: { coins: 50, items: 1 },
       },
       area_2: {
         name: 'Pebble Banks',
         difficulty: 1,
-        gems: [
-          { id: 'quartz_clear', weight: 60, rarity: 'COMMON' },
+        items: [
+          { id: 'clear_quartz', weight: 35, rarity: 'COMMON' },
           { id: 'amethyst', weight: 30, rarity: 'COMMON' },
-          { id: 'garnet', weight: 10, rarity: 'UNCOMMON' },
+          { id: 'calcite', weight: 25, rarity: 'COMMON' },
+          { id: 'rose_quartz', weight: 10, rarity: 'COMMON' },
         ],
-        baseRewards: { coins: 60, gems: 1 },
+        baseRewards: { coins: 60, items: 1 },
       },
       area_3: {
         name: 'Sandy Flats',
         difficulty: 2,
-        gems: [
-          { id: 'quartz_clear', weight: 50, rarity: 'COMMON' },
+        items: [
           { id: 'amethyst', weight: 35, rarity: 'COMMON' },
-          { id: 'garnet', weight: 15, rarity: 'UNCOMMON' },
+          { id: 'calcite', weight: 30, rarity: 'COMMON' },
+          { id: 'clear_quartz', weight: 25, rarity: 'COMMON' },
+          { id: 'fluorite', weight: 10, rarity: 'COMMON' },
         ],
-        baseRewards: { coins: 75, gems: 1 },
+        baseRewards: { coins: 75, items: 1 },
       },
     },
   },
@@ -61,40 +79,44 @@ export const LOOT_TABLES = {
     name: 'Ozark Hills',
     color: '#228B22',
     unlockLevel: 1,
+    type: 'mixed',
     description: 'Hilly terrain with varied mineral deposits',
     areas: {
       area_1: {
         name: 'Crystal Creek',
         difficulty: 1,
-        gems: [
-          { id: 'amethyst', weight: 45, rarity: 'COMMON' },
-          { id: 'garnet', weight: 35, rarity: 'COMMON' },
-          { id: 'citrine', weight: 15, rarity: 'UNCOMMON' },
-          { id: 'rose_quartz', weight: 5, rarity: 'UNCOMMON' },
+        items: [
+          { id: 'amethyst', weight: 40, rarity: 'COMMON' },
+          { id: 'tsavorite', weight: 20, rarity: 'RARE' },
+          { id: 'citrine', weight: 20, rarity: 'UNCOMMON' },
+          { id: 'rose_quartz', weight: 15, rarity: 'COMMON' },
+          { id: 'hematite', weight: 5, rarity: 'COMMON' },
         ],
-        baseRewards: { coins: 65, gems: 1 },
+        baseRewards: { coins: 65, items: 1 },
       },
       area_2: {
         name: 'Rose Valley',
         difficulty: 1,
-        gems: [
-          { id: 'rose_quartz', weight: 40, rarity: 'COMMON' },
-          { id: 'amethyst', weight: 35, rarity: 'COMMON' },
-          { id: 'citrine', weight: 20, rarity: 'UNCOMMON' },
-          { id: 'garnet', weight: 5, rarity: 'UNCOMMON' },
+        items: [
+          { id: 'rose_quartz', weight: 35, rarity: 'COMMON' },
+          { id: 'amethyst', weight: 30, rarity: 'COMMON' },
+          { id: 'citrine', weight: 18, rarity: 'UNCOMMON' },
+          { id: 'hematite', weight: 12, rarity: 'COMMON' },
+          { id: 'tsavorite', weight: 5, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 70, gems: 1 },
+        baseRewards: { coins: 70, items: 1 },
       },
       area_3: {
         name: 'Golden Ridge',
         difficulty: 2,
-        gems: [
-          { id: 'citrine', weight: 35, rarity: 'COMMON' },
-          { id: 'garnet', weight: 30, rarity: 'COMMON' },
-          { id: 'amethyst', weight: 25, rarity: 'COMMON' },
-          { id: 'rose_quartz', weight: 10, rarity: 'UNCOMMON' },
+        items: [
+          { id: 'citrine', weight: 30, rarity: 'UNCOMMON' },
+          { id: 'tsavorite', weight: 25, rarity: 'RARE' },
+          { id: 'amethyst', weight: 20, rarity: 'COMMON' },
+          { id: 'hematite', weight: 15, rarity: 'COMMON' },
+          { id: 'rose_quartz', weight: 10, rarity: 'COMMON' },
         ],
-        baseRewards: { coins: 85, gems: 2 },
+        baseRewards: { coins: 85, items: 2 },
       },
     },
   },
@@ -103,40 +125,41 @@ export const LOOT_TABLES = {
     name: 'Bavarian Fields',
     color: '#DAA520',
     unlockLevel: 2,
-    description: 'Historic mining fields with unique quartz varieties',
+    type: 'mineral',
+    description: 'Historic mining fields with volcanic and feldspar minerals',
     areas: {
       area_1: {
         name: 'Misty Meadow',
         difficulty: 1,
-        gems: [
-          { id: 'smoky_quartz', weight: 50, rarity: 'COMMON' },
-          { id: 'quartz_clear', weight: 30, rarity: 'COMMON' },
-          { id: 'moonstone', weight: 15, rarity: 'UNCOMMON' },
-          { id: 'amethyst', weight: 5, rarity: 'COMMON' },
+        items: [
+          { id: 'obsidian', weight: 45, rarity: 'COMMON' },
+          { id: 'clear_quartz', weight: 30, rarity: 'COMMON' },
+          { id: 'moonstone', weight: 15, rarity: 'COMMON' },
+          { id: 'fluorite', weight: 10, rarity: 'COMMON' },
         ],
-        baseRewards: { coins: 70, gems: 1 },
+        baseRewards: { coins: 70, items: 1 },
       },
       area_2: {
         name: 'Stone Valley',
         difficulty: 2,
-        gems: [
-          { id: 'smoky_quartz', weight: 40, rarity: 'COMMON' },
-          { id: 'moonstone', weight: 30, rarity: 'UNCOMMON' },
-          { id: 'quartz_clear', weight: 20, rarity: 'COMMON' },
-          { id: 'amethyst', weight: 10, rarity: 'COMMON' },
+        items: [
+          { id: 'obsidian', weight: 35, rarity: 'COMMON' },
+          { id: 'moonstone', weight: 30, rarity: 'COMMON' },
+          { id: 'clear_quartz', weight: 20, rarity: 'COMMON' },
+          { id: 'labradorite', weight: 15, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 90, gems: 1 },
+        baseRewards: { coins: 90, items: 1 },
       },
       area_3: {
         name: 'Moonlit Peak',
         difficulty: 2,
-        gems: [
-          { id: 'moonstone', weight: 45, rarity: 'UNCOMMON' },
-          { id: 'smoky_quartz', weight: 35, rarity: 'COMMON' },
-          { id: 'amethyst', weight: 15, rarity: 'COMMON' },
-          { id: 'quartz_clear', weight: 5, rarity: 'COMMON' },
+        items: [
+          { id: 'moonstone', weight: 40, rarity: 'COMMON' },
+          { id: 'obsidian', weight: 30, rarity: 'COMMON' },
+          { id: 'labradorite', weight: 20, rarity: 'UNCOMMON' },
+          { id: 'celestite', weight: 10, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 100, gems: 2 },
+        baseRewards: { coins: 100, items: 2 },
       },
     },
   },
@@ -145,40 +168,42 @@ export const LOOT_TABLES = {
     name: 'Ural Shores',
     color: '#8B4513',
     unlockLevel: 3,
+    type: 'gem',
     description: 'Coastal regions with beryl and topaz deposits',
     areas: {
       area_1: {
         name: 'Coastal Drift',
         difficulty: 2,
-        gems: [
+        items: [
           { id: 'amethyst', weight: 40, rarity: 'COMMON' },
-          { id: 'topaz', weight: 35, rarity: 'UNCOMMON' },
-          { id: 'garnet', weight: 15, rarity: 'COMMON' },
-          { id: 'citrine', weight: 10, rarity: 'UNCOMMON' },
+          { id: 'imperial_topaz', weight: 25, rarity: 'RARE' },
+          { id: 'tsavorite', weight: 15, rarity: 'RARE' },
+          { id: 'citrine', weight: 15, rarity: 'UNCOMMON' },
+          { id: 'peridot', weight: 5, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 120, gems: 2 },
+        baseRewards: { coins: 120, items: 2 },
       },
       area_2: {
         name: 'Amber Shore',
         difficulty: 2,
-        gems: [
-          { id: 'topaz', weight: 45, rarity: 'UNCOMMON' },
+        items: [
+          { id: 'imperial_topaz', weight: 35, rarity: 'RARE' },
           { id: 'amethyst', weight: 30, rarity: 'COMMON' },
-          { id: 'citrine', weight: 15, rarity: 'UNCOMMON' },
-          { id: 'garnet', weight: 10, rarity: 'COMMON' },
+          { id: 'citrine', weight: 20, rarity: 'UNCOMMON' },
+          { id: 'tsavorite', weight: 15, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 130, gems: 2 },
+        baseRewards: { coins: 130, items: 2 },
       },
       area_3: {
         name: 'Topaz Cove',
         difficulty: 3,
-        gems: [
-          { id: 'topaz', weight: 50, rarity: 'UNCOMMON' },
+        items: [
+          { id: 'imperial_topaz', weight: 45, rarity: 'RARE' },
           { id: 'citrine', weight: 25, rarity: 'UNCOMMON' },
           { id: 'amethyst', weight: 15, rarity: 'COMMON' },
-          { id: 'garnet', weight: 10, rarity: 'COMMON' },
+          { id: 'tsavorite', weight: 15, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 150, gems: 2 },
+        baseRewards: { coins: 150, items: 2 },
       },
     },
   },
@@ -187,40 +212,41 @@ export const LOOT_TABLES = {
     name: 'Bahia Mines',
     color: '#2F4F4F',
     unlockLevel: 5,
+    type: 'gem',
     description: 'Deep mines with rare tourmaline and beryl',
     areas: {
       area_1: {
         name: 'Tourmaline Depths',
         difficulty: 2,
-        gems: [
+        items: [
           { id: 'tourmaline', weight: 40, rarity: 'UNCOMMON' },
           { id: 'aquamarine', weight: 30, rarity: 'UNCOMMON' },
-          { id: 'morganite', weight: 20, rarity: 'UNCOMMON' },
-          { id: 'topaz', weight: 10, rarity: 'UNCOMMON' },
+          { id: 'parba_tourmaline', weight: 20, rarity: 'EPIC' },
+          { id: 'peridot', weight: 10, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 160, gems: 2 },
+        baseRewards: { coins: 160, items: 2 },
       },
       area_2: {
         name: 'Beryl Veins',
         difficulty: 2,
-        gems: [
+        items: [
           { id: 'aquamarine', weight: 40, rarity: 'UNCOMMON' },
-          { id: 'morganite', weight: 30, rarity: 'UNCOMMON' },
-          { id: 'tourmaline', weight: 20, rarity: 'UNCOMMON' },
-          { id: 'topaz', weight: 10, rarity: 'UNCOMMON' },
+          { id: 'parba_tourmaline', weight: 25, rarity: 'EPIC' },
+          { id: 'tourmaline', weight: 25, rarity: 'UNCOMMON' },
+          { id: 'peridot', weight: 10, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 175, gems: 2 },
+        baseRewards: { coins: 175, items: 2 },
       },
       area_3: {
         name: 'Bahia Deep',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'aquamarine', weight: 35, rarity: 'UNCOMMON' },
           { id: 'tourmaline', weight: 30, rarity: 'UNCOMMON' },
-          { id: 'morganite', weight: 25, rarity: 'UNCOMMON' },
-          { id: 'topaz', weight: 10, rarity: 'UNCOMMON' },
+          { id: 'parba_tourmaline', weight: 25, rarity: 'EPIC' },
+          { id: 'peridot', weight: 10, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 200, gems: 3 },
+        baseRewards: { coins: 200, items: 3 },
       },
     },
   },
@@ -229,40 +255,44 @@ export const LOOT_TABLES = {
     name: 'Montana Streambed',
     color: '#4682B4',
     unlockLevel: 7,
-    description: 'Mountain streams with corundum deposits',
+    type: 'mixed',
+    description: 'Mountain streams with corundum deposits and pyrite',
     areas: {
       area_1: {
         name: 'Sapphire Falls',
         difficulty: 2,
-        gems: [
-          { id: 'sapphire', weight: 35, rarity: 'RARE' },
-          { id: 'yogo_sapphire', weight: 15, rarity: 'RARE' },
-          { id: 'garnet', weight: 30, rarity: 'COMMON' },
-          { id: 'tourmaline', weight: 20, rarity: 'UNCOMMON' },
+        items: [
+          { id: 'sapphire', weight: 30, rarity: 'RARE' },
+          { id: 'spinel', weight: 20, rarity: 'RARE' },
+          { id: 'tsavorite', weight: 25, rarity: 'RARE' },
+          { id: 'tourmaline', weight: 15, rarity: 'UNCOMMON' },
+          { id: 'pyrite', weight: 10, rarity: 'COMMON' },
         ],
-        baseRewards: { coins: 180, gems: 2 },
+        baseRewards: { coins: 180, items: 2 },
       },
       area_2: {
         name: 'Blue River',
         difficulty: 3,
-        gems: [
-          { id: 'yogo_sapphire', weight: 35, rarity: 'RARE' },
+        items: [
           { id: 'sapphire', weight: 35, rarity: 'RARE' },
+          { id: 'spinel', weight: 25, rarity: 'RARE' },
           { id: 'tourmaline', weight: 20, rarity: 'UNCOMMON' },
-          { id: 'garnet', weight: 10, rarity: 'COMMON' },
+          { id: 'pyrite', weight: 10, rarity: 'COMMON' },
+          { id: 'tsavorite', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 220, gems: 2 },
+        baseRewards: { coins: 220, items: 2 },
       },
       area_3: {
         name: 'Montana Ridge',
         difficulty: 3,
-        gems: [
-          { id: 'yogo_sapphire', weight: 45, rarity: 'RARE' },
-          { id: 'sapphire', weight: 30, rarity: 'RARE' },
+        items: [
+          { id: 'sapphire', weight: 40, rarity: 'RARE' },
+          { id: 'spinel', weight: 30, rarity: 'RARE' },
           { id: 'tourmaline', weight: 15, rarity: 'UNCOMMON' },
-          { id: 'garnet', weight: 10, rarity: 'COMMON' },
+          { id: 'pyrite', weight: 8, rarity: 'COMMON' },
+          { id: 'tsavorite', weight: 7, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 250, gems: 3 },
+        baseRewards: { coins: 250, items: 3 },
       },
     },
   },
@@ -271,40 +301,41 @@ export const LOOT_TABLES = {
     name: 'Minas Gerais',
     color: '#9932CC',
     unlockLevel: 10,
+    type: 'gem',
     description: 'Legendary Brazilian mines with precious gems',
     areas: {
       area_1: {
         name: 'Emerald Valley',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'emerald', weight: 30, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 25, rarity: 'RARE' },
           { id: 'tourmaline', weight: 25, rarity: 'UNCOMMON' },
           { id: 'aquamarine', weight: 20, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 280, gems: 3 },
+        baseRewards: { coins: 280, items: 3 },
       },
       area_2: {
         name: 'Topaz Plains',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'imperial_topaz', weight: 40, rarity: 'RARE' },
           { id: 'emerald', weight: 25, rarity: 'RARE' },
           { id: 'aquamarine', weight: 20, rarity: 'UNCOMMON' },
           { id: 'tourmaline', weight: 15, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 300, gems: 3 },
+        baseRewards: { coins: 300, items: 3 },
       },
       area_3: {
         name: 'Imperial Depths',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'imperial_topaz', weight: 45, rarity: 'RARE' },
           { id: 'emerald', weight: 30, rarity: 'RARE' },
           { id: 'tourmaline', weight: 15, rarity: 'UNCOMMON' },
           { id: 'aquamarine', weight: 10, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 350, gems: 3 },
+        baseRewards: { coins: 350, items: 3 },
       },
     },
   },
@@ -313,40 +344,41 @@ export const LOOT_TABLES = {
     name: 'Mogok Valley',
     color: '#DC143C',
     unlockLevel: 15,
+    type: 'gem',
     description: 'Burmese valley of rubies and spinels',
     areas: {
       area_1: {
         name: 'Ruby Hills',
         difficulty: 3,
-        gems: [
-          { id: 'ruby', weight: 35, rarity: 'RARE' },
+        items: [
+          { id: 'ruby', weight: 35, rarity: 'EPIC' },
           { id: 'sapphire', weight: 25, rarity: 'RARE' },
-          { id: 'yogo_sapphire', weight: 20, rarity: 'RARE' },
+          { id: 'spinel', weight: 20, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 20, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 320, gems: 3 },
+        baseRewards: { coins: 320, items: 3 },
       },
       area_2: {
         name: 'Burmese Deep',
         difficulty: 3,
-        gems: [
-          { id: 'ruby', weight: 45, rarity: 'RARE' },
+        items: [
+          { id: 'ruby', weight: 45, rarity: 'EPIC' },
           { id: 'sapphire', weight: 25, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 20, rarity: 'RARE' },
-          { id: 'yogo_sapphire', weight: 10, rarity: 'RARE' },
+          { id: 'spinel', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 380, gems: 3 },
+        baseRewards: { coins: 380, items: 3 },
       },
       area_3: {
         name: 'Mogok Peak',
         difficulty: 3,
-        gems: [
-          { id: 'ruby', weight: 50, rarity: 'RARE' },
+        items: [
+          { id: 'ruby', weight: 50, rarity: 'EPIC' },
           { id: 'imperial_topaz', weight: 25, rarity: 'RARE' },
           { id: 'sapphire', weight: 15, rarity: 'RARE' },
-          { id: 'yogo_sapphire', weight: 10, rarity: 'RARE' },
+          { id: 'spinel', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 400, gems: 4 },
+        baseRewards: { coins: 400, items: 4 },
       },
     },
   },
@@ -355,40 +387,44 @@ export const LOOT_TABLES = {
     name: 'Sri Lanka Fields',
     color: '#FF8C00',
     unlockLevel: 20,
-    description: 'Island gem mines with diverse precious stones',
+    type: 'mixed',
+    description: 'Island gem mines with diverse precious stones and lapis lazuli',
     areas: {
       area_1: {
         name: 'Ceylon South',
         difficulty: 3,
-        gems: [
-          { id: 'ruby', weight: 25, rarity: 'RARE' },
+        items: [
+          { id: 'ruby', weight: 25, rarity: 'EPIC' },
           { id: 'sapphire', weight: 30, rarity: 'RARE' },
           { id: 'emerald', weight: 20, rarity: 'RARE' },
-          { id: 'imperial_topaz', weight: 25, rarity: 'RARE' },
+          { id: 'imperial_topaz', weight: 15, rarity: 'RARE' },
+          { id: 'lapis_lazuli', weight: 10, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 350, gems: 3 },
+        baseRewards: { coins: 350, items: 3 },
       },
       area_2: {
         name: 'Ratnapura',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'sapphire', weight: 35, rarity: 'RARE' },
-          { id: 'ruby', weight: 25, rarity: 'RARE' },
-          { id: 'imperial_topaz', weight: 25, rarity: 'RARE' },
-          { id: 'emerald', weight: 15, rarity: 'RARE' },
+          { id: 'ruby', weight: 25, rarity: 'EPIC' },
+          { id: 'imperial_topaz', weight: 20, rarity: 'RARE' },
+          { id: 'emerald', weight: 12, rarity: 'RARE' },
+          { id: 'lapis_lazuli', weight: 8, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 400, gems: 4 },
+        baseRewards: { coins: 400, items: 4 },
       },
       area_3: {
         name: 'Island Deep',
         difficulty: 3,
-        gems: [
-          { id: 'emerald', weight: 30, rarity: 'RARE' },
-          { id: 'ruby', weight: 25, rarity: 'RARE' },
+        items: [
+          { id: 'emerald', weight: 28, rarity: 'RARE' },
+          { id: 'ruby', weight: 25, rarity: 'EPIC' },
           { id: 'sapphire', weight: 25, rarity: 'RARE' },
-          { id: 'imperial_topaz', weight: 20, rarity: 'RARE' },
+          { id: 'imperial_topaz', weight: 15, rarity: 'RARE' },
+          { id: 'lapis_lazuli', weight: 7, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 450, gems: 4 },
+        baseRewards: { coins: 450, items: 4 },
       },
     },
   },
@@ -397,40 +433,41 @@ export const LOOT_TABLES = {
     name: 'Muzo Highlands',
     color: '#00FF7F',
     unlockLevel: 25,
+    type: 'gem',
     description: 'Colombian highlands with world-class emeralds',
     areas: {
       area_1: {
         name: 'Emerald Heart',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'emerald', weight: 50, rarity: 'RARE' },
-          { id: 'ruby', weight: 20, rarity: 'RARE' },
+          { id: 'ruby', weight: 20, rarity: 'EPIC' },
           { id: 'sapphire', weight: 15, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 15, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 480, gems: 4 },
+        baseRewards: { coins: 480, items: 4 },
       },
       area_2: {
         name: 'Muzo Core',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'emerald', weight: 60, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 20, rarity: 'RARE' },
-          { id: 'ruby', weight: 12, rarity: 'RARE' },
+          { id: 'ruby', weight: 12, rarity: 'EPIC' },
           { id: 'sapphire', weight: 8, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 520, gems: 4 },
+        baseRewards: { coins: 520, items: 4 },
       },
       area_3: {
         name: 'Chivor Deep',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'emerald', weight: 55, rarity: 'EPIC' },
-          { id: 'ruby', weight: 20, rarity: 'RARE' },
+          { id: 'ruby', weight: 20, rarity: 'EPIC' },
           { id: 'imperial_topaz', weight: 15, rarity: 'RARE' },
           { id: 'sapphire', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 580, gems: 5 },
+        baseRewards: { coins: 580, items: 5 },
       },
     },
   },
@@ -439,40 +476,41 @@ export const LOOT_TABLES = {
     name: 'Kashmir Heights',
     color: '#4169E1',
     unlockLevel: 30,
+    type: 'gem',
     description: 'Himalayan mines with legendary sapphires',
     areas: {
       area_1: {
         name: 'Kashmir Valley',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'sapphire', weight: 45, rarity: 'RARE' },
-          { id: 'ruby', weight: 25, rarity: 'RARE' },
+          { id: 'ruby', weight: 25, rarity: 'EPIC' },
           { id: 'emerald', weight: 15, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 15, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 550, gems: 4 },
+        baseRewards: { coins: 550, items: 4 },
       },
       area_2: {
         name: 'Padder Peaks',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'sapphire', weight: 50, rarity: 'EPIC' },
-          { id: 'ruby', weight: 25, rarity: 'RARE' },
+          { id: 'ruby', weight: 25, rarity: 'EPIC' },
           { id: 'emerald', weight: 15, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 620, gems: 5 },
+        baseRewards: { coins: 620, items: 5 },
       },
       area_3: {
         name: 'Snow Leopard Trail',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'sapphire', weight: 55, rarity: 'EPIC' },
-          { id: 'ruby', weight: 20, rarity: 'RARE' },
+          { id: 'ruby', weight: 20, rarity: 'EPIC' },
           { id: 'emerald', weight: 15, rarity: 'RARE' },
           { id: 'imperial_topaz', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 700, gems: 5 },
+        baseRewards: { coins: 700, items: 5 },
       },
     },
   },
@@ -481,40 +519,44 @@ export const LOOT_TABLES = {
     name: 'Argyle Caverns',
     color: '#FF1493',
     unlockLevel: 40,
-    description: 'Australian caves with rare pink diamonds',
+    type: 'gem',
+    description: 'Australian caves with rare pink diamonds and opals',
     areas: {
       area_1: {
         name: 'Pink Pit',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'diamond', weight: 35, rarity: 'EPIC' },
-          { id: 'sapphire', weight: 30, rarity: 'RARE' },
-          { id: 'ruby', weight: 20, rarity: 'RARE' },
-          { id: 'emerald', weight: 15, rarity: 'RARE' },
+          { id: 'sapphire', weight: 25, rarity: 'RARE' },
+          { id: 'ruby', weight: 20, rarity: 'EPIC' },
+          { id: 'opal', weight: 15, rarity: 'UNCOMMON' },
+          { id: 'tourmaline', weight: 5, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 750, gems: 5 },
+        baseRewards: { coins: 750, items: 5 },
       },
       area_2: {
         name: 'Argyle Depths',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'diamond', weight: 45, rarity: 'EPIC' },
-          { id: 'ruby', weight: 25, rarity: 'RARE' },
-          { id: 'sapphire', weight: 18, rarity: 'RARE' },
-          { id: 'emerald', weight: 12, rarity: 'RARE' },
+          { id: 'ruby', weight: 25, rarity: 'EPIC' },
+          { id: 'black_opal', weight: 15, rarity: 'RARE' },
+          { id: 'sapphire', weight: 10, rarity: 'RARE' },
+          { id: 'opal', weight: 5, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 850, gems: 5 },
+        baseRewards: { coins: 850, items: 5 },
       },
       area_3: {
         name: 'Diamond Heart',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'diamond', weight: 55, rarity: 'EPIC' },
-          { id: 'ruby', weight: 20, rarity: 'RARE' },
-          { id: 'sapphire', weight: 15, rarity: 'RARE' },
-          { id: 'emerald', weight: 10, rarity: 'RARE' },
+          { id: 'ruby', weight: 20, rarity: 'EPIC' },
+          { id: 'black_opal', weight: 12, rarity: 'RARE' },
+          { id: 'sapphire', weight: 8, rarity: 'RARE' },
+          { id: 'opal', weight: 5, rarity: 'UNCOMMON' },
         ],
-        baseRewards: { coins: 1000, gems: 6 },
+        baseRewards: { coins: 1000, items: 6 },
       },
     },
   },
@@ -523,40 +565,41 @@ export const LOOT_TABLES = {
     name: 'Golconda Depths',
     color: '#FFD700',
     unlockLevel: 50,
+    type: 'gem',
     description: 'Legendary Indian diamond mines',
     areas: {
       area_1: {
         name: 'Kollur Mine',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'diamond', weight: 50, rarity: 'EPIC' },
           { id: 'emerald', weight: 20, rarity: 'RARE' },
-          { id: 'ruby', weight: 15, rarity: 'RARE' },
+          { id: 'ruby', weight: 15, rarity: 'EPIC' },
           { id: 'sapphire', weight: 15, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 1200, gems: 6 },
+        baseRewards: { coins: 1200, items: 6 },
       },
       area_2: {
         name: 'Golconda Core',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'diamond', weight: 60, rarity: 'LEGENDARY' },
           { id: 'emerald', weight: 18, rarity: 'RARE' },
-          { id: 'ruby', weight: 12, rarity: 'RARE' },
+          { id: 'ruby', weight: 12, rarity: 'EPIC' },
           { id: 'sapphire', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 1500, gems: 6 },
+        baseRewards: { coins: 1500, items: 6 },
       },
       area_3: {
         name: 'Legendary Vault',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'diamond', weight: 70, rarity: 'LEGENDARY' },
-          { id: 'ruby', weight: 12, rarity: 'RARE' },
+          { id: 'ruby', weight: 12, rarity: 'EPIC' },
           { id: 'emerald', weight: 10, rarity: 'RARE' },
           { id: 'sapphire', weight: 8, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 2000, gems: 7 },
+        baseRewards: { coins: 2000, items: 7 },
       },
     },
   },
@@ -565,40 +608,41 @@ export const LOOT_TABLES = {
     name: 'Androy Dunes',
     color: '#9400D3',
     unlockLevel: 60,
+    type: 'gem',
     description: 'Madagascar deserts with rare tanzanite',
     areas: {
       area_1: {
         name: 'Tanzanite Fields',
         difficulty: 3,
-        gems: [
-          { id: 'tanzanite', weight: 45, rarity: 'LEGENDARY' },
+        items: [
+          { id: 'tanzanite', weight: 45, rarity: 'EPIC' },
           { id: 'diamond', weight: 25, rarity: 'EPIC' },
           { id: 'sapphire', weight: 15, rarity: 'RARE' },
-          { id: 'ruby', weight: 15, rarity: 'RARE' },
+          { id: 'ruby', weight: 15, rarity: 'EPIC' },
         ],
-        baseRewards: { coins: 1800, gems: 6 },
+        baseRewards: { coins: 1800, items: 6 },
       },
       area_2: {
         name: 'Merelani Hills',
         difficulty: 3,
-        gems: [
-          { id: 'tanzanite', weight: 55, rarity: 'LEGENDARY' },
+        items: [
+          { id: 'tanzanite', weight: 55, rarity: 'EPIC' },
           { id: 'diamond', weight: 20, rarity: 'EPIC' },
-          { id: 'ruby', weight: 15, rarity: 'RARE' },
+          { id: 'ruby', weight: 15, rarity: 'EPIC' },
           { id: 'sapphire', weight: 10, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 2200, gems: 7 },
+        baseRewards: { coins: 2200, items: 7 },
       },
       area_3: {
         name: 'Deep Desert',
         difficulty: 3,
-        gems: [
-          { id: 'tanzanite', weight: 65, rarity: 'LEGENDARY' },
+        items: [
+          { id: 'tanzanite', weight: 65, rarity: 'EPIC' },
           { id: 'diamond', weight: 18, rarity: 'LEGENDARY' },
-          { id: 'ruby', weight: 10, rarity: 'RARE' },
+          { id: 'ruby', weight: 10, rarity: 'EPIC' },
           { id: 'sapphire', weight: 7, rarity: 'RARE' },
         ],
-        baseRewards: { coins: 2800, gems: 7 },
+        baseRewards: { coins: 2800, items: 7 },
       },
     },
   },
@@ -607,43 +651,44 @@ export const LOOT_TABLES = {
     name: 'Mogok Hidden',
     color: '#FF0000',
     unlockLevel: 75,
+    type: 'gem',
     description: 'Secret Burmese mines with the rarest gems on Earth',
     areas: {
       area_1: {
         name: 'Secret Valley',
         difficulty: 3,
-        gems: [
+        items: [
           { id: 'alexandrite', weight: 30, rarity: 'LEGENDARY' },
-          { id: 'painite', weight: 20, rarity: 'LEGENDARY' },
+          { id: 'taaffeite', weight: 20, rarity: 'LEGENDARY' },
           { id: 'diamond', weight: 25, rarity: 'LEGENDARY' },
-          { id: 'tanzanite', weight: 15, rarity: 'LEGENDARY' },
+          { id: 'tanzanite', weight: 15, rarity: 'EPIC' },
           { id: 'ruby', weight: 10, rarity: 'EPIC' },
         ],
-        baseRewards: { coins: 3000, gems: 7 },
+        baseRewards: { coins: 3000, items: 7 },
       },
       area_2: {
         name: 'Hidden Palace',
         difficulty: 3,
-        gems: [
-          { id: 'painite', weight: 35, rarity: 'LEGENDARY' },
+        items: [
+          { id: 'taaffeite', weight: 35, rarity: 'LEGENDARY' },
           { id: 'alexandrite', weight: 30, rarity: 'LEGENDARY' },
           { id: 'diamond', weight: 20, rarity: 'LEGENDARY' },
-          { id: 'tanzanite', weight: 10, rarity: 'LEGENDARY' },
+          { id: 'tanzanite', weight: 10, rarity: 'EPIC' },
           { id: 'ruby', weight: 5, rarity: 'EPIC' },
         ],
-        baseRewards: { coins: 4000, gems: 8 },
+        baseRewards: { coins: 4000, items: 8 },
       },
       area_3: {
         name: 'Dragon\'s Hoard',
         difficulty: 3,
-        gems: [
-          { id: 'painite', weight: 40, rarity: 'LEGENDARY' },
+        items: [
+          { id: 'taaffeite', weight: 40, rarity: 'LEGENDARY' },
           { id: 'alexandrite', weight: 35, rarity: 'LEGENDARY' },
           { id: 'diamond', weight: 15, rarity: 'LEGENDARY' },
-          { id: 'tanzanite', weight: 7, rarity: 'LEGENDARY' },
+          { id: 'tanzanite', weight: 7, rarity: 'EPIC' },
           { id: 'ruby', weight: 3, rarity: 'EPIC' },
         ],
-        baseRewards: { coins: 5000, gems: 8 },
+        baseRewards: { coins: 5000, items: 8 },
       },
     },
   },
@@ -654,23 +699,14 @@ export const LOOT_TABLES = {
 // ============================================
 
 /**
- * Get a gem object by its ID
- * @param {string} gemId - The gem ID to look up
- * @returns {object|undefined} The gem object from gems.json
- */
-export const getGemById = (gemId) => {
-  return gemsData.gems.find((gem) => gem.id === gemId);
-};
-
-/**
  * Roll for loot in a specific area
  * @param {string} locationKey - The location tier (e.g., 'TIER_1')
  * @param {string} areaKey - The area within that location (e.g., 'area_1')
- * @param {number} gemCount - Number of gems to roll for (default: 1)
+ * @param {number} itemCount - Number of items to roll for (default: 1)
  * @param {number} difficulty - Difficulty multiplier (1-3)
- * @returns {object} Object containing coins and gems array
+ * @returns {object} Object containing coins and items array
  */
-export const rollLoot = (locationKey, areaKey, gemCount = 1, difficulty = 1) => {
+export const rollLoot = (locationKey, areaKey, itemCount = 1, difficulty = 1) => {
   const location = LOOT_TABLES[locationKey];
   if (!location) {
     throw new Error(`Invalid location: ${locationKey}`);
@@ -686,22 +722,22 @@ export const rollLoot = (locationKey, areaKey, gemCount = 1, difficulty = 1) => 
   // Calculate base rewards with multipliers
   const coins = Math.floor(area.baseRewards.coins * multipliers.coins);
 
-  // Roll for gems based on weighted chances
-  const gems = [];
-  const totalWeight = area.gems.reduce((sum, gem) => sum + gem.weight, 0);
+  // Roll for items based on weighted chances
+  const items = [];
+  const totalWeight = area.items.reduce((sum, item) => sum + item.weight, 0);
 
-  for (let i = 0; i < gemCount; i++) {
+  for (let i = 0; i < itemCount; i++) {
     let roll = Math.random() * totalWeight;
-    
-    for (const gemEntry of area.gems) {
-      roll -= gemEntry.weight;
+
+    for (const itemEntry of area.items) {
+      roll -= itemEntry.weight;
       if (roll <= 0) {
-        const gemData = getGemById(gemEntry.id);
-        if (gemData) {
-          gems.push({
-            ...gemData,
-            rarity: gemEntry.rarity,
-            rarityTier: RARITY_TIERS[gemEntry.rarity],
+        const itemData = getItemById(itemEntry.id);
+        if (itemData) {
+          items.push({
+            ...itemData,
+            rarity: itemEntry.rarity,
+            rarityTier: RARITY_TIERS[itemEntry.rarity],
             source: {
               location: locationKey,
               area: areaKey,
@@ -715,39 +751,40 @@ export const rollLoot = (locationKey, areaKey, gemCount = 1, difficulty = 1) => 
 
   return {
     coins,
-    gems,
+    items,
     location: location.name,
     area: area.name,
   };
 };
 
 /**
- * Get all sources where a specific gem can be found
- * @param {string} gemId - The gem ID to search for
+ * Get all sources where a specific item can be found
+ * @param {string} itemId - The item ID to search for
  * @returns {Array} Array of {location, area, rarity, weight} objects
  */
-export const getGemSources = (gemId) => {
+export const getItemSources = (itemId) => {
   const sources = [];
 
   for (const [locationKey, location] of Object.entries(LOOT_TABLES)) {
     for (const [areaKey, area] of Object.entries(location.areas)) {
-      const gemEntry = area.gems.find((g) => g.id === gemId);
-      if (gemEntry) {
+      const itemEntry = area.items.find((i) => i.id === itemId);
+      if (itemEntry) {
         sources.push({
           location: {
             key: locationKey,
             name: location.name,
             color: location.color,
             unlockLevel: location.unlockLevel,
+            type: location.type,
           },
           area: {
             key: areaKey,
             name: area.name,
             difficulty: area.difficulty,
           },
-          rarity: gemEntry.rarity,
-          weight: gemEntry.weight,
-          rarityTier: RARITY_TIERS[gemEntry.rarity],
+          rarity: itemEntry.rarity,
+          weight: itemEntry.weight,
+          rarityTier: RARITY_TIERS[itemEntry.rarity],
         });
       }
     }
@@ -761,38 +798,38 @@ export const getGemSources = (gemId) => {
 };
 
 /**
- * Get all available gems from a specific location
+ * Get all available items from a specific location
  * @param {string} locationKey - The location tier
- * @returns {Array} Array of gem objects with rarity info
+ * @returns {Array} Array of item objects with rarity info
  */
-export const getGemsAtLocation = (locationKey) => {
+export const getItemsAtLocation = (locationKey) => {
   const location = LOOT_TABLES[locationKey];
   if (!location) return [];
 
-  const gemMap = new Map();
+  const itemMap = new Map();
 
   for (const area of Object.values(location.areas)) {
-    for (const gemEntry of area.gems) {
-      if (!gemMap.has(gemEntry.id)) {
-        const gemData = getGemById(gemEntry.id);
-        if (gemData) {
-          gemMap.set(gemEntry.id, {
-            ...gemData,
-            rarity: gemEntry.rarity,
-            rarityTier: RARITY_TIERS[gemEntry.rarity],
-            rarityWeight: gemEntry.weight,
+    for (const itemEntry of area.items) {
+      if (!itemMap.has(itemEntry.id)) {
+        const itemData = getItemById(itemEntry.id);
+        if (itemData) {
+          itemMap.set(itemEntry.id, {
+            ...itemData,
+            rarity: itemEntry.rarity,
+            rarityTier: RARITY_TIERS[itemEntry.rarity],
+            rarityWeight: itemEntry.weight,
           });
         }
       }
     }
   }
 
-  return Array.from(gemMap.values());
+  return Array.from(itemMap.values());
 };
 
 /**
  * Get summary of all available locations
- * @returns {Array} Array of location summaries with gem counts
+ * @returns {Array} Array of location summaries with item counts
  */
 export const getAllLocations = () => {
   return Object.entries(LOOT_TABLES).map(([key, location]) => ({
@@ -800,16 +837,30 @@ export const getAllLocations = () => {
     name: location.name,
     color: location.color,
     unlockLevel: location.unlockLevel,
+    type: location.type,
     description: location.description,
     areas: Object.entries(location.areas).map(([areaKey, area]) => ({
       key: areaKey,
       name: area.name,
       difficulty: area.difficulty,
-      gemCount: area.gems.length,
+      itemCount: area.items.length,
       baseRewards: area.baseRewards,
     })),
-    gemTypes: getGemsAtLocation(key).length,
+    itemTypes: getItemsAtLocation(key).length,
   }));
 };
+
+// ============================================
+// BACKWARD COMPATIBILITY ALIASES
+// ============================================
+
+/** @deprecated Use getItemById instead */
+export const getGemById = getItemById;
+
+/** @deprecated Use getItemSources instead */
+export const getGemSources = getItemSources;
+
+/** @deprecated Use getItemsAtLocation instead */
+export const getGemsAtLocation = getItemsAtLocation;
 
 export default LOOT_TABLES;
