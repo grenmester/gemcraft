@@ -5,7 +5,8 @@ const menuButtons = [
   { label: 'Discover', phase: GAME_PHASES.DISCOVER, icon: '🔍' },
   { label: 'Process', phase: GAME_PHASES.PROCESS, icon: '⚙️' },
   { label: 'Craft', phase: GAME_PHASES.CRAFT, icon: '💎' },
-  { label: 'Sell', phase: GAME_PHASES.SELL, icon: '💰' }
+  { label: 'Sell', phase: GAME_PHASES.SELL, icon: '💰' },
+  { label: 'Gemdex', phase: 'gemdex', icon: '📖' }
 ];
 
 export default function Menu() {

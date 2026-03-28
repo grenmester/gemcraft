@@ -8,6 +8,7 @@ import Minigame from './components/Minigame';
 import ChipReveal from './components/ChipReveal';
 import SieveSort from './components/SieveSort';
 import LocationMap from './components/LocationMap';
+import Gemdex from './components/Gemdex';
 import './App.css';
 
 function GameContent() {
@@ -42,6 +43,9 @@ function GameContent() {
       break;
     case 'location_map':
       phaseContent = <LocationMap />;
+      break;
+    case 'gemdex':
+      phaseContent = <Gemdex />;
       break;
     default:
       phaseContent = <Menu />;
