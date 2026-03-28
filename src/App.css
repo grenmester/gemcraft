@@ -1,0 +1,122 @@
+:root {
+  --bg-primary: #0f0f1a;
+  --bg-secondary: #1a1a2e;
+  --bg-tertiary: #252540;
+  --text-primary: #f0f0f0;
+  --text-secondary: #a0a0b0;
+  --accent-primary: #ff6b6b;
+  --accent-secondary: #4ecdc4;
+  --accent-gold: #ffd93d;
+  --gem-common: #A0A0A0;
+  --gem-uncommon: #4CAF50;
+  --gem-rare: #2196F3;
+  --gem-epic: #9C27B0;
+  --gem-legendary: #FF9800;
+  --border-radius: 8px;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+}
+
+.app-header {
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--bg-tertiary);
+  text-align: center;
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  color: var(--accent-gold);
+  text-shadow: 0 0 10px rgba(255, 217, 61, 0.3);
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.app-footer {
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--bg-tertiary);
+}
+
+.coins-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--accent-gold);
+}
+
+.coin-icon {
+  font-size: 1.5rem;
+}
+
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.screen h2 {
+  font-size: 2rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #ff5252;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-2px);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--accent-gold), #ffb300);
+  color: var(--bg-primary);
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(255, 217, 61, 0.4);
+}

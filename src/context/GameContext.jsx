@@ -3,6 +3,10 @@ import { Player } from '../models/Player.js';
 import { Inventory } from '../models/Inventory.js';
 import { Gem } from '../models/Gem.js';
 
+import { GAME_PHASES } from '../constants.js';
+
+export { GAME_PHASES };
+
 export const SET_PHASE = 'SET_PHASE';
 export const SET_MINIGAME = 'SET_MINIGAME';
 export const ADD_GEM = 'ADD_GEM';
@@ -10,13 +14,6 @@ export const ADD_COINS = 'ADD_COINS';
 export const LOAD_STATE = 'LOAD_STATE';
 
 const STORAGE_KEY = 'gemstone_game_save';
-
-export const GAME_PHASES = {
-  MENU: 'menu',
-  EXPLORATION: 'exploration',
-  MINIGAME: 'minigame',
-  RESULTS: 'results'
-};
 
 const initialPlayer = new Player();
 const initialInventory = new Inventory();

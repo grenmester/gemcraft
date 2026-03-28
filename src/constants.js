@@ -28,8 +28,10 @@ export const GAME_CONFIG = {
 };
 
 export const GAME_PHASES = {
-  SETUP: 'setup',
-  PLAYING: 'playing',
-  PAUSED: 'paused',
-  GAME_OVER: 'gameOver'
+  MENU: 'menu',
+  DISCOVER: 'discover',
+  PROCESS: 'process',
+  CRAFT: 'craft',
+  SELL: 'sell',
+  MINIGAME: 'minigame'
 };
