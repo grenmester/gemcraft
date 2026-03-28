@@ -1,12 +1,12 @@
 import { GameProvider, useGame, GAME_PHASES } from './context/GameContext';
 import Menu from './components/Menu';
 import Discover from './components/Discover';
+import Minigame from './components/Minigame';
 import './App.css';
 
 const Process = () => <div className="screen"><h2>Process</h2></div>;
 const Craft = () => <div className="screen"><h2>Craft</h2></div>;
 const Sell = () => <div className="screen"><h2>Sell</h2></div>;
-const Minigame = () => <div className="screen"><h2>Minigame</h2></div>;
 
 function GameContent() {
   const { state } = useGame();
