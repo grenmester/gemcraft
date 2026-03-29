@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { useGame, GAME_PHASES, SET_PHASE } from '../../../context/GameContext';
 import { useInventory } from '../hooks/useInventory';
 import { getItems, getItemById } from '../../../data/items';
+import { FaSearch, FaArrowLeft } from 'react-icons/fa';
+import { GemIcon, MineralIcon } from '../../../shared/components/ItemIcons';
 
 // Rarity display configuration
 const RARITY_CONFIG = {
@@ -154,10 +156,10 @@ export default function Gemdex() {
     setSelectedItem(null);
   };
 
-  // Get emoji based on category
+  // Get icon based on category
   const getItemIcon = (item) => {
     if (!item.discovered) return '❓';
-    return item.category === 'Gem' ? '💎' : '🪨';
+    return item.category === 'Gem' ? <GemIcon /> : <MineralIcon />;
   };
 
   // Clear all filters
@@ -178,7 +180,7 @@ export default function Gemdex() {
           onClick={handleBack} 
           className="bg-transparent border border-amber-700 text-amber-900 px-4 py-2 font-serif cursor-pointer transition-all hover:bg-amber-700 hover:text-amber-50"
         >
-          ← Back
+          <FaArrowLeft /> Back
         </button>
         <h1 className="font-serif text-2xl m-0 text-amber-900" style={{ textShadow: '1px 1px 1px rgba(184, 115, 51, 0.3)' }}>
           📖 Gemdex
@@ -203,7 +205,7 @@ export default function Gemdex() {
       {/* Search Bar */}
       <div className="flex gap-2 mb-4">
         <div className="flex-1 relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-700">🔍</span>
+           <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-700" />
           <input
             type="text"
             placeholder="Search by name..."
@@ -235,7 +237,7 @@ export default function Gemdex() {
                 : 'bg-transparent border-amber-700 text-amber-900 hover:bg-amber-100'
             }`}
           >
-            {cat === 'all' ? 'All' : cat === 'gems' ? '💎 Gems' : '🪨 Minerals'}
+            {cat === 'all' ? 'All' : cat === 'gems' ? <><GemIcon /> Gems</> : <><MineralIcon /> Minerals</>}
           </button>
         ))}
       </div>
@@ -331,7 +333,7 @@ export default function Gemdex() {
       {/* Empty State */}
       {filteredItems.length === 0 && (
         <div className="text-center py-12 text-amber-700">
-          <div className="text-6xl mb-4">🔍</div>
+          <div className="text-6xl mb-4"><FaSearch /></div>
           <p className="font-serif text-lg">No items match your filters</p>
           <button 
             onClick={clearFilters}
@@ -363,7 +365,7 @@ export default function Gemdex() {
             {/* Icon and Category */}
             <div className="text-center mb-4">
               <div className="text-6xl mb-2">
-                {selectedItem.category === 'Gem' ? '💎' : '🪨'}
+                {selectedItem.category === 'Gem' ? <GemIcon /> : <MineralIcon />}
               </div>
               <span className="text-amber-600 font-serif text-sm uppercase tracking-wide">
                 {selectedItem.category}

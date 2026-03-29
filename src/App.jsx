@@ -1,4 +1,5 @@
 import { GameProvider, useGame, GAME_PHASES } from './context/GameContext';
+import { FaGem } from 'react-icons/fa';
 import Menu from './shared/components/Menu';
 import Discover from './features/discover/components/Discover';
 import Process from './features/process/components/Process';
@@ -82,7 +83,7 @@ function GameContent() {
       </main>
       <footer className="app-footer bg-slate-800 border-t border-slate-700 px-4 md:px-6 py-3 shrink-0">
         <div className="flex items-center justify-center gap-2 text-lg font-bold text-yellow-400">
-          <span className="text-xl">💎</span>
+          <FaGem className="text-xl" />
           <span>{coins}</span>
         </div>
       </footer>
