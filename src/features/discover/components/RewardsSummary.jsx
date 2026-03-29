@@ -1,5 +1,7 @@
 import { useGame, CLEAR_DISCOVER_SELECTION, GAME_PHASES } from '../../../context/GameContext';
 import { getItemById } from '../../../data/lootTables';
+import { GemIcon, MineralIcon } from '../../../shared/components/ItemIcons';
+import { FaCoins, FaBox, FaArrowLeft, FaHome } from 'react-icons/fa';
 
 export default function RewardsSummary() {
   const { state, dispatch } = useGame();
@@ -44,7 +46,7 @@ export default function RewardsSummary() {
       <div className="bg-slate-800/50 rounded-2xl p-6 w-full max-w-md mb-6">
         {/* Coins */}
         <div className="flex items-center gap-4 mb-4 pb-4 border-b border-slate-700">
-          <span className="text-3xl">💰</span>
+          <span className="text-3xl"><FaCoins /></span>
           <div>
             <div className="text-xl font-bold text-yellow-400">+{rewards.coins}</div>
             <div className="text-sm text-slate-400">coins earned</div>
@@ -53,7 +55,7 @@ export default function RewardsSummary() {
 
         {/* Items found summary */}
         <div className="flex items-center gap-4 mb-6">
-          <span className="text-3xl">📦</span>
+          <span className="text-3xl"><FaBox /></span>
           <div>
             <div className="text-xl font-bold text-emerald-400">+{totalItems}</div>
             <div className="text-sm text-slate-400">items found</div>
@@ -64,7 +66,7 @@ export default function RewardsSummary() {
         {gems.length > 0 && (
           <div className="mb-4">
             <h3 className="text-lg font-bold text-purple-400 mb-3">
-              ✨ Gems ({gems.length})
+              <GemIcon className="text-purple-400" /> Gems ({gems.length})
             </h3>
             <div className="grid grid-cols-2 gap-3">
               {gems.map((gem, index) => {
@@ -72,7 +74,7 @@ export default function RewardsSummary() {
                 return (
                   <div key={`gem-${gem.id}-${index}`} className="bg-slate-900 rounded-lg p-3 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-purple-900/50 flex items-center justify-center text-xl">
-                      ✨
+                      <GemIcon className="text-purple-400" />
                     </div>
                     <div>
                       <div className="font-bold text-white text-sm">{gemData?.name || gem.id}</div>
@@ -94,7 +96,7 @@ export default function RewardsSummary() {
         {minerals.length > 0 && (
           <div>
             <h3 className="text-lg font-bold text-blue-400 mb-3">
-              💎 Minerals ({minerals.length})
+              <MineralIcon className="text-blue-400" /> Minerals ({minerals.length})
             </h3>
             <div className="grid grid-cols-2 gap-3">
               {minerals.map((mineral, index) => {
@@ -102,7 +104,7 @@ export default function RewardsSummary() {
                 return (
                   <div key={`mineral-${mineral.id}-${index}`} className="bg-slate-900 rounded-lg p-3 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-blue-900/50 flex items-center justify-center text-xl">
-                      💎
+                      <MineralIcon className="text-blue-400" />
                     </div>
                     <div>
                       <div className="font-bold text-white text-sm">{mineralData?.name || mineral.id}</div>
@@ -134,13 +136,13 @@ export default function RewardsSummary() {
           className="px-6 py-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
           onClick={() => dispatch({ type: CLEAR_DISCOVER_SELECTION })}
         >
-          ← Back to Discover
+          <FaArrowLeft /> Back to Discover
         </button>
         <button
           className="px-6 py-3 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 transition-colors"
           onClick={() => dispatch({ type: CLEAR_DISCOVER_SELECTION })}
         >
-          🏠 Main Menu
+          <FaHome /> Main Menu
         </button>
       </div>
     </div>

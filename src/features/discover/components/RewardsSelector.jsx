@@ -1,6 +1,8 @@
 import { useGame, SELECT_AREA, SET_REWARDS, ADD_MINERAL, ADD_TO_INVENTORY } from '../../../context/GameContext';
 import { LOOT_TABLES, rollLoot, REWARD_MULTIPLIERS, getItemById, calculateEquipmentBonus } from '../../../data/lootTables';
 import { EQUIPMENT } from '../../../data/equipment';
+import { GemIcon } from '../../../shared/components/ItemIcons';
+import { FaCoins, FaBox, FaArrowLeft } from 'react-icons/fa';
 
 const DIFFICULTY_CONFIG = {
   1: { label: 'Easy', color: '#4CAF50', multiplier: 1.0 },
@@ -79,7 +81,7 @@ export default function RewardsSelector() {
           className="mt-4 bg-slate-700 text-white font-semibold px-6 py-3 rounded-lg hover:bg-slate-600 transition-colors"
           onClick={handleBack}
         >
-          ← Back to Areas
+          <FaArrowLeft /> Back to Areas
         </button>
       </div>
     );
@@ -133,7 +135,7 @@ export default function RewardsSelector() {
                     key={`gem-${idx}`}
                     className="px-2 py-1 bg-purple-900/30 rounded text-xs text-purple-300"
                   >
-                    ✨ {itemData?.name || item.id}
+                    <GemIcon className="text-purple-400 text-xs" /> {itemData?.name || item.id}
                   </span>
                 );
               })}
@@ -150,7 +152,7 @@ export default function RewardsSelector() {
                     key={`mineral-${idx}`}
                     className="px-2 py-1 bg-blue-900/30 rounded text-xs text-blue-300"
                   >
-                    💎 {itemData?.name || item.id}
+                    <GemIcon className="text-blue-400 text-xs" /> {itemData?.name || item.id}
                   </span>
                 );
               })}
@@ -167,11 +169,11 @@ export default function RewardsSelector() {
           <p className="text-sm text-yellow-400 mb-2 font-medium">Base Rewards</p>
           <div className="flex justify-center gap-6">
             <div className="text-center">
-              <span className="text-xl">💰</span>
+              <span className="text-xl"><FaCoins /></span>
               <p className="text-sm text-slate-300">{area.baseRewards.coins}</p>
             </div>
             <div className="text-center">
-              <span className="text-xl">📦</span>
+              <span className="text-xl"><FaBox /></span>
               <p className="text-sm text-slate-300">{area.baseRewards.items} item{area.baseRewards.items !== 1 ? 's' : ''}</p>
             </div>
           </div>
@@ -209,10 +211,10 @@ export default function RewardsSelector() {
                   </p>
                   <div className="flex flex-wrap justify-center gap-3">
                     <span className="text-gray-200 text-sm">
-                      💰 {Math.floor(area.baseRewards.coins * multiplier)} coins
+                      <FaCoins /> {Math.floor(area.baseRewards.coins * multiplier)} coins
                     </span>
                     <span className="text-gray-200 text-sm">
-                      📦 {Math.ceil(area.baseRewards.items * multiplier)} items
+                      <FaBox /> {Math.ceil(area.baseRewards.items * multiplier)} items
                     </span>
                   </div>
                 </>
@@ -226,7 +228,7 @@ export default function RewardsSelector() {
         className="bg-slate-700 text-white font-semibold px-6 py-3 mx-4 mb-4 rounded-lg hover:bg-slate-600 transition-colors"
         onClick={handleBack}
       >
-        ← Back to Areas
+        <FaArrowLeft /> Back to Areas
       </button>
     </div>
   );

@@ -4,6 +4,8 @@ import { LOCATION_TIERS, getUnlockedLocations } from '../../../data/locations';
 import { canUnlockZone, getZoneRequirements } from '../../../shared/utils/zoneUnlock';
 import { getItemById } from '../../../data/items';
 import { getEquipmentById } from '../../../data/equipment';
+import { GemIcon } from '../../../shared/components/ItemIcons';
+import { FaStar, FaArrowLeft } from 'react-icons/fa';
 
 const SHIFT_POINTS_PER_LEVEL = 100;
 
@@ -51,7 +53,7 @@ export default function LocationMap() {
       return (
         <div className="w-full flex flex-col gap-1 mt-1" key={requirement.type}>
           <span className="text-[0.65rem] text-gray-400">
-            ⭐ Level {requirement.current}/{requirement.required}
+            <FaStar className="text-yellow-400" /> Level {requirement.current}/{requirement.required}
           </span>
           <div className="w-full h-1.5 bg-white/10 rounded overflow-hidden">
             <div className="h-full bg-gradient-to-r from-red-400 to-yellow-400 rounded transition-all duration-300" style={{ width: `${progress}%` }} />
@@ -74,7 +76,7 @@ export default function LocationMap() {
       return (
         <div className="w-full flex flex-col gap-1 mt-1" key={`material-${requirement.id}`}>
           <span className="text-[0.65rem] text-gray-400">
-            💎 {itemData?.name || requirement.id}: {requirement.current}/{requirement.required}
+            <GemIcon className="text-blue-400" /> {itemData?.name || requirement.id}: {requirement.current}/{requirement.required}
           </span>
           <div className="w-full h-1.5 bg-white/10 rounded overflow-hidden">
             <div className="h-full bg-gradient-to-r from-blue-400 to-cyan-400 rounded transition-all duration-300" style={{ width: `${progress}%` }} />
@@ -177,7 +179,7 @@ export default function LocationMap() {
       )}
 
       <button className="fixed bottom-4 left-4 right-4 md:left-6 md:right-6 bg-slate-700 text-white font-semibold px-6 py-3 rounded-lg hover:bg-slate-600 transition-colors" onClick={handleBack}>
-        ← Back to Discover
+        <FaArrowLeft /> Back to Discover
       </button>
     </div>
   );

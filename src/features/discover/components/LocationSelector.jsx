@@ -3,6 +3,8 @@ import { useGame, CLEAR_DISCOVER_SELECTION, SELECT_LOCATION } from '../../../con
 import { LOOT_TABLES } from '../../../data/lootTables';
 import { canUnlockZone, getZoneRequirements } from '../../../shared/utils/zoneUnlock';
 import { getItemById } from '../../../data/items';
+import { GemIcon } from '../../../shared/components/ItemIcons';
+import { FaStar, FaArrowLeft } from 'react-icons/fa';
 
 function RequirementTooltip({ requirements, locationKey }) {
   const location = LOOT_TABLES[locationKey];
@@ -13,14 +15,14 @@ function RequirementTooltip({ requirements, locationKey }) {
       {requirements.map((req, idx) => (
         <div key={idx} className="text-xs text-slate-300 mb-1">
           {req.type === 'level' && (
-            <span>⭐ Level {req.required} (you: {req.current})</span>
+            <span><FaStar className="text-yellow-400" /> Level {req.required} (you: {req.current})</span>
           )}
           {req.type === 'equipment' && (
             <span>🔧 {req.requiredName || req.required}</span>
           )}
           {req.type === 'material' && (
             <span>
-              💎 {getItemById(req.id)?.name || req.id}: {req.current}/{req.required}
+              <GemIcon className="text-blue-400" /> {getItemById(req.id)?.name || req.id}: {req.current}/{req.required}
             </span>
           )}
         </div>
@@ -55,7 +57,7 @@ export function LocationSelector() {
           className="px-4 py-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
           onClick={() => dispatch({ type: CLEAR_DISCOVER_SELECTION })}
         >
-          ← Back
+          <FaArrowLeft /> Back
         </button>
       </div>
 
@@ -94,10 +96,10 @@ export function LocationSelector() {
                     </div>
                   )}
                   {location.type === 'mineral' && (
-                    <div className="text-xs text-blue-400 mt-1">💎 Minerals</div>
+                    <div className="text-xs text-blue-400 mt-1"><GemIcon className="text-blue-400" /> Minerals</div>
                   )}
                   {location.type === 'gem' && (
-                    <div className="text-xs text-purple-400 mt-1">✨ Gems</div>
+                    <div className="text-xs text-purple-400 mt-1"><GemIcon className="text-purple-400" /> Gems</div>
                   )}
                 </button>
                 

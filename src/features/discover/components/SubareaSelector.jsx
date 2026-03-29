@@ -1,6 +1,8 @@
 import { useGame, SELECT_LOCATION, SELECT_AREA } from '../../../context/GameContext';
 import { LOOT_TABLES } from '../../../data/lootTables';
 import { getItemById } from '../../../data/items';
+import { GemIcon } from '../../../shared/components/ItemIcons';
+import { FaArrowLeft } from 'react-icons/fa';
 
 function DifficultyStars({ difficulty }) {
   return (
@@ -43,7 +45,7 @@ function AreaItemPreview({ items }) {
         const data = getItemById(item.id);
         return (
           <span key={`gem-${idx}`} className="text-xs px-1.5 py-0.5 bg-purple-900/50 text-purple-300 rounded">
-            ✨ {data?.name || item.id}
+            <GemIcon className="text-purple-400 text-sm" /> {data?.name || item.id}
           </span>
         );
       })}
@@ -51,7 +53,7 @@ function AreaItemPreview({ items }) {
         const data = getItemById(item.id);
         return (
           <span key={`mineral-${idx}`} className="text-xs px-1.5 py-0.5 bg-blue-900/50 text-blue-300 rounded">
-            💎 {data?.name || item.id}
+            <GemIcon className="text-blue-400 text-sm" /> {data?.name || item.id}
           </span>
         );
       })}
@@ -83,7 +85,7 @@ export function SubareaSelector() {
           className="px-4 py-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
           onClick={() => dispatch({ type: SELECT_LOCATION, payload: null })}
         >
-          ← Locations
+          <FaArrowLeft /> Locations
         </button>
       </div>
 
@@ -94,9 +96,9 @@ export function SubareaSelector() {
           location.type === 'mineral' ? 'bg-blue-900/50 text-blue-300' :
           'bg-slate-700 text-slate-300'
         }`}>
-          {location.type === 'gem' && '✨ Gems Only'}
-          {location.type === 'mineral' && '💎 Minerals Only'}
-          {location.type === 'mixed' && '🔮 Mixed (Gems & Minerals)'}
+          {location.type === 'gem' && <><GemIcon className="text-purple-400" /> Gems Only</>}
+          {location.type === 'mineral' && <><GemIcon className="text-blue-400" /> Minerals Only</>}
+          {location.type === 'mixed' && <><GemIcon className="text-amber-400" /> Mixed (Gems & Minerals)</>}
         </span>
       </div>
 
@@ -129,10 +131,10 @@ export function SubareaSelector() {
                 {/* Gem/Mineral breakdown */}
                 <div className="flex gap-3 text-xs mb-1">
                   {gemCount > 0 && (
-                    <span className="text-purple-400">✨ {gemCount} gem{gemCount !== 1 ? 's' : ''}</span>
+                    <span className="text-purple-400"><GemIcon className="text-purple-400 text-xs" /> {gemCount} gem{gemCount !== 1 ? 's' : ''}</span>
                   )}
                   {mineralCount > 0 && (
-                    <span className="text-blue-400">💎 {mineralCount} mineral{mineralCount !== 1 ? 's' : ''}</span>
+                    <span className="text-blue-400"><GemIcon className="text-blue-400 text-xs" /> {mineralCount} mineral{mineralCount !== 1 ? 's' : ''}</span>
                   )}
                 </div>
                 
