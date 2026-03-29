@@ -125,7 +125,7 @@ export default function Discover() {
         /* Panning Tab Content */
         <div className="flex flex-col items-center gap-6 max-w-xl mx-auto w-full">
           <section className="bg-slate-800 rounded-xl p-8 flex flex-col items-center gap-6 shadow-md w-full">
-            <h3 className="text-2xl text-white m-0">🔍 Panning</h3>
+            <h3 className="text-2xl text-white m-0 flex items-center gap-2"><FaMapMarkedAlt /> Panning</h3>
 
             <p className="text-slate-400 text-center m-0">
               Select a mine location to start panning for gems and Shift Points!
@@ -136,14 +136,14 @@ export default function Discover() {
                 className="w-full px-6 py-4 bg-yellow-500 text-black text-lg font-bold rounded-lg hover:bg-yellow-400 transition-colors shadow-md"
                 onClick={handleSelectLocation}
               >
-                🌍 Select Mine Location
+                <FaMapMarkedAlt /> Select Mine Location
               </button>
 
               <button
                 className="w-full px-6 py-3 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 transition-colors"
                 onClick={handleStartPanning}
               >
-                🔍 Start Panning (Quick)
+                <FaPlay /> Start Panning (Quick)
               </button>
             </div>
           </section>
@@ -153,7 +153,7 @@ export default function Discover() {
         <div className="flex flex-col gap-6 max-w-xl mx-auto w-full">
           {/* Shift Tier Section */}
           <section className="bg-slate-800 rounded-xl p-6 flex flex-col gap-4 shadow-md">
-            <h3 className="text-2xl text-white m-0">⭐ Shift Tier: {currentTier.label}</h3>
+            <h3 className="text-2xl text-white m-0 flex items-center gap-2"><FaStar /> Shift Tier: {currentTier.label}</h3>
             
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-3">

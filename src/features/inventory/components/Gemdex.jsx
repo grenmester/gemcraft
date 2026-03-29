@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useGame, GAME_PHASES, SET_PHASE } from '../../../context/GameContext';
 import { useInventory } from '../hooks/useInventory';
 import { getItems, getItemById } from '../../../data/items';
-import { FaSearch, FaArrowLeft } from 'react-icons/fa';
+import { FaSearch, FaArrowLeft, FaMapMarkedAlt } from 'react-icons/fa';
 import { GemIcon, MineralIcon } from '../../../shared/components/ItemIcons';
 
 // Rarity display configuration
@@ -417,7 +417,7 @@ export default function Gemdex() {
 
             {/* Real World Locations */}
             <div className="mb-6">
-              <h4 className="font-serif m-0 mb-2 text-sm text-amber-700">🌍 Real World Locations</h4>
+              <h4 className="font-serif m-0 mb-2 text-sm text-amber-700 flex items-center gap-1"><FaMapMarkedAlt /> Real World Locations</h4>
               <div className="flex flex-wrap gap-2">
                 {selectedItem.realWorldLocations.map((loc, idx) => (
                   <span

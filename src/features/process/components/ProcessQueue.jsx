@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react';
 import { useProcess } from '../hooks/useProcess';
 import { getRemainingTime, isQueueProcessComplete } from '../../../shared/utils/queueProcessing';
 import itemsData from '../../../data/items.json';
+import { GemIcon, MineralIcon } from '../../../shared/components/ItemIcons';
+import { FaStar } from 'react-icons/fa';
 
 /**
  * Format milliseconds to human-readable time
@@ -33,40 +35,20 @@ function formatTime(ms) {
 function getItemInfo(itemId) {
   const item = itemsData.items.find(i => i.id === itemId);
   if (!item) {
-    return { name: itemId, icon: '❓', category: 'Unknown', rarity: 'Common' };
+    return { name: itemId, IconComponent: GemIcon, category: 'Unknown', rarity: 'Common' };
   }
   
-  const icon = getItemIcon(item.category, item.rarity);
+  const IconComponent = item.category === 'Mineral' ? MineralIcon : GemIcon;
   return {
     name: item.name,
-    icon,
+    IconComponent,
     category: item.category,
     rarity: item.rarity
   };
 }
 
 /**
- * Get emoji icon based on item category and rarity
- */
-function getItemIcon(category, rarity) {
-  if (category === 'Mineral') {
-    return '🪨';
-  }
-  
-  // Gems get different icons based on rarity
-  const rarityEmojis = {
-    Common: '💎',
-    Uncommon: '💎',
-    Rare: '💠',
-    Epic: '💜',
-    Legendary: '⭐'
-  };
-  
-  return rarityEmojis[rarity] || '💎';
-}
-
-/**
- * Get rarity color for styling
+ * Get rarity color for styling (no emojis needed)
  */
 function getRarityColor(rarity) {
   const colors = {
@@ -179,7 +161,7 @@ export default function ProcessQueue() {
                       className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl"
                       style={{ backgroundColor: `${getRarityColor(itemInfo.rarity)}20` }}
                     >
-                      {itemInfo.icon}
+                      <itemInfo.IconComponent className="text-2xl text-cyan-400" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
@@ -310,7 +292,7 @@ export default function ProcessQueue() {
                       onClick={() => setSelectedItem(item)}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-xl">{info.icon}</span>
+                        <info.IconComponent className="text-xl text-cyan-400" />
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold text-sm truncate">{info.name}</div>
                           <div className="text-xs text-slate-400">×{item.quantity}</div>
@@ -328,16 +310,16 @@ export default function ProcessQueue() {
                 <label className="block text-sm text-slate-400 mb-2">Process Type</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { id: 'cleaning', name: 'Cleaning', time: '5-15m', icon: '🧹' },
-                    { id: 'cutting', name: 'Cutting', time: '15-45m', icon: '✂️' },
-                    { id: 'faceting', name: 'Faceting', time: '30-90m', icon: '💎' }
+                    { id: 'cleaning', name: 'Cleaning', time: '5-15m' },
+                    { id: 'cutting', name: 'Cutting', time: '15-45m' },
+                    { id: 'faceting', name: 'Faceting', time: '30-90m' }
                   ].map(type => (
                     <button
                       key={type.id}
                       className="p-3 rounded-lg border border-slate-600 bg-slate-700/50 hover:border-cyan-400 transition-colors text-center"
                       onClick={() => handleAddToQueue(type.id)}
                     >
-                      <div className="text-2xl mb-1">{type.icon}</div>
+                      <GemIcon className="text-2xl mb-1 text-cyan-400" />
                       <div className="font-semibold text-sm">{type.name}</div>
                       <div className="text-xs text-slate-400">{type.time}</div>
                     </button>

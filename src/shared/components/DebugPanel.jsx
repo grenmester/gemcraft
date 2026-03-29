@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import itemsData from '../../data/items.json';
 import { PROCESS_EQUIPMENT } from '../../data/processEquipment.js';
-import { FaGem } from 'react-icons/fa';
+import { FaGem, FaBook } from 'react-icons/fa';
 
 export const DEBUG_KEY = 'debug_mode';
 
@@ -73,8 +73,8 @@ export default function DebugPanel() {
             <h4 className="m-0 mb-2 text-xs uppercase tracking-wide text-gray-400">Current Stats</h4>
             <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
               <span className="whitespace-nowrap"><FaGem className="inline" /> {state.player.coins?.toLocaleString() || 0}</span>
-              <span className="whitespace-nowrap">📦 Gems: {state.player.gems?.length || 0}</span>
-              <span className="whitespace-nowrap">📖 Gemdex: {state.player.gemdex?.length || 0}/{itemsData.items.filter(item => item.category === 'Gem').length}</span>
+              <span className="whitespace-nowrap flex items-center gap-1"><FaGem className="text-xs" /> Gems: {state.player.gems?.length || 0}</span>
+              <span className="whitespace-nowrap"><FaBook /> Gemdex: {state.player.gemdex?.length || 0}/{itemsData.items.filter(item => item.category === 'Gem').length}</span>
             </div>
           </div>
 
