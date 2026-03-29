@@ -5,7 +5,7 @@
 
 import { useCallback } from 'react';
 import { useGame, QUEUE_ITEM, COLLECT_QUEUE_ITEM, CANCEL_QUEUE_ITEM } from '../../../context/GameContext';
-import { calculateProcessingTime } from '../utils/queueProcessing';
+import { calculateProcessingTime } from '../../../shared/utils/queueProcessing';
 
 export function useProcess() {
   const { state, dispatch } = useGame();
