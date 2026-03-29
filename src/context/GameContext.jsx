@@ -5,6 +5,7 @@ import gemsData from '../data/gems.json';
 
 import { GAME_PHASES } from '../constants.js';
 import { EQUIPMENT } from '../data/equipment.js';
+import { PROCESS_EQUIPMENT } from '../data/processEquipment.js';
 import { LOCATION_TIERS } from '../data/locations.js';
 import { removeItemFromInventory, addItemToInventory } from './inventoryHelpers.js';
 
@@ -43,6 +44,10 @@ export const UNLOCK_QUEUE_SLOT = 'UNLOCK_QUEUE_SLOT';
 
 // Zone actions
 export const UNLOCK_ZONE = 'UNLOCK_ZONE';
+
+// Process equipment actions
+export const BUY_PROCESS_EQUIPMENT = 'BUY_PROCESS_EQUIPMENT';
+export const EQUIP_PROCESS_TOOL = 'EQUIP_PROCESS_TOOL';
 
 // Discover state actions
 export const SET_DISCOVER_TAB = 'SET_DISCOVER_TAB';
@@ -692,6 +697,53 @@ case UNLOCK_ZONE: {
         processState: {
           ...state.processState,
           queueSlots: state.processState.queueSlots + amount
+        }
+      };
+    }
+
+    case BUY_PROCESS_EQUIPMENT: {
+      const equipmentId = action.payload;
+      const eq = PROCESS_EQUIPMENT[equipmentId];
+      if (!eq) return state;
+      const cost = eq.cost;
+      if (state.player.coins < cost) return state;
+      
+      const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], processEquipment: [], currency: { coins: 0 } };
+      const processEquipment = [...(inv.processEquipment || [])];
+      
+      if (!processEquipment.includes(equipmentId)) {
+        processEquipment.push(equipmentId);
+      }
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          coins: state.player.coins - cost,
+          inventory: {
+            ...inv,
+            processEquipment
+          }
+        }
+      };
+    }
+
+    case EQUIP_PROCESS_TOOL: {
+      const { processType, equipmentId } = action.payload;
+      const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], processEquipment: [], currency: { coins: 0 } };
+      const equippedTools = state.player.equippedTools || {};
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          inventory: {
+            ...inv
+          },
+          equippedTools: {
+            ...equippedTools,
+            [processType]: equipmentId
+          }
         }
       };
     }

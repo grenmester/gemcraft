@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import gemsData from '../../data/gems.json';
+import { PROCESS_EQUIPMENT } from '../../data/processEquipment.js';
 
 export const DEBUG_KEY = 'debug_mode';
 
@@ -43,6 +44,11 @@ export default function DebugPanel() {
 
   const handleUnlockAllLocations = () => {
     dispatch({ type: 'DEBUG_UNLOCK_ALL_LOCATIONS' });
+    // Also give all process equipment for testing
+    const allProcessEquipmentIds = Object.keys(PROCESS_EQUIPMENT);
+    allProcessEquipmentIds.forEach(eqId => {
+      dispatch({ type: 'BUY_PROCESS_EQUIPMENT', payload: eqId });
+    });
   };
 
   const handleMaxInventory = () => {

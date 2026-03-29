@@ -9,7 +9,7 @@ export class Player {
     pathProgress = 0,
     shiftPoints = 0,
     calibrationMultiplier = 1.0,
-    inventory = { minerals: [], gems: [], equipment: [], currency: { coins: 100 } },
+    inventory = { minerals: [], gems: [], equipment: [], processEquipment: [], currency: { coins: 100 } },
     locationProgress = {},
     highScores = {},
     processState = {
