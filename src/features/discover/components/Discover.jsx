@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useGame, GAME_PHASES } from '../../../context/GameContext';
 import { useDiscover } from '../hooks/useDiscover';
 import { Gem } from '../../../models/Gem';
-import gemsData from '../../../data/gems.json';
+import { getGems } from '../../../data/items';
+import { FaClock, FaSearch, FaGem, FaBriefcase, FaArrowLeft, FaStar, FaHourglassHalf } from 'react-icons/fa';
 
 const SHIFT_TIERS = [
   { threshold: 0, rate: 0, label: 'No Idle Collection', color: '#666' },
@@ -45,14 +46,14 @@ export default function Discover() {
   }, [currentTier.rate, inventoryCapacity]);
 
   const generateRandomGem = () => {
-    const gems = gemsData.gems;
+    const gems = getGems();
     const randomIndex = Math.floor(Math.random() * gems.length);
     const gemData = gems[randomIndex];
     return new Gem({
       id: `${gemData.id}_idle_${Date.now()}`,
       name: gemData.name,
       mohs: gemData.hardness || 7,
-      color: gemData.type || '#888',
+      color: '#888',
       facts: [],
       values: [gemData.value || 10]
     });
@@ -90,11 +91,11 @@ export default function Discover() {
         </h2>
         <div className="flex gap-6">
           <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-lg">
-            <span className="text-xl">💎</span>
+            <FaGem className="text-xl text-yellow-400" />
             <span className="text-lg font-bold text-yellow-500">{coins}</span>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-lg">
-            <span className="text-xl">🎒</span>
+            <FaBriefcase className="text-xl text-yellow-400" />
             <span className="text-lg font-bold text-yellow-500">{inventoryCount}/{inventoryCapacity}</span>
           </div>
         </div>
@@ -103,24 +104,24 @@ export default function Discover() {
       {/* Tab Buttons */}
       <div className="flex gap-2 mb-2">
         <button 
-          className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+          className={`px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
             activeTab === 'idle' 
               ? 'bg-yellow-500 text-black' 
               : 'bg-slate-700 text-slate-300'
           }`}
           onClick={() => setActiveTab('idle')}
         >
-          ⏰ Idle
+          <FaHourglassHalf /> Idle
         </button>
         <button 
-          className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+          className={`px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
             activeTab === 'panning' 
               ? 'bg-yellow-500 text-black' 
               : 'bg-slate-700 text-slate-300'
           }`}
           onClick={() => setActiveTab('panning')}
         >
-          🔍 Panning
+          <FaSearch /> Panning
         </button>
       </div>
 

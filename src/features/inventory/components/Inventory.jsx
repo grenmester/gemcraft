@@ -3,11 +3,12 @@ import { useGame, SET_PHASE, GAME_PHASES } from '../../../context/GameContext';
 import { useInventory } from '../hooks/useInventory';
 import itemsData from '../../../data/items.json';
 import { EQUIPMENT } from '../../../data/equipment.js';
+import { FaGem, FaMountain, FaShieldAlt, FaBackspace } from 'react-icons/fa';
 
 const TABS = [
-  { id: 'gems', label: 'Gems', icon: '💎' },
-  { id: 'minerals', label: 'Minerals', icon: '🪨' },
-  { id: 'equipment', label: 'Equipment', icon: '⚔️' }
+  { id: 'gems', label: 'Gems', Icon: FaGem },
+  { id: 'minerals', label: 'Minerals', Icon: FaMountain },
+  { id: 'equipment', label: 'Equipment', Icon: FaShieldAlt }
 ];
 
 const SORT_OPTIONS = [
@@ -42,7 +43,7 @@ export default function Inventory() {
           owned: isOwned,
           unlockLevel: eq.unlockLevel,
           cost: eq.cost,
-          icon: '⚔️'
+          Icon: FaShieldAlt
         };
       });
     }
@@ -59,7 +60,7 @@ export default function Inventory() {
 
     return invItems.map(invItem => {
       const itemData = itemsData.items.find(item => item.id === invItem.gemId);
-      const icon = itemData?.category === 'Gem' ? '💎' : '🪨';
+      const Icon = itemData?.category === 'Gem' ? FaGem : FaMountain;
       return {
         id: invItem.gemId,
         gemId: invItem.gemId,
@@ -69,7 +70,7 @@ export default function Inventory() {
         hardness: itemData?.hardness || 0,
         rarity: itemData?.rarity || 'Unknown',
         category: itemData?.category || 'Unknown',
-        icon
+        Icon
       };
     });
   }, [activeTab, inventory, playerLevel]);
@@ -102,27 +103,33 @@ export default function Inventory() {
   return (
     <div className="flex-1 flex flex-col items-center p-4 md:p-6 w-full max-w-3xl mx-auto">
       <div className="flex justify-between items-center w-full mb-6">
-        <button className="bg-slate-700 text-white font-semibold px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors" onClick={handleBack}>← Back</button>
+        <button className="flex items-center gap-2 bg-slate-700 text-white font-semibold px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors" onClick={handleBack}>
+          <FaBackspace className="text-sm" />
+          <span>Back</span>
+        </button>
         <h2 className="text-xl md:text-2xl font-bold text-yellow-400 m-0">INVENTORY</h2>
         <div style={{ width: 80 }} />
       </div>
       
       <div className="flex flex-wrap gap-2 mb-6 w-full">
-        {TABS.map(tab => (
-          <button
-            key={tab.id}
-            className={`
-              flex items-center gap-1 px-3 md:px-4 py-2 rounded-lg border-2 border-transparent cursor-pointer transition-all
-              ${activeTab === tab.id 
-                ? 'bg-yellow-400 text-slate-900 border-yellow-400' 
-                : 'bg-slate-700 text-gray-400 hover:bg-slate-600'}
-            `}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            <span className="text-lg">{tab.icon}</span>
-            <span className="hidden sm:inline">{tab.label}</span>
-          </button>
-        ))}
+        {TABS.map(tab => {
+          const Icon = tab.Icon;
+          return (
+            <button
+              key={tab.id}
+              className={`
+                flex items-center gap-1 px-3 md:px-4 py-2 rounded-lg border-2 border-transparent cursor-pointer transition-all
+                ${activeTab === tab.id 
+                  ? 'bg-yellow-400 text-slate-900 border-yellow-400' 
+                  : 'bg-slate-700 text-gray-400 hover:bg-slate-600'}
+              `}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <Icon className="text-lg" />
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
       
       <div className="flex gap-4 mb-6 w-full sm:flex-row flex-col">
@@ -147,35 +154,46 @@ export default function Inventory() {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 w-full">
         {filteredItems.length === 0 ? (
           <div className="col-span-full text-center py-12 px-4">
-            <div className="text-4xl mb-3">{TABS.find(t => t.id === activeTab)?.icon}</div>
+            <div className="flex justify-center mb-3">
+              {(() => {
+                const tab = TABS.find(t => t.id === activeTab);
+                const Icon = tab?.Icon;
+                return Icon ? <Icon className="text-4xl" /> : null;
+              })()}
+            </div>
             <p className="text-gray-400 text-sm">{EMPTY_STATE_MESSAGES[activeTab]}</p>
           </div>
         ) : (
-          filteredItems.map(item => (
-            <div
-              key={item.id}
-              className={`
-                bg-slate-800 border-2 border-slate-700 rounded-lg p-3 text-center transition-all hover:border-yellow-400 hover:scale-105
-                ${activeTab === 'equipment' && !item.owned ? 'opacity-50' : ''}
-              `}
-            >
-              <div className="text-3xl mb-2">
-                {item.icon}
-              </div>
-              <div className="font-semibold mb-1 text-sm">{item.name}</div>
-              {activeTab !== 'equipment' && (
-                <>
-                  <div className="text-sm text-teal-400">x{item.quantity}</div>
-                  <div className="text-xs text-yellow-400">{item.value}💎</div>
-                </>
-              )}
-              {activeTab === 'equipment' && (
-                <div className={`text-xs ${item.owned ? 'text-teal-400' : 'text-gray-400'}`}>
-                  {item.owned ? '✓ Owned' : `Level ${item.unlockLevel}`}
+          filteredItems.map(item => {
+            const ItemIcon = item.Icon;
+            return (
+              <div
+                key={item.id}
+                className={`
+                  bg-slate-800 border-2 border-slate-700 rounded-lg p-3 text-center transition-all hover:border-yellow-400 hover:scale-105
+                  ${activeTab === 'equipment' && !item.owned ? 'opacity-50' : ''}
+                `}
+              >
+                <div className="flex justify-center mb-2">
+                  <ItemIcon className="text-3xl text-cyan-400" />
                 </div>
-              )}
-            </div>
-          ))
+                <div className="font-semibold mb-1 text-sm">{item.name}</div>
+                {activeTab !== 'equipment' && (
+                  <>
+                    <div className="text-sm text-teal-400">x{item.quantity}</div>
+                    <div className="text-xs text-yellow-400 flex items-center justify-center gap-1">
+                      {item.value} <FaGem className="text-xs" />
+                    </div>
+                  </>
+                )}
+                {activeTab === 'equipment' && (
+                  <div className={`text-xs ${item.owned ? 'text-teal-400' : 'text-gray-400'}`}>
+                    {item.owned ? '✓ Owned' : `Level ${item.unlockLevel}`}
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
     </div>
