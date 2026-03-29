@@ -3,7 +3,7 @@ import { useGame, GAME_PHASES } from '../../../context/GameContext';
 import { useDiscover } from '../hooks/useDiscover';
 import { Gem } from '../../../models/Gem';
 import { getGems } from '../../../data/items';
-import { FaClock, FaSearch, FaGem, FaBriefcase, FaArrowLeft, FaStar, FaHourglassHalf } from 'react-icons/fa';
+import { FaClock, FaMapMarkedAlt, FaGem, FaBriefcase, FaArrowLeft, FaStar, FaHourglassHalf } from 'react-icons/fa';
 
 const SHIFT_TIERS = [
   { threshold: 0, rate: 0, label: 'No Idle Collection', color: '#666' },
@@ -80,53 +80,75 @@ export default function Discover() {
     dispatch({ type: 'SELECT_LOCATION', payload: null });
   };
 
-  const activeTab = discoverState?.activeTab || 'idle';
+  const activeTab = discoverState?.activeTab || 'panning';
 
   return (
     <div className="flex flex-col gap-8 pt-4 h-full">
       {/* Header */}
-      <div className="w-full flex justify-between items-center">
-        <h2 className="text-4xl font-bold text-yellow-500 m-0 text-glow-yellow">
-          Discover
-        </h2>
-        <div className="flex gap-6">
-          <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-lg">
-            <FaGem className="text-xl text-yellow-400" />
-            <span className="text-lg font-bold text-yellow-500">{coins}</span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-lg">
-            <FaBriefcase className="text-xl text-yellow-400" />
-            <span className="text-lg font-bold text-yellow-500">{inventoryCount}/{inventoryCapacity}</span>
-          </div>
-        </div>
+      <div className="flex items-center justify-between mb-6">
+        <button
+          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+          onClick={handleBack}
+        >
+          <FaArrowLeft /> Menu
+        </button>
+        <h2 className="text-2xl text-yellow-400 font-bold">Discover</h2>
+        <div className="w-16" />
       </div>
 
       {/* Tab Buttons */}
       <div className="flex gap-2 mb-2">
-        <button 
+        <button
           className={`px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
-            activeTab === 'idle' 
-              ? 'bg-yellow-500 text-black' 
+            activeTab === 'panning'
+              ? 'bg-yellow-500 text-black'
+              : 'bg-slate-700 text-slate-300'
+          }`}
+          onClick={() => setActiveTab('panning')}
+        >
+          <FaMapMarkedAlt /> Panning
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
+            activeTab === 'idle'
+              ? 'bg-yellow-500 text-black'
               : 'bg-slate-700 text-slate-300'
           }`}
           onClick={() => setActiveTab('idle')}
         >
           <FaHourglassHalf /> Idle
         </button>
-        <button 
-          className={`px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
-            activeTab === 'panning' 
-              ? 'bg-yellow-500 text-black' 
-              : 'bg-slate-700 text-slate-300'
-          }`}
-          onClick={() => setActiveTab('panning')}
-        >
-          <FaSearch /> Panning
-        </button>
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'idle' ? (
+      {activeTab === 'panning' ? (
+        /* Panning Tab Content */
+        <div className="flex flex-col items-center gap-6 max-w-xl mx-auto w-full">
+          <section className="bg-slate-800 rounded-xl p-8 flex flex-col items-center gap-6 shadow-md w-full">
+            <h3 className="text-2xl text-white m-0">🔍 Panning</h3>
+
+            <p className="text-slate-400 text-center m-0">
+              Select a mine location to start panning for gems and Shift Points!
+            </p>
+
+            <div className="flex flex-col gap-3 w-full">
+              <button
+                className="w-full px-6 py-4 bg-yellow-500 text-black text-lg font-bold rounded-lg hover:bg-yellow-400 transition-colors shadow-md"
+                onClick={handleSelectLocation}
+              >
+                🌍 Select Mine Location
+              </button>
+
+              <button
+                className="w-full px-6 py-3 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 transition-colors"
+                onClick={handleStartPanning}
+              >
+                🔍 Start Panning (Quick)
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : (
         /* Idle Tab Content */
         <div className="flex flex-col gap-6 max-w-xl mx-auto w-full">
           {/* Shift Tier Section */}
@@ -183,49 +205,6 @@ export default function Discover() {
               </div>
             </section>
           )}
-
-          {/* Back Button */}
-          <button 
-            className="px-6 py-3 bg-slate-700 text-slate-300 font-semibold rounded-lg hover:bg-slate-600 transition-colors"
-            onClick={handleBack}
-          >
-            ← Back to Menu
-          </button>
-        </div>
-      ) : (
-        /* Panning Tab Content */
-        <div className="flex flex-col items-center gap-6 max-w-xl mx-auto w-full">
-          <section className="bg-slate-800 rounded-xl p-8 flex flex-col items-center gap-6 shadow-md w-full">
-            <h3 className="text-2xl text-white m-0">🔍 Panning</h3>
-            
-            <p className="text-slate-400 text-center m-0">
-              Select a mine location to start panning for gems and Shift Points!
-            </p>
-            
-            <div className="flex flex-col gap-3 w-full">
-              <button 
-                className="w-full px-6 py-4 bg-yellow-500 text-black text-lg font-bold rounded-lg hover:bg-yellow-400 transition-colors shadow-md"
-                onClick={handleSelectLocation}
-              >
-                🌍 Select Mine Location
-              </button>
-              
-              <button 
-                className="w-full px-6 py-3 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 transition-colors"
-                onClick={handleStartPanning}
-              >
-                🔍 Start Panning (Quick)
-              </button>
-            </div>
-          </section>
-
-          {/* Back Button */}
-          <button 
-            className="px-6 py-3 bg-slate-700 text-slate-300 font-semibold rounded-lg hover:bg-slate-600 transition-colors"
-            onClick={handleBack}
-          >
-            ← Back to Menu
-          </button>
         </div>
       )}
     </div>
