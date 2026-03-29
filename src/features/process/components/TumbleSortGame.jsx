@@ -39,7 +39,6 @@ export default function TumbleSortGame({ item, onComplete }) {
     missedGems: 0,
   });
   const [tumblingItems, setTumblingItems] = useState([]);
-  const [barrelRotation, setBarrelRotation] = useState(0);
   
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -47,6 +46,7 @@ export default function TumbleSortGame({ item, onComplete }) {
   const itemsRef = useRef([]);
   const startTimeRef = useRef(Date.now());
   const cleanZoneRef = useRef({ x: 0, y: 0, width: CLEAN_ZONE_WIDTH, height: 100 });
+  const rotationRef = useRef(0);
   
   const totalGems = GEM_COUNT;
 
@@ -328,11 +328,11 @@ export default function TumbleSortGame({ item, onComplete }) {
         return;
       }
       
-      // Update barrel rotation
-      setBarrelRotation(prev => prev + 1.5);
+      // Update barrel rotation using ref to avoid stale closure
+      rotationRef.current += 1.5;
       
-      // Update physics
-      const updatedItems = updatePhysics(itemsRef.current, deltaTime, barrelRotation);
+      // Update physics using ref value
+      const updatedItems = updatePhysics(itemsRef.current, deltaTime, rotationRef.current);
       itemsRef.current = updatedItems;
       setTumblingItems(updatedItems);
       
@@ -355,7 +355,7 @@ export default function TumbleSortGame({ item, onComplete }) {
         cancelAnimationFrame(animationId);
       }
     };
-  }, [gameState, initializeItems, updatePhysics, endGame, barrelRotation]);
+  }, [gameState, initializeItems, updatePhysics, endGame]);
 
   // Draw the game
   useEffect(() => {
@@ -388,7 +388,7 @@ export default function TumbleSortGame({ item, onComplete }) {
     ctx.clip();
     
     for (let i = 0; i < 8; i++) {
-      const angle = (barrelRotation + i * 45) * Math.PI / 180;
+      const angle = (rotationRef.current + i * 45) * Math.PI / 180;
       const x1 = 260 + Math.cos(angle) * 20;
       const y1 = 200 + Math.sin(angle) * 20;
       const x2 = 260 + Math.cos(angle) * 200;
@@ -484,7 +484,7 @@ export default function TumbleSortGame({ item, onComplete }) {
     
     ctx.restore();
     
-  }, [tumblingItems, barrelRotation]);
+  }, [tumblingItems]);
 
   const handlePlayAgain = () => {
     setGameState('playing');
