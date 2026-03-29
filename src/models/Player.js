@@ -11,7 +11,18 @@ export class Player {
     calibrationMultiplier = 1.0,
     inventory = { minerals: [], gems: [], equipment: [], currency: { coins: 100 } },
     locationProgress = {},
-    highScores = {}
+    highScores = {},
+    processState = {
+      activeProcess: null,
+      queue: [],
+      queueSlots: 2,
+      completedQueue: [],
+      processingStats: {
+        totalProcessed: 0,
+        masterworksCreated: 0,
+        bestQuality: 0,
+      }
+    }
   } = {}) {
     this.coins = coins;
     this.level = level;
@@ -23,6 +34,7 @@ export class Player {
     this.inventory = inventory;
     this.locationProgress = locationProgress;
     this.highScores = highScores;
+    this.processState = processState;
   }
 
   addGem(gemData) {
@@ -54,7 +66,8 @@ export class Player {
       calibrationMultiplier: this.calibrationMultiplier,
       inventory: this.inventory,
       locationProgress: this.locationProgress,
-      highScores: this.highScores
+      highScores: this.highScores,
+      processState: this.processState
     };
   }
 }

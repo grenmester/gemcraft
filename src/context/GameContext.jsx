@@ -29,6 +29,17 @@ export const REMOVE_MINERAL = 'REMOVE_MINERAL';
 // Equipment actions
 export const ADD_EQUIPMENT = 'ADD_EQUIPMENT';
 
+// Process actions
+export const START_ACTIVE_PROCESS = 'START_ACTIVE_PROCESS';
+export const COMPLETE_ACTIVE_PROCESS = 'COMPLETE_ACTIVE_PROCESS';
+export const QUEUE_ITEM = 'QUEUE_ITEM';
+export const START_QUEUE_PROCESS = 'START_QUEUE_PROCESS';
+export const COMPLETE_QUEUE_PROCESS = 'COMPLETE_QUEUE_PROCESS';
+export const COLLECT_QUEUE_ITEM = 'COLLECT_QUEUE_ITEM';
+export const CANCEL_QUEUE_ITEM = 'CANCEL_QUEUE_ITEM';
+export const UPDATE_PROCESS_STATS = 'UPDATE_PROCESS_STATS';
+export const UNLOCK_QUEUE_SLOT = 'UNLOCK_QUEUE_SLOT';
+
 // Zone actions
 export const UNLOCK_ZONE = 'UNLOCK_ZONE';
 
@@ -46,19 +57,30 @@ const MIGRATION_VERSION = 4;
 
 const initialPlayer = new Player();
 
-const initialState = {
-  player: initialPlayer.toJSON(),
-  migrationVersion: MIGRATION_VERSION,
-  phase: GAME_PHASES.MENU,
-  activeMinigame: null,
-  discoverState: {
-    activeTab: 'idle',       // 'idle' | 'panning'
-    selectedLocation: null,  // 'TIER_1' | 'TIER_1_B' | ... | null
-    selectedArea: null,      // 'area_1' | 'area_2' | 'area_3' | null
-    lastRewards: null        // { coins, gems } | null
-  },
-  unlockedZones: [] // Array of location tier keys player can access
-};
+ const initialState = {
+   player: initialPlayer.toJSON(),
+   migrationVersion: MIGRATION_VERSION,
+   phase: GAME_PHASES.MENU,
+   activeMinigame: null,
+   discoverState: {
+     activeTab: 'idle',       // 'idle' | 'panning'
+     selectedLocation: null,  // 'TIER_1' | 'TIER_1_B' | ... | null
+     selectedArea: null,      // 'area_1' | 'area_2' | 'area_3' | null
+     lastRewards: null        // { coins, gems } | null
+   },
+   unlockedZones: [], // Array of location tier keys player can access
+   processState: {
+     activeProcess: null,        // { itemId, processType, startTime, quality }
+     queue: [],                  // [{ itemId, processType, startTime, estimatedCompletion }]
+     queueSlots: 2,              // Unlocked queue slots (level unlocks more)
+     completedQueue: [],         // Finished items waiting for collection
+     processingStats: {
+       totalProcessed: 0,
+       masterworksCreated: 0,
+       bestQuality: 0,
+     }
+   }
+ };
 
 function migrateState(state) {
   let migrated = { ...state };
@@ -448,19 +470,329 @@ case UNLOCK_ZONE: {
         }
       };
 
-    case CLEAR_DISCOVER_SELECTION:
+     case CLEAR_DISCOVER_SELECTION:
+       return {
+         ...state,
+         discoverState: {
+           activeTab: 'idle',
+           selectedLocation: null,
+           selectedArea: null,
+           lastRewards: null
+         }
+       };
+
+    // Process actions
+    case START_ACTIVE_PROCESS: {
+      const { itemId, processType, quality = 0 } = action.payload || {};
+      // Remove from inventory
+      const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+      const minerals = [...(inv.minerals || [])];
+      const gems = [...(inv.gems || [])];
+      
+      let removed = false;
+      const mineralIndex = minerals.findIndex(m => m.id === itemId);
+      if (mineralIndex >= 0) {
+        const mineral = minerals[mineralIndex];
+        const newQty = mineral.quantity - 1;
+        if (newQty <= 0) {
+          minerals.splice(mineralIndex, 1);
+        } else {
+          minerals[mineralIndex] = { ...mineral, quantity: newQty };
+        }
+        removed = true;
+      } else {
+        const gemIndex = gems.findIndex(g => g.gemId === itemId);
+        if (gemIndex >= 0) {
+          const gem = gems[gemIndex];
+          const newQty = gem.quantity - 1;
+          if (newQty <= 0) {
+            gems.splice(gemIndex, 1);
+          } else {
+            gems[gemIndex] = { ...gem, quantity: newQty };
+          }
+          removed = true;
+        }
+      }
+      
+      if (!removed) return state;
+      
       return {
         ...state,
-        discoverState: {
-          activeTab: 'idle',
-          selectedLocation: null,
-          selectedArea: null,
-          lastRewards: null
+        player: {
+          ...state.player,
+          inventory: {
+            ...inv,
+            minerals,
+            gems
+          }
+        },
+        processState: {
+          ...state.processState,
+          activeProcess: { itemId, processType, startTime: Date.now(), quality }
         }
       };
+    }
+
+    case COMPLETE_ACTIVE_PROCESS: {
+      const active = state.processState.activeProcess;
+      if (!active) return state;
+      
+      const { quality = active.quality || 0 } = action.payload || {};
+      const { itemId } = active;
+      
+      const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+      const minerals = [...(inv.minerals || [])];
+      const gems = [...(inv.gems || [])];
+      
+      const mineralIndex = minerals.findIndex(m => m.id === itemId);
+      if (mineralIndex >= 0) {
+        const mineral = minerals[mineralIndex];
+        minerals[mineralIndex] = { ...mineral, quantity: mineral.quantity + 1 };
+      } else {
+        const gemIndex = gems.findIndex(g => g.gemId === itemId);
+        if (gemIndex >= 0) {
+          const gem = gems[gemIndex];
+          gems[gemIndex] = { ...gem, quantity: gem.quantity + 1 };
+        } else {
+          gems.push({ gemId: itemId, quantity: 1 });
+        }
+      }
+      
+      const stats = state.processState.processingStats;
+      const newTotalProcessed = stats.totalProcessed + 1;
+      const newMasterworksCreated = quality >= 90 ? stats.masterworksCreated + 1 : stats.masterworksCreated;
+      const newBestQuality = Math.max(stats.bestQuality, quality);
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          inventory: {
+            ...inv,
+            minerals,
+            gems
+          }
+        },
+        processState: {
+          ...state.processState,
+          activeProcess: null,
+          processingStats: {
+            totalProcessed: newTotalProcessed,
+            masterworksCreated: newMasterworksCreated,
+            bestQuality: newBestQuality
+          }
+        }
+      };
+    }
+
+    case QUEUE_ITEM: {
+      const { itemId, processType, estimatedCompletion, startTime = Date.now() } = action.payload;
+      if (state.processState.queue.length >= state.processState.queueSlots) {
+        return state;
+      }
+      const newQueueItem = { itemId, processType, startTime, estimatedCompletion };
+      return {
+        ...state,
+        processState: {
+          ...state.processState,
+          queue: [...state.processState.queue, newQueueItem]
+        }
+      };
+    }
+
+    case START_QUEUE_PROCESS: {
+      const queue = state.processState.queue;
+      if (queue.length === 0) return state;
+      
+      const [next, ...rest] = queue;
+      const { itemId, processType, estimatedCompletion } = next;
+      
+      const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+      const minerals = [...(inv.minerals || [])];
+      const gems = [...(inv.gems || [])];
+      
+      let removed = false;
+      const mineralIndex = minerals.findIndex(m => m.id === itemId);
+      if (mineralIndex >= 0) {
+        const mineral = minerals[mineralIndex];
+        const newQty = mineral.quantity - 1;
+        if (newQty <= 0) {
+          minerals.splice(mineralIndex, 1);
+        } else {
+          minerals[mineralIndex] = { ...mineral, quantity: newQty };
+        }
+        removed = true;
+      } else {
+        const gemIndex = gems.findIndex(g => g.gemId === itemId);
+        if (gemIndex >= 0) {
+          const gem = gems[gemIndex];
+          const newQty = gem.quantity - 1;
+          if (newQty <= 0) {
+            gems.splice(gemIndex, 1);
+          } else {
+            gems[gemIndex] = { ...gem, quantity: newQty };
+          }
+          removed = true;
+        }
+      }
+      
+      if (!removed) return state;
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          inventory: {
+            ...inv,
+            minerals,
+            gems
+          }
+        },
+        processState: {
+          ...state.processState,
+          queue: rest,
+          activeProcess: { 
+            itemId, 
+            processType, 
+            startTime: Date.now(), 
+            estimatedCompletion,
+            quality: 0
+          }
+        }
+      };
+    }
+
+    case COMPLETE_QUEUE_PROCESS: {
+      const active = state.processState.activeProcess;
+      if (!active) return state;
+      return {
+        ...state,
+        processState: {
+          ...state.processState,
+          activeProcess: null,
+          completedQueue: [...state.processState.completedQueue, active]
+        }
+      };
+    }
+
+    case COLLECT_QUEUE_ITEM: {
+      const { index } = action.payload || {};
+      if (index === undefined) return state;
+      const completedQueue = state.processState.completedQueue;
+      if (index < 0 || index >= completedQueue.length) return state;
+      
+      const completed = completedQueue[index];
+      const newCompletedQueue = completedQueue.filter((_, i) => i !== index);
+      const { itemId } = completed;
+      
+      const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+      const minerals = [...(inv.minerals || [])];
+      const gems = [...(inv.gems || [])];
+      
+      const mineralIndex = minerals.findIndex(m => m.id === itemId);
+      if (mineralIndex >= 0) {
+        const mineral = minerals[mineralIndex];
+        minerals[mineralIndex] = { ...mineral, quantity: mineral.quantity + 1 };
+      } else {
+        const gemIndex = gems.findIndex(g => g.gemId === itemId);
+        if (gemIndex >= 0) {
+          const gem = gems[gemIndex];
+          gems[gemIndex] = { ...gem, quantity: gem.quantity + 1 };
+        } else {
+          gems.push({ gemId: itemId, quantity: 1 });
+        }
+      }
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          inventory: {
+            ...inv,
+            minerals,
+            gems
+          }
+        },
+        processState: {
+          ...state.processState,
+          completedQueue: newCompletedQueue
+        }
+      };
+    }
+
+    case CANCEL_QUEUE_ITEM: {
+      const { index } = action.payload || {};
+      if (index === undefined) return state;
+      const queue = state.processState.queue;
+      if (index < 0 || index >= queue.length) return state;
+      
+      const cancelled = queue[index];
+      const newQueue = queue.filter((_, i) => i !== index);
+      const { itemId } = cancelled;
+      
+      const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+      const minerals = [...(inv.minerals || [])];
+      const gems = [...(inv.gems || [])];
+      
+      const mineralIndex = minerals.findIndex(m => m.id === itemId);
+      if (mineralIndex >= 0) {
+        const mineral = minerals[mineralIndex];
+        minerals[mineralIndex] = { ...mineral, quantity: mineral.quantity + 1 };
+      } else {
+        const gemIndex = gems.findIndex(g => g.gemId === itemId);
+        if (gemIndex >= 0) {
+          const gem = gems[gemIndex];
+          gems[gemIndex] = { ...gem, quantity: gem.quantity + 1 };
+        } else {
+          gems.push({ gemId: itemId, quantity: 1 });
+        }
+      }
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          inventory: {
+            ...inv,
+            minerals,
+            gems
+          }
+        },
+        processState: {
+          ...state.processState,
+          queue: newQueue
+        }
+      };
+    }
+
+    case UPDATE_PROCESS_STATS: {
+      const statsUpdate = action.payload;
+      const currentStats = state.processState.processingStats;
+      return {
+        ...state,
+        processState: {
+          ...state.processState,
+          processingStats: {
+            ...currentStats,
+            ...statsUpdate
+          }
+        }
+      };
+    }
+
+    case UNLOCK_QUEUE_SLOT: {
+      const amount = action.payload?.amount || 1;
+      return {
+        ...state,
+        processState: {
+          ...state.processState,
+          queueSlots: state.processState.queueSlots + amount
+        }
+      };
+    }
 
     default:
-      return state
+       return state;
   }
 }
 
