@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
-import { useGame } from '../../../context/GameContext';
+import { useGame, ADD_TO_INVENTORY, ADD_MINERAL } from '../../../context/GameContext';
 import { useProcess } from '../hooks/useProcess';
 import { getItemById } from '../../../data/items';
-import { FaGem, FaTools, FaCut, FaCog, FaArrowLeft, FaStar, FaMapMarkedAlt, FaMountain } from 'react-icons/fa';
+import { FaTools, FaCut, FaCog, FaArrowLeft, FaStar } from 'react-icons/fa';
+import { GemIcon, MineralIcon } from '../../../shared/components/ItemIcons';
 
 const PROCESS_TYPES = [
   { id: 'cleaning', label: 'Cleaning', description: 'Tumble and clean the item', Icon: FaTools },
@@ -19,8 +20,8 @@ const RARITY_COLORS = {
 };
 
 const CATEGORY_ICONS = {
-  Gem: FaGem,
-  Mineral: FaMountain,
+  Gem: GemIcon,
+  Mineral: MineralIcon,
 };
 
 export default function ProcessSelector() {
@@ -34,7 +35,7 @@ export default function ProcessSelector() {
   const itemsWithData = useMemo(() => {
     return availableItems.map(invItem => {
       const itemData = getItemById(invItem.id);
-      const Icon = CATEGORY_ICONS[itemData?.category] || FaGem;
+      const Icon = CATEGORY_ICONS[itemData?.category] || GemIcon;
       return {
         ...invItem,
         data: itemData,
@@ -93,6 +94,21 @@ export default function ProcessSelector() {
   };
 
   const handleDone = () => {
+    // Add the processed item back to inventory
+    const isMineral = result.item.category === 'Mineral';
+    if (isMineral) {
+      dispatch({
+        type: ADD_MINERAL,
+        payload: { mineralId: result.item.id, quantity: 1 }
+      });
+    } else {
+      dispatch({
+        type: ADD_TO_INVENTORY,
+        payload: { category: 'gems', gemId: result.item.id, quantity: 1 }
+      });
+    }
+
+    // Reset state
     setStep('select');
     setSelectedItem(null);
     setSelectedType(null);
@@ -148,7 +164,7 @@ export default function ProcessSelector() {
         {/* Empty State */}
         {step === 'select' && itemsWithData.length === 0 && (
           <div className="text-center py-12 text-gray-400">
-            <FaGem className="text-4xl mx-auto mb-4 opacity-50" />
+            <GemIcon className="text-4xl mx-auto mb-4 opacity-50" />
             <p>No items available to process.</p>
             <p className="text-sm mt-2">Visit Discover to find some gems!</p>
           </div>
@@ -249,7 +265,7 @@ function ResultDisplay({ result, onDone }) {
             <div className="text-gray-400 text-sm">Value</div>
             <div className="text-green-400 text-2xl font-bold flex items-center justify-center gap-1">
               {result.newValue}
-              <FaGem className="text-yellow-400 text-sm" />
+              <GemIcon className="text-yellow-400 text-sm" />
             </div>
           </div>
         </div>
