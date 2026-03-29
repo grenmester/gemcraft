@@ -3,7 +3,7 @@ import { useGame, GAME_PHASES, SET_PHASE } from '../../../context/GameContext';
 import { useProcess } from '../hooks/useProcess';
 import ProcessQueue from './ProcessQueue';
 import ProcessSelector from './ProcessSelector';
-import { FaBolt, FaHourglassHalf } from 'react-icons/fa';
+import { FaBolt, FaHourglassHalf, FaArrowLeft } from 'react-icons/fa';
 
 export default function Process() {
   const { dispatch } = useGame();

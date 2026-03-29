@@ -4,7 +4,7 @@ test.describe('Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     // Wait for app to load
-    await page.waitForSelector('text=Gemstone', { timeout: 15000 });
+    await page.waitForSelector('h1:has-text("Gemstone")', { timeout: 15000 });
   });
 
   test('should load the main menu', async ({ page }) => {
@@ -30,12 +30,11 @@ test.describe('Navigation', () => {
     // Click Process button from menu
     await page.getByRole('button', { name: 'Process' }).click();
     
-    // Verify we're on Process page - look for "Process" header text
-    await expect(page.getByText('Process', { exact: true }).first()).toBeVisible({ timeout: 15000 });
+    // Verify we're on Process page - look for Process heading
+    await expect(page.locator('h2:has-text("Process")')).toBeVisible({ timeout: 15000 });
     
-    // Verify buttons are visible
-    await expect(page.getByRole('button', { name: /Active/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Idle/i })).toBeVisible();
+    // Verify Active tab is selected by default
+    await expect(page.getByRole('button', { name: /^Active/i })).toHaveClass(/bg-amber-500/, { timeout: 5000 });
   });
 
   test('should navigate to Craft page', async ({ page }) => {
@@ -77,9 +76,9 @@ test.describe('Navigation', () => {
     await page.getByRole('button', { name: 'Process', exact: false }).click();
     
     // Wait for Process page to load
-    await expect(page.getByText('Process').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('h2:has-text("Process")')).toBeVisible({ timeout: 15000 });
     
-    // Click back button (contains Menu text)
+    // Click back button (Menu button)
     await page.getByRole('button', { name: 'Menu', exact: false }).click();
     
     // Verify we're back on main menu
@@ -91,8 +90,7 @@ test.describe('Navigation', () => {
     await page.locator('button:has-text("Discover")').click();
     await expect(page.locator('button:has-text("Idle")').first()).toBeVisible();
     
-    // Click back to menu - find the menu button in the header or click Discover again
-    // The header always shows "Gemstone Collector", so we verify the app is still running
+    // Click back to menu - the header shows "Gemstone Collector"
     await expect(page.locator('h1:has-text("Gemstone Collector")')).toBeVisible();
   });
 });
@@ -100,31 +98,41 @@ test.describe('Navigation', () => {
 test.describe('Process Page Functionality', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('text=Gemstone', { timeout: 15000 });
+    await page.waitForSelector('h1:has-text("Gemstone")', { timeout: 15000 });
   });
 
   test('should show Active and Idle tabs on Process page', async ({ page }) => {
     await page.getByRole('button', { name: 'Process' }).click();
     
-    await expect(page.getByText('Process', { exact: true }).first()).toBeVisible({ timeout: 15000 });
-    await expect(page.getByRole('button', { name: /Active/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Idle/i })).toBeVisible();
+    // Process page should be visible with tabs
+    await expect(page.locator('h2:has-text("Process")')).toBeVisible({ timeout: 15000 });
+    
+    // Both tabs should be visible
+    await expect(page.getByRole('button', { name: /^Active/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Idle Queue/i })).toBeVisible();
   });
 
   test('should switch between Active and Idle tabs', async ({ page }) => {
     await page.getByRole('button', { name: 'Process' }).click();
-    await expect(page.getByText('Process', { exact: true }).first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('h2:has-text("Process")')).toBeVisible({ timeout: 15000 });
+    
+    // Active tab by default should show "Select Item to Process"
+    await expect(page.getByText('Select Item to Process')).toBeVisible({ timeout: 15000 });
     
     // Click Idle tab
-    await page.getByRole('button', { name: /Idle/i }).click();
+    await page.getByRole('button', { name: /Idle Queue/i }).click();
     
     // Should show queue interface
     await expect(page.getByText('Process Queue')).toBeVisible({ timeout: 15000 });
+    // Empty state shows when no items in inventory or queue depending on state
+    await expect(
+      page.getByText('Add to Queue').or(page.getByText('No items in inventory'))
+    ).toBeVisible({ timeout: 15000 });
     
     // Click Active tab
-    await page.getByRole('button', { name: /Active/i }).click();
+    await page.getByRole('button', { name: /^Active/i }).click();
     
-    // Should show active processing interface  
+    // Should show active processing interface (item selector)
     await expect(page.getByText('Select Item to Process')).toBeVisible({ timeout: 15000 });
   });
 });
