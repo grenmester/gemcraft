@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
-import gemsData from '../../data/gems.json';
+import itemsData from '../../data/items.json';
 import { PROCESS_EQUIPMENT } from '../../data/processEquipment.js';
 
 export const DEBUG_KEY = 'debug_mode';
@@ -33,7 +33,7 @@ export default function DebugPanel() {
   if (!isVisible) return null;
 
   const handleUnlockAllGems = () => {
-    gemsData.gems.forEach(gem => {
+    itemsData.items.filter(item => item.category === 'Gem').forEach(gem => {
       dispatch({ type: 'DEBUG_ADD_GEM', payload: gem });
     });
   };
@@ -73,7 +73,7 @@ export default function DebugPanel() {
             <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
               <span className="whitespace-nowrap">💎 {state.player.coins?.toLocaleString() || 0}</span>
               <span className="whitespace-nowrap">📦 Gems: {state.player.gems?.length || 0}</span>
-              <span className="whitespace-nowrap">📖 Gemdex: {state.player.gemdex?.length || 0}/{gemsData.gems.length}</span>
+              <span className="whitespace-nowrap">📖 Gemdex: {state.player.gemdex?.length || 0}/{itemsData.items.filter(item => item.category === 'Gem').length}</span>
             </div>
           </div>
 

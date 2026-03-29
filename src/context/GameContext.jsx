@@ -1,9 +1,8 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import { Player } from '../models/Player.js';
 import { Gem } from '../models/Gem.js';
-import gemsData from '../data/gems.json';
-
 import { GAME_PHASES } from '../constants.js';
+import itemsData from '../data/items.json';
 import { EQUIPMENT } from '../data/equipment.js';
 import { PROCESS_EQUIPMENT } from '../data/processEquipment.js';
 import { LOCATION_TIERS } from '../data/locations.js';
@@ -252,11 +251,19 @@ case DEBUG_UNLOCK_ALL_LOCATIONS: {
       const currentCount = state.player.gems?.length || 0;
       const needed = maxGems - currentCount;
       if (needed <= 0) return state;
-      const sampleGems = gemsData.gems.slice(0, Math.min(needed, gemsData.gems.length));
+      const gemItems = itemsData.items.filter(item => item.category === 'Gem');
+      const sampleGems = gemItems.slice(0, Math.min(needed, gemItems.length));
       const newGems = [...state.player.gems];
       for (let i = 0; i < needed; i++) {
-        const gemTemplate = sampleGems[i % sampleGems.length];
-        newGems.push(new Gem({ ...gemTemplate, instanceId: `debug_${Date.now()}_${i}` }));
+        const item = sampleGems[i % sampleGems.length];
+        newGems.push(new Gem({
+          id: item.id,
+          name: item.name,
+          mohs: item.hardness,
+          color: item.rarity,
+          facts: [],
+          values: [item.value]
+        }));
       }
       return {
         ...state,
