@@ -75,7 +75,7 @@ export default function RewardsSelector() {
 
   if (!location || !area) {
     return (
-      <div className="flex flex-col h-screen bg-gradient-to-br from-slate-950 to-slate-800 items-center justify-center">
+      <div className="flex flex-col h-full items-center justify-center">
         <p className="text-gray-400">No area selected</p>
         <button
           className="mt-4 bg-slate-700 text-white font-semibold px-6 py-3 rounded-lg hover:bg-slate-600 transition-colors"
@@ -100,7 +100,7 @@ export default function RewardsSelector() {
   const previewMinerals = area.items.filter(i => getItemById(i.id)?.category === 'Mineral').slice(0, 2);
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-950 to-slate-800">
+      <div className="flex flex-col h-full">
       <div className="flex justify-between items-center p-4 bg-black/50 border-b-2 border-yellow-400/30">
         <div>
           <h2 className="text-2xl font-bold text-yellow-400 m-0">{area.name}</h2>

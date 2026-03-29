@@ -88,7 +88,7 @@ export default function LocationMap() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 p-4 md:p-6">
+    <div className="flex-1 flex flex-col min-h-full p-4 md:p-6">
       <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
         <h2 className="text-xl md:text-2xl font-bold text-yellow-400 m-0">World Map</h2>
         <div className="flex gap-4 text-gray-400 text-sm">
