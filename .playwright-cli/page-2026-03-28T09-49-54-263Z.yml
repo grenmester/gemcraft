@@ -1,0 +1,32 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "Gemstone Collector" [level=1] [ref=e6]
+  - main [ref=e7]:
+    - generic [ref=e779]:
+      - generic [ref=e780]:
+        - button "← Back" [ref=e781]
+        - heading "INVENTORY" [level=2] [ref=e782]
+      - generic [ref=e783]:
+        - button "🪨 Raw Minerals" [ref=e784] [cursor=pointer]:
+          - generic [ref=e785]: 🪨
+          - generic [ref=e786]: Raw Minerals
+        - button "💎 Gems" [ref=e787] [cursor=pointer]:
+          - generic [ref=e788]: 💎
+          - generic [ref=e789]: Gems
+        - button "🔧 Equipment" [ref=e790] [cursor=pointer]:
+          - generic [ref=e791]: 🔧
+          - generic [ref=e792]: Equipment
+        - button "💰 Currency" [ref=e793] [cursor=pointer]:
+          - generic [ref=e794]: 💰
+          - generic [ref=e795]: Currency
+      - generic [ref=e796]:
+        - combobox [ref=e797]:
+          - 'option "Sort: Name" [selected]'
+          - 'option "Sort: Value"'
+          - 'option "Sort: Quantity"'
+        - textbox "Filter..." [ref=e798]
+      - generic [ref=e800]: No items in Raw Minerals
+  - contentinfo [ref=e31]:
+    - generic [ref=e32]:
+      - generic [ref=e33]: 💎
+      - generic [ref=e34]: "450"

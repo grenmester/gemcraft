@@ -1,0 +1,91 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "Gemstone Collector" [level=1] [ref=e6]
+  - main [ref=e7]:
+    - generic [ref=e433]:
+      - generic [ref=e434]:
+        - heading "World Map" [level=2] [ref=e435]
+        - generic [ref=e436]:
+          - generic [ref=e437]: "Level: 0"
+          - generic [ref=e438]: "Shift: 4"
+      - generic [ref=e439]:
+        - generic [ref=e440] [cursor=pointer]:
+          - generic [ref=e441]: 🗺️
+          - generic [ref=e442]: River Panning
+          - generic [ref=e443]: Lv. 0
+        - generic [ref=e444] [cursor=pointer]:
+          - generic [ref=e445]: 🔒
+          - generic [ref=e446]: Ozark Hills
+          - generic [ref=e447]: Lv. 0/1
+          - generic [ref=e449]: ⭐ Level 0/1
+        - generic [ref=e451] [cursor=pointer]:
+          - generic [ref=e452]: 🔒
+          - generic [ref=e453]: Bavarian Fields
+          - generic [ref=e454]: Lv. 0/2
+          - generic [ref=e456]: ⭐ Level 0/2
+        - generic [ref=e458] [cursor=pointer]:
+          - generic [ref=e459]: 🔒
+          - generic [ref=e460]: Ural Shores
+          - generic [ref=e461]: Lv. 0/3
+          - generic [ref=e463]: ⭐ Level 0/3
+        - generic [ref=e465] [cursor=pointer]:
+          - generic [ref=e466]: 🔒
+          - generic [ref=e467]: Bahia Mines
+          - generic [ref=e468]: Lv. 0/5
+          - generic [ref=e470]: ⭐ Level 0/5
+        - generic [ref=e472] [cursor=pointer]:
+          - generic [ref=e473]: 🔒
+          - generic [ref=e474]: Montana Streambed
+          - generic [ref=e475]: Lv. 0/7
+          - generic [ref=e477]: ⭐ Level 0/7
+        - generic [ref=e479] [cursor=pointer]:
+          - generic [ref=e480]: 🔒
+          - generic [ref=e481]: Minas Gerais
+          - generic [ref=e482]: Lv. 0/10
+          - generic [ref=e484]: ⭐ Level 0/10
+        - generic [ref=e486] [cursor=pointer]:
+          - generic [ref=e487]: 🔒
+          - generic [ref=e488]: Mogok Valley
+          - generic [ref=e489]: Lv. 0/15
+          - generic [ref=e491]: ⭐ Level 0/15
+        - generic [ref=e493] [cursor=pointer]:
+          - generic [ref=e494]: 🔒
+          - generic [ref=e495]: Sri Lanka Fields
+          - generic [ref=e496]: Lv. 0/20
+          - generic [ref=e498]: ⭐ Level 0/20
+        - generic [ref=e500] [cursor=pointer]:
+          - generic [ref=e501]: 🔒
+          - generic [ref=e502]: Muzo Highlands
+          - generic [ref=e503]: Lv. 0/25
+          - generic [ref=e505]: ⭐ Level 0/25
+        - generic [ref=e507] [cursor=pointer]:
+          - generic [ref=e508]: 🔒
+          - generic [ref=e509]: Kashmir Heights
+          - generic [ref=e510]: Lv. 0/30
+          - generic [ref=e512]: ⭐ Level 0/30
+        - generic [ref=e514] [cursor=pointer]:
+          - generic [ref=e515]: 🔒
+          - generic [ref=e516]: Argyle Caverns
+          - generic [ref=e517]: Lv. 0/40
+          - generic [ref=e519]: ⭐ Level 0/40
+        - generic [ref=e521] [cursor=pointer]:
+          - generic [ref=e522]: 🔒
+          - generic [ref=e523]: Golconda Depths
+          - generic [ref=e524]: Lv. 0/50
+          - generic [ref=e526]: ⭐ Level 0/50
+        - generic [ref=e528] [cursor=pointer]:
+          - generic [ref=e529]: 🔒
+          - generic [ref=e530]: Androy Dunes
+          - generic [ref=e531]: Lv. 0/60
+          - generic [ref=e533]: ⭐ Level 0/60
+        - generic [ref=e535] [cursor=pointer]:
+          - generic [ref=e536]: 🔒
+          - generic [ref=e537]: Mogok Hidden
+          - generic [ref=e538]: Lv. 0/75
+          - generic [ref=e540]: ⭐ Level 0/75
+      - button "Start River Panning" [ref=e544]
+      - button "← Back to Discover" [ref=e542]
+  - contentinfo [ref=e31]:
+    - generic [ref=e32]:
+      - generic [ref=e33]: 💎
+      - generic [ref=e34]: "250"

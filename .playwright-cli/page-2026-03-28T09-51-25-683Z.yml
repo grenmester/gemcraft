@@ -1,0 +1,138 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "Gemstone Collector" [level=1] [ref=e6]
+  - main [ref=e7]:
+    - generic [ref=e829]:
+      - generic [ref=e830]:
+        - button "← Back" [ref=e831] [cursor=pointer]
+        - heading "Gemdex" [level=1] [ref=e832]
+        - generic [ref=e833]: 6/20
+      - generic [ref=e834]:
+        - generic [ref=e835]:
+          - button "All" [ref=e836] [cursor=pointer]
+          - button "Discovered" [ref=e837] [cursor=pointer]
+          - button "Undiscovered" [ref=e838] [cursor=pointer]
+        - combobox [ref=e839] [cursor=pointer]:
+          - option "Name" [selected]
+          - option "Value"
+          - option "Hardness"
+      - generic [ref=e843]: 30%
+      - generic [ref=e844]:
+        - generic [ref=e845] [cursor=pointer]:
+          - generic [ref=e846]: "?"
+          - heading "???" [level=3] [ref=e848]
+        - generic [ref=e849] [cursor=pointer]:
+          - generic [ref=e850]: A
+          - generic [ref=e851]:
+            - heading "Amethyst" [level=3] [ref=e852]
+            - generic [ref=e853]: Quartz
+            - generic [ref=e854]: $15
+        - generic [ref=e855] [cursor=pointer]:
+          - generic [ref=e856]: A
+          - generic [ref=e857]:
+            - heading "Aquamarine" [level=3] [ref=e858]
+            - generic [ref=e859]: Beryl
+            - generic [ref=e860]: $75
+        - generic [ref=e861] [cursor=pointer]:
+          - generic [ref=e862]: "?"
+          - heading "???" [level=3] [ref=e864]
+        - generic [ref=e865] [cursor=pointer]:
+          - generic [ref=e866]: "?"
+          - heading "???" [level=3] [ref=e868]
+        - generic [ref=e869] [cursor=pointer]:
+          - generic [ref=e870]: "?"
+          - heading "???" [level=3] [ref=e872]
+        - generic [ref=e873] [cursor=pointer]:
+          - generic [ref=e874]: "?"
+          - heading "???" [level=3] [ref=e876]
+        - generic [ref=e877] [cursor=pointer]:
+          - generic [ref=e878]: G
+          - generic [ref=e879]:
+            - heading "Garnet" [level=3] [ref=e880]
+            - generic [ref=e881]: Garnet
+            - generic [ref=e882]: $25
+        - generic [ref=e883] [cursor=pointer]:
+          - generic [ref=e884]: "?"
+          - heading "???" [level=3] [ref=e886]
+        - generic [ref=e887] [cursor=pointer]:
+          - generic [ref=e888]: "?"
+          - heading "???" [level=3] [ref=e890]
+        - generic [ref=e891] [cursor=pointer]:
+          - generic [ref=e892]: M
+          - generic [ref=e893]:
+            - heading "Morganite" [level=3] [ref=e894]
+            - generic [ref=e895]: Beryl
+            - generic [ref=e896]: $60
+        - generic [ref=e897] [cursor=pointer]:
+          - generic [ref=e898]: "?"
+          - heading "???" [level=3] [ref=e900]
+        - generic [ref=e901] [cursor=pointer]:
+          - generic [ref=e902]: "?"
+          - heading "???" [level=3] [ref=e904]
+        - generic [ref=e905] [cursor=pointer]:
+          - generic [ref=e906]: R
+          - generic [ref=e907]:
+            - heading "Ruby" [level=3] [ref=e908]
+            - generic [ref=e909]: Corundum
+            - generic [ref=e910]: $250
+        - generic [ref=e911] [cursor=pointer]:
+          - generic [ref=e912]: "?"
+          - heading "???" [level=3] [ref=e914]
+        - generic [ref=e915] [cursor=pointer]:
+          - generic [ref=e916]: "?"
+          - heading "???" [level=3] [ref=e918]
+        - generic [ref=e919] [cursor=pointer]:
+          - generic [ref=e920]: "?"
+          - heading "???" [level=3] [ref=e922]
+        - generic [ref=e923] [cursor=pointer]:
+          - generic [ref=e924]: "?"
+          - heading "???" [level=3] [ref=e926]
+        - generic [ref=e927] [cursor=pointer]:
+          - generic [ref=e928]: T
+          - generic [ref=e929]:
+            - heading "Tourmaline" [level=3] [ref=e930]
+            - generic [ref=e931]: Tourmaline
+            - generic [ref=e932]: $50
+        - generic [ref=e933] [cursor=pointer]:
+          - generic [ref=e934]: "?"
+          - heading "???" [level=3] [ref=e936]
+  - contentinfo [ref=e31]:
+    - generic [ref=e32]:
+      - generic [ref=e33]: 💎
+      - generic [ref=e34]: "450"
+  - generic [ref=e937]:
+    - generic [ref=e938] [cursor=pointer]:
+      - generic [ref=e939]: 🔧 Debug Mode
+      - generic [ref=e940]: ▼
+    - generic [ref=e941]:
+      - generic [ref=e942]:
+        - heading "Current Stats" [level=4] [ref=e943]
+        - generic [ref=e944]:
+          - generic [ref=e945]: 💎 450
+          - generic [ref=e946]: "✨ Shift: 12"
+          - generic [ref=e947]: "📦 Gems: 6"
+          - generic [ref=e948]: "📖 Gemdex: 6/20"
+      - generic [ref=e949]:
+        - heading "Resources" [level=4] [ref=e950]
+        - generic [ref=e951]:
+          - button "+1K Coins" [ref=e952]
+          - button "+10K Coins" [ref=e953]
+          - button "+100K Coins" [ref=e954]
+          - button "Max Shift (500)" [ref=e955]
+      - generic [ref=e956]:
+        - heading "Progression" [level=4] [ref=e957]
+        - generic [ref=e958]:
+          - button "Level 5" [ref=e959]
+          - button "Level 10" [ref=e960]
+          - button "Level 25" [ref=e961]
+          - button "Level 50" [ref=e962]
+          - button "Unlock All Locations" [ref=e963]
+      - generic [ref=e964]:
+        - heading "Gems & Items" [level=4] [ref=e965]
+        - generic [ref=e966]:
+          - button "Unlock All Gems" [ref=e967]
+          - button "Max Inventory (100 gems)" [ref=e968]
+      - generic [ref=e969]:
+        - heading "Danger Zone" [level=4] [ref=e970]
+        - button "Reset All Progress" [ref=e972]
+      - generic [ref=e973]: "Shortcuts: Ctrl+Shift+D toggle | Ctrl+Shift+O open/close"

@@ -1,0 +1,27 @@
+import { z } from 'zod';
+
+export const RARITY_ENUM = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
+export const CATEGORY_ENUM = ['Gem', 'Mineral'];
+
+export const itemProcessingSchema = z.object({
+  canClean: z.boolean(),
+  canCut: z.boolean(),
+  canFacet: z.boolean(),
+  baseProcessTime: z.number().min(1),
+  processDifficulty: z.number().min(1).max(5)
+});
+
+export const itemSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  category: z.enum(CATEGORY_ENUM),
+  hardness: z.number().min(1).max(10),
+  value: z.number().min(0),
+  rarity: z.enum(RARITY_ENUM),
+  realWorldLocations: z.array(z.string()).min(1),
+  processing: itemProcessingSchema
+});
+
+export const itemsDataSchema = z.object({
+  items: z.array(itemSchema)
+});
