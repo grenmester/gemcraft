@@ -2,3 +2,5 @@ node_modules/
 .worktrees/
 dist/
 test-results/
+
+# opencode
