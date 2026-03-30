@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useProcess } from '../hooks/useProcess';
 import { getRemainingTime, isQueueProcessComplete } from '../../../shared/utils/queueProcessing';
-import itemsData from '../../../data/items.json';
+import { items } from '../../../loaders/items.js';
 import { GemIcon, MineralIcon } from '../../../shared/components/ItemIcons';
 import { FaStar } from 'react-icons/fa';
 
@@ -33,7 +33,7 @@ function formatTime(ms) {
  * Get item display info from items data
  */
 function getItemInfo(itemId) {
-  const item = itemsData.items.find(i => i.id === itemId);
+  const item = items.find(i => i.id === itemId);
   if (!item) {
     return { name: itemId, IconComponent: GemIcon, category: 'Unknown', rarity: 'Common' };
   }

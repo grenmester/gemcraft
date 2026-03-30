@@ -2,10 +2,10 @@ import { createContext, useContext, useReducer, useEffect } from 'react';
 import { Player } from '../models/Player.js';
 import { Gem } from '../models/Gem.js';
 import { GAME_PHASES } from '../constants.js';
-import itemsData from '../data/items.json';
-import { EQUIPMENT } from '../data/equipment.js';
+import { items, itemsById } from '../loaders/items.js';
+import { EQUIPMENT } from '../loaders/equipment.js';
 import { PROCESS_EQUIPMENT } from '../data/processEquipment.js';
-import { LOCATION_TIERS } from '../data/locations.js';
+import { LOCATION_TIERS } from '../loaders/locations.js';
 import { removeItemFromInventory, addItemToInventory } from './inventoryHelpers.js';
 
 export { GAME_PHASES };
@@ -251,7 +251,7 @@ case DEBUG_UNLOCK_ALL_LOCATIONS: {
       const currentCount = state.player.gems?.length || 0;
       const needed = maxGems - currentCount;
       if (needed <= 0) return state;
-      const gemItems = itemsData.items.filter(item => item.category === 'Gem');
+      const gemItems = items.filter(item => item.category === 'Gem');
       const sampleGems = gemItems.slice(0, Math.min(needed, gemItems.length));
       const newGems = [...state.player.gems];
       for (let i = 0; i < needed; i++) {

@@ -53,7 +53,9 @@ export default function ProcessSelector() {
   }, [availableItems]);
 
   const handleSelectItem = (item) => {
-    setSelectedItem(item);
+    // Ensure we store the enriched item with canClean/canCut/canFacet flags
+    const enriched = itemsWithData.find(i => i.id === item.id) || item;
+    setSelectedItem(enriched);
     setStep('type');
   };
 

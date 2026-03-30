@@ -13,7 +13,7 @@ import {
   getAllLocations,
   calculateEquipmentBonus,
 } from '../../../data/lootTables';
-import { EQUIPMENT } from '../../../data/equipment';
+import { EQUIPMENT } from '../../../loaders/equipment';
 
 describe('lootTables', () => {
   describe('RARITY_TIERS', () => {

@@ -38,4 +38,4 @@ export const GAME_PHASES = {
 };
 
 export { MINIGAME_TYPES, SCORE_TIERS, getScoreTier, calculateRewards } from './data/minigames.js';
-export { LOCATION_TIERS, getLocationForTier, getUnlockedLocations } from './data/locations.js';
+export { LOCATION_TIERS, getLocationForTier, getUnlockedLocations } from './loaders/locations.js';

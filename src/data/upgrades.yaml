@@ -1,0 +1,150 @@
+upgrades:
+  # Processing Upgrades
+  - id: efficient_cleaning
+    name: Efficient Cleaning
+    description: Reduces processing time for cleaning by 10% per level
+    category: processing
+    tier: 1
+    cost:
+      coins: 200
+      materials:
+        clear_quartz: 10
+    effect:
+      type: cleaning_time_reduction
+      value: 0.1
+    maxLevel: 5
+
+  - id: expert_cleaning
+    name: Expert Cleaning
+    description: Unlocks advanced cleaning techniques
+    category: processing
+    tier: 2
+    cost:
+      coins: 1000
+      materials:
+        rose_quartz: 15
+        moonstone: 10
+    effect:
+      type: cleaning_quality_bonus
+      value: 0.15
+    maxLevel: 3
+
+  - id: precision_cutting
+    name: Precision Cutting
+    description: Improves cut quality by 10% per level
+    category: processing
+    tier: 2
+    cost:
+      coins: 1500
+      materials:
+        clear_quartz: 20
+        fluorite: 15
+    effect:
+      type: cut_quality_bonus
+      value: 0.1
+    maxLevel: 5
+
+  - id: master_faceting
+    name: Master Faceting
+    description: Unlocks premium faceting patterns for maximum sparkle
+    category: processing
+    tier: 3
+    cost:
+      coins: 5000
+      materials:
+        labradorite: 10
+        celestite: 10
+    effect:
+      type: facet_quality_bonus
+      value: 0.2
+    maxLevel: 3
+
+  # Discovery Upgrades
+  - id: keen_eyes
+    name: Keen Eyes
+    description: Increases chance to find rare items by 5% per level
+    category: discovery
+    tier: 1
+    cost:
+      coins: 300
+      materials:
+        moonstone: 5
+    effect:
+      type: rare_find_chance
+      value: 0.05
+    maxLevel: 5
+
+  - id: deep_scanner
+    name: Deep Scanner
+    description: Reveals hidden gem veins more often
+    category: discovery
+    tier: 2
+    cost:
+      coins: 2000
+      materials:
+        obsidian: 15
+        hematite: 10
+    effect:
+      type: hidden_vein_chance
+      value: 0.2
+    maxLevel: 3
+
+  # Storage Upgrades
+  - id: expanded_inventory
+    name: Expanded Inventory
+    description: Increases inventory capacity by 10 slots per level
+    category: storage
+    tier: 1
+    cost:
+      coins: 250
+      materials:
+        gypsum: 10
+    effect:
+      type: inventory_capacity
+      value: 10
+    maxLevel: 10
+
+  - id: gem_vault
+    name: Gem Vault
+    description: Special storage for rare and epic gems
+    category: storage
+    tier: 3
+    cost:
+      coins: 8000
+      materials:
+        lapis_lazuli: 15
+        malachite: 10
+    effect:
+      type: rare_storage_capacity
+      value: 25
+    maxLevel: 1
+
+  # Marketplace Upgrades
+  - id: better_listings
+    name: Better Listings
+    description: Increases listing visibility in marketplace
+    category: marketplace
+    tier: 1
+    cost:
+      coins: 400
+      materials:
+        mica: 10
+    effect:
+      type: listing_visibility
+      value: 0.15
+    maxLevel: 5
+
+  - id: price_analytics
+    name: Price Analytics
+    description: Shows market trends and optimal pricing
+    category: marketplace
+    tier: 2
+    cost:
+      coins: 2500
+      materials:
+        azurite: 10
+        calcite: 15
+    effect:
+      type: market_insights
+      value: true
+    maxLevel: 1

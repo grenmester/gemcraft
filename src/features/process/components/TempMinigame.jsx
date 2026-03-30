@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGame, GAME_PHASES, SET_REWARDS, ADD_MINERAL, ADD_TO_INVENTORY } from '../../../context/GameContext';
 import { rollLoot, getItemById } from '../../../data/lootTables';
-import { EQUIPMENT } from '../../../data/equipment';
+import { EQUIPMENT } from '../../../loaders/equipment';
 
 export default function TempMinigame() {
   const { state, dispatch } = useGame();

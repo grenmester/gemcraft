@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
-import itemsData from '../../data/items.json';
+import { items } from '../../loaders/items.js';
 import { PROCESS_EQUIPMENT } from '../../data/processEquipment.js';
 import { FaGem, FaBook } from 'react-icons/fa';
 
@@ -34,7 +34,7 @@ export default function DebugPanel() {
   if (!isVisible) return null;
 
   const handleUnlockAllGems = () => {
-    itemsData.items.filter(item => item.category === 'Gem').forEach(gem => {
+    items.filter(item => item.category === 'Gem').forEach(gem => {
       dispatch({ type: 'DEBUG_ADD_GEM', payload: gem });
     });
   };
@@ -74,7 +74,7 @@ export default function DebugPanel() {
             <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
               <span className="whitespace-nowrap"><FaGem className="inline" /> {state.player.coins?.toLocaleString() || 0}</span>
               <span className="whitespace-nowrap flex items-center gap-1"><FaGem className="text-xs" /> Gems: {state.player.gems?.length || 0}</span>
-              <span className="whitespace-nowrap"><FaBook /> Gemdex: {state.player.gemdex?.length || 0}/{itemsData.items.filter(item => item.category === 'Gem').length}</span>
+              <span className="whitespace-nowrap"><FaBook /> Gemdex: {state.player.gemdex?.length || 0}/{items.filter(item => item.category === 'Gem').length}</span>
             </div>
           </div>
 

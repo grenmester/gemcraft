@@ -1,6 +1,6 @@
 import { useGame, SELECT_AREA, SET_REWARDS, ADD_MINERAL, ADD_TO_INVENTORY } from '../../../context/GameContext';
 import { LOOT_TABLES, rollLoot, REWARD_MULTIPLIERS, getItemById, calculateEquipmentBonus } from '../../../data/lootTables';
-import { EQUIPMENT } from '../../../data/equipment';
+import { EQUIPMENT } from '../../../loaders/equipment';
 import { GemIcon } from '../../../shared/components/ItemIcons';
 import { FaCoins, FaBox, FaArrowLeft } from 'react-icons/fa';
 

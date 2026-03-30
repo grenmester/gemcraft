@@ -1,5 +1,5 @@
-import { LOCATION_TIERS } from '../../data/locations.js';
-import { EQUIPMENT, getEquipmentById } from '../../data/equipment.js';
+import { LOCATION_TIERS } from '../../loaders/locations.js';
+import { EQUIPMENT, getEquipmentById } from '../../loaders/equipment.js';
 
 /**
  * Check if a player can unlock a specific zone

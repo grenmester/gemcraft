@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useGame, GAME_PHASES } from '../../../context/GameContext';
-import { LOCATION_TIERS, getUnlockedLocations } from '../../../data/locations';
+import { LOCATION_TIERS, getUnlockedLocations } from '../../../loaders/locations';
 import { canUnlockZone, getZoneRequirements } from '../../../shared/utils/zoneUnlock';
-import { getItemById } from '../../../data/items';
-import { getEquipmentById } from '../../../data/equipment';
+import { itemsById } from '../../../loaders/items';
+import { getEquipmentById } from '../../../loaders/equipment';
 import { GemIcon } from '../../../shared/components/ItemIcons';
 import { FaStar, FaArrowLeft } from 'react-icons/fa';
 
@@ -71,7 +71,7 @@ export default function LocationMap() {
       );
     }
     if (requirement.type === 'material') {
-      const itemData = getItemById(requirement.id);
+      const itemData = itemsById[requirement.id];
       const progress = Math.min(100, (requirement.current / requirement.required) * 100);
       return (
         <div className="w-full flex flex-col gap-1 mt-1" key={`material-${requirement.id}`}>
@@ -154,7 +154,7 @@ export default function LocationMap() {
                       );
                     }
                     if (req.type === 'material') {
-                      const itemData = getItemById(req.id);
+                      const itemData = itemsById[req.id];
                       return (
                         <div key={i} className="text-[0.65rem] text-red-400 text-center">
                           Need: {itemData?.name || req.id} x{req.required - req.current}

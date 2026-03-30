@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useGame, SET_PHASE, GAME_PHASES } from '../../../context/GameContext';
 import { useInventory } from '../hooks/useInventory';
-import itemsData from '../../../data/items.json';
-import { EQUIPMENT } from '../../../data/equipment.js';
+import { items } from '../../../loaders/items.js';
+import { EQUIPMENT } from '../../../loaders/equipment.js';
 import { FaGem, FaMountain, FaShieldAlt, FaBackspace } from 'react-icons/fa';
 
 const TABS = [
@@ -59,7 +59,7 @@ export default function Inventory() {
     const invItems = inventory[invCategory] || [];
 
     return invItems.map(invItem => {
-      const itemData = itemsData.items.find(item => item.id === invItem.gemId);
+      const itemData = items.find(item => item.id === invItem.gemId);
       const Icon = itemData?.category === 'Gem' ? FaGem : FaMountain;
       return {
         id: invItem.gemId,

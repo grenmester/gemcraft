@@ -1,11 +1,9 @@
-import itemsData from './items.json';
-import { EQUIPMENT } from './equipment.js';
+import { items, itemsById } from '../loaders/items.js';
+import { EQUIPMENT } from '../loaders/equipment.js';
 
 // ============================================
 // ITEM LOOKUP (replaces gems.json dependency)
 // ============================================
-
-const itemsById = Object.fromEntries(itemsData.items.map(item => [item.id, item]));
 
 export const getItemById = (itemId) => itemsById[itemId];
 

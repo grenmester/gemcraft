@@ -6,7 +6,7 @@ import {
   canAffordEquipment,
   canCraftEquipment,
   getEquipmentForZone,
-} from '../equipment';
+} from '../../loaders/equipment.js';
 
 describe('equipment.js', () => {
   describe('EQUIPMENT constant', () => {
@@ -38,7 +38,7 @@ describe('equipment.js', () => {
     });
 
     it('has null craftRecipe for purchase-only equipment', () => {
-      expect(EQUIPMENT.NONE.craftRecipe).toBeUndefined();
+      expect(EQUIPMENT.NONE.craftRecipe).toBeNull();
       expect(EQUIPMENT.BASIC_PICKAXE.craftRecipe).toBeNull();
     });
   });
