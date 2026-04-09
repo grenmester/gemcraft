@@ -7,6 +7,7 @@ import { EQUIPMENT } from '../loaders/equipment.js';
 import { PROCESS_EQUIPMENT } from '../data/processEquipment.js';
 import { LOCATION_TIERS } from '../loaders/locations.js';
 import { removeItemFromInventory, addItemToInventory } from './inventoryHelpers.js';
+import { SUBAREA_LOOT } from '../data/subareas.js';
 
 export { GAME_PHASES };
 
@@ -566,12 +567,41 @@ case UNLOCK_ZONE: {
        const itemCount = rewardSize === 'small' ? 1 : rewardSize === 'medium' ? 3 : 5;
        const pending = state.discoverState.pendingMaterials[mineId] || [];
        
-       // Placeholder loot - will be replaced with actual loot tables
-       const sampleItems = [
-         { itemId: 'clear_quartz', quantity: itemCount }
-       ];
+       // Roll for loot using SUBAREA_LOOT
+       const lootTable = SUBAREA_LOOT[mineId]?.[subareaId] || SUBAREA_LOOT.TIER_1?.area_a || [];
+       const rolledItems = [];
        
-       const newPending = [...pending, ...sampleItems];
+       for (let i = 0; i < itemCount; i++) {
+         const totalWeight = lootTable.reduce((sum, item) => sum + item.weight, 0);
+         let roll = Math.random() * totalWeight;
+         
+         for (const lootEntry of lootTable) {
+           roll -= lootEntry.weight;
+           if (roll <= 0) {
+             rolledItems.push({ itemId: lootEntry.itemId, quantity: 1 });
+             break;
+           }
+         }
+         
+         // Fallback if no match
+         if (rolledItems.length <= i && lootTable.length === 0) {
+           rolledItems.push({ itemId: 'clear_quartz', quantity: 1 });
+         }
+       }
+       
+       // Aggregate same items
+       const aggregatedItems = [];
+       const itemMap = new Map();
+       for (const item of rolledItems) {
+         if (itemMap.has(item.itemId)) {
+           itemMap.get(item.itemId).quantity += item.quantity;
+         } else {
+           itemMap.set(item.itemId, { ...item });
+           aggregatedItems.push(itemMap.get(item.itemId));
+         }
+       }
+       
+       const newPending = [...pending, ...aggregatedItems];
        
        return {
          ...state,

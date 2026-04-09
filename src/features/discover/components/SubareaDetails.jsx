@@ -1,61 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useGame, MINE_SUBAREA, COLLECT_PENDING_MATERIALS, SELECT_SUBAREA, GAME_PHASES } from '../../../context/GameContext';
 import { FaArrowLeft, FaGem, FaUsers, FaCoins, FaSyncAlt } from 'react-icons/fa';
+import { getSubareaInfo, getLootForSubarea, RARITY_COLORS } from '../../../data/subareas';
+import { itemsById } from '../../../loaders/items';
 
 const COOLDOWNS = {
   small: 5,
   medium: 15,
   large: 30
 };
-
-const LOOT_TABLES = {
-  TIER_1: {
-    area_a: [
-      { itemId: 'clear_quartz', chance: 0.40, name: 'Clear Quartz' },
-      { itemId: 'raw_obsidian', chance: 0.30, name: 'Raw Obsidian' },
-      { itemId: 'raw_fluorite', chance: 0.25, name: 'Raw Fluorite' },
-      { itemId: 'rough_amethyst', chance: 0.05, name: 'Rough Amethyst' }
-    ],
-    area_b: [
-      { itemId: 'clear_quartz', chance: 0.35, name: 'Clear Quartz' },
-      { itemId: 'raw_fluorite', chance: 0.30, name: 'Raw Fluorite' },
-      { itemId: 'raw_obsidian', chance: 0.25, name: 'Raw Obsidian' },
-      { itemId: 'rough_amethyst', chance: 0.10, name: 'Rough Amethyst' }
-    ],
-    area_c: [
-      { itemId: 'raw_fluorite', chance: 0.30, name: 'Raw Fluorite' },
-      { itemId: 'rough_amethyst', chance: 0.25, name: 'Rough Amethyst' },
-      { itemId: 'raw_obsidian', chance: 0.25, name: 'Raw Obsidian' },
-      { itemId: 'clear_quartz', chance: 0.20, name: 'Clear Quartz' }
-    ]
-  }
-};
-
-const SUBAREA_INFO = {
-  TIER_1: {
-    area_a: { name: 'River Bend', description: 'A calm bend in the river with excellent gem deposits in the shallow water.' },
-    area_b: { name: 'Sandbar', description: 'Shallow waters with mixed minerals and occasional surprises.' },
-    area_c: { name: 'Rocky Shore', description: 'Challenging terrain but with better potential finds.' }
-  },
-  TIER_1_B: {
-    area_a: { name: 'Ozark Hollow', description: 'Hidden cave with crystal formations.' },
-    area_b: { name: 'Hilltop Vista', description: 'Open terrain with surface deposits.' },
-    area_c: { name: 'Creek Bed', description: 'Water-worn stones with embedded gems.' }
-  },
-  TIER_1_C: {
-    area_a: { name: 'Field Edge', description: 'Border area with mixed deposits.' },
-    area_b: { name: 'Bavarian Meadow', description: 'Fertile soil with mineral content.' },
-    area_c: { name: 'Mountain Base', description: 'Rocky terrain with hidden treasures.' }
-  }
-};
-
-function getDefaultLoot(mineId, subareaId) {
-  return LOOT_TABLES[mineId]?.[subareaId] || LOOT_TABLES.TIER_1[subareaId] || [];
-}
-
-function getSubareaInfo(mineId, subareaId) {
-  return SUBAREA_INFO[mineId]?.[subareaId] || { name: subareaId, description: 'A mining subarea.' };
-}
 
 export default function SubareaDetails({ mineId, subareaId }) {
   const { state, dispatch } = useGame();
@@ -67,7 +20,7 @@ export default function SubareaDetails({ mineId, subareaId }) {
   const pending = state.discoverState?.pendingMaterials?.[mineId] || [];
   const pendingCount = pending.reduce((sum, m) => sum + m.quantity, 0);
   
-  const lootTable = getDefaultLoot(mineId, subareaId);
+  const lootTable = getLootForSubarea(mineId, subareaId);
   const subareaInfo = getSubareaInfo(mineId, subareaId);
   
   useEffect(() => {
@@ -138,20 +91,27 @@ export default function SubareaDetails({ mineId, subareaId }) {
         </h3>
         
         <div className="space-y-2">
-          {lootTable.map(item => (
-            <div key={item.itemId} className="flex items-center gap-3">
-              <span className="text-slate-300 w-36">{item.name}</span>
-              <div className="flex-1 h-4 bg-slate-700 rounded overflow-hidden">
-                <div 
-                  className="h-full bg-yellow-500 transition-all"
-                  style={{ width: `${item.chance * 100}%` }}
-                />
-              </div>
-              <span className="text-slate-400 text-sm w-16 text-right">
-                {(item.chance * 100).toFixed(0)}%
-              </span>
-            </div>
-          ))}
+          {(() => {
+            const totalWeight = lootTable.reduce((sum, item) => sum + item.weight, 0);
+            return lootTable.map(item => {
+              const chance = (item.weight / totalWeight) * 100;
+              const itemData = itemsById[item.itemId];
+              return (
+                <div key={item.itemId} className="flex items-center gap-3">
+                  <span className="text-slate-300 w-36">{itemData?.name || item.itemId}</span>
+                  <div className="flex-1 h-4 bg-slate-700 rounded overflow-hidden">
+                    <div 
+                      className={`h-full transition-all ${RARITY_COLORS[item.rarity] || 'bg-gray-600'}`}
+                      style={{ width: `${chance}%` }}
+                    />
+                  </div>
+                  <span className="text-slate-400 text-sm w-16 text-right">
+                    {chance.toFixed(1)}%
+                  </span>
+                </div>
+              );
+            });
+          })()}
         </div>
         
         <p className="text-xs text-slate-500 mt-3 flex items-center gap-1">
@@ -203,6 +163,7 @@ export default function SubareaDetails({ mineId, subareaId }) {
                 key={size}
                 onClick={() => handleMine(size)}
                 disabled={isOnCooldown}
+                aria-label={`${size} reward`}
                 className={`p-4 rounded-lg font-semibold transition-colors ${
                   isOnCooldown
                     ? 'bg-slate-700 text-slate-500 cursor-not-allowed'

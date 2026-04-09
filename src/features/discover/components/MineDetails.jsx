@@ -1,103 +1,14 @@
 import { useGame, SELECT_SUBAREA, CLEAR_MINING_SELECTION } from '../../../context/GameContext';
 import { LOCATION_TIERS } from '../../../loaders/locations';
 import { FaArrowLeft, FaUsers, FaMapMarkedAlt, FaChevronRight, FaGem } from 'react-icons/fa';
-
-const SUBAREAS = {
-  TIER_1: [
-    { id: 'area_a', name: 'River Bend', description: 'A calm bend with excellent gem deposits', rarity: 'Common' },
-    { id: 'area_b', name: 'Sandbar', description: 'Shallow waters with mixed minerals', rarity: 'Common' },
-    { id: 'area_c', name: 'Rocky Shore', description: 'Challenging terrain with better finds', rarity: 'Uncommon' }
-  ],
-  TIER_1_B: [
-    { id: 'area_a', name: 'Ozark Hollow', description: 'Hidden cave with crystal formations', rarity: 'Common' },
-    { id: 'area_b', name: 'Hilltop Vista', description: 'Open terrain with surface deposits', rarity: 'Common' },
-    { id: 'area_c', name: 'Creek Bed', description: 'Water-worn stones with embedded gems', rarity: 'Uncommon' }
-  ],
-  TIER_1_C: [
-    { id: 'area_a', name: 'Field Edge', description: 'Border area with mixed deposits', rarity: 'Common' },
-    { id: 'area_b', name: 'Bavarian Meadow', description: 'Fertile soil with mineral content', rarity: 'Common' },
-    { id: 'area_c', name: 'Mountain Base', description: 'Rocky terrain with hidden treasures', rarity: 'Uncommon' }
-  ],
-  TIER_2_A: [
-    { id: 'area_a', name: 'Ural Shore', description: 'Rocky beach with amethyst veins', rarity: 'Uncommon' },
-    { id: 'area_b', name: 'Mineral Springs', description: 'Natural springs depositing minerals', rarity: 'Common' },
-    { id: 'area_c', name: 'Crystal Cave', description: 'Underground cavern with quartz', rarity: 'Uncommon' }
-  ],
-  TIER_2_B: [
-    { id: 'area_a', name: 'Quartz Vein', description: 'Rich vein of clear quartz', rarity: 'Common' },
-    { id: 'area_b', name: 'Historic Shaft', description: 'Old mine workings with remnants', rarity: 'Uncommon' },
-    { id: 'area_c', name: 'Gem Pocket', description: 'Hidden pocket of semi-precious stones', rarity: 'Uncommon' }
-  ],
-  TIER_2_C: [
-    { id: 'area_a', name: 'Montana Ridge', description: 'Mountain ridge with garnet deposits', rarity: 'Uncommon' },
-    { id: 'area_b', name: 'Stream Cut', description: 'Eroded bank with exposed minerals', rarity: 'Common' },
-    { id: 'area_c', name: 'Drill Site', description: 'Active mining area with equipment', rarity: 'Uncommon' }
-  ],
-  TIER_3_A: [
-    { id: 'area_a', name: 'Tourmaline Lode', description: 'Rich deposits of colored tourmaline', rarity: 'Rare' },
-    { id: 'area_b', name: 'Emerald Field', description: 'Green mineral deposits', rarity: 'Uncommon' },
-    { id: 'area_c', name: 'Topaz Hollow', description: 'Golden topaz in volcanic rock', rarity: 'Rare' }
-  ],
-  TIER_3_B: [
-    { id: 'area_a', name: 'Ruby Streak', description: 'Famous red ruby deposits', rarity: 'Rare' },
-    { id: 'area_b', name: 'Spinel Ridge', description: 'Pink spinel with ruby association', rarity: 'Rare' },
-    { id: 'area_c', name: 'Sapphire Gorge', description: 'Blue sapphire in marble', rarity: 'Epic' }
-  ],
-  TIER_3_C: [
-    { id: 'area_a', name: 'Ceylon Paddy', description: 'Rice paddy fields with gem gravels', rarity: 'Rare' },
-    { id: 'area_b', name: 'Moonstone Beach', description: 'Beach with labradorite deposits', rarity: 'Rare' },
-    { id: 'area_c', name: 'Catseye Valley', description: 'Rare chrysoberyl deposits', rarity: 'Epic' }
-  ],
-  TIER_4_A: [
-    { id: 'area_a', name: 'Muzo Wall', description: 'Legendary emerald mine face', rarity: 'Epic' },
-    { id: 'area_b', name: 'Alexandrite Ridge', description: 'Color-changing alexandrite deposits', rarity: 'Legendary' },
-    { id: 'area_c', name: 'Colombian Deep', description: 'Deep shaft with rare finds', rarity: 'Epic' }
-  ],
-  TIER_4_B: [
-    { id: 'area_a', name: 'Lapis Deposit', description: 'Deep blue lapis lazuli veins', rarity: 'Rare' },
-    { id: 'area_b', name: 'Kashmir Sapphire', description: 'Premier Kashmir blue sapphire', rarity: 'Epic' },
-    { id: 'area_c', name: 'Himalayan Deep', description: 'High altitude gem discovery', rarity: 'Epic' }
-  ],
-  TIER_4_C: [
-    { id: 'area_a', name: 'Pink Diamond Zone', description: 'Rare pink diamond formation', rarity: 'Legendary' },
-    { id: 'area_b', name: 'Argyle Pipe', description: 'Primary kimberlite pipe source', rarity: 'Epic' },
-    { id: 'area_c', name: 'Fancy Color Vein', description: 'Champagne and cognac diamonds', rarity: 'Legendary' }
-  ],
-  TIER_5_A: [
-    { id: 'area_a', name: 'Golconda Main', description: 'Historic diamond source', rarity: 'Legendary' },
-    { id: 'area_b', name: 'Hope Vault', description: 'Rare blue diamond formation', rarity: 'Legendary' },
-    { id: 'area_c', name: 'Koh-i-Noor Zone', description: 'Premier gem quality area', rarity: 'Legendary' }
-  ],
-  TIER_5_B: [
-    { id: 'area_a', name: 'Androy Canyon', description: 'Grandidierite deposits', rarity: 'Legendary' },
-    { id: 'area_b', name: 'Sapphire Flood', description: 'Alluvial blue sapphire deposits', rarity: 'Epic' },
-    { id: 'area_c', name: 'Hidden Vein', description: 'Secret gem-bearing formation', rarity: 'Legendary' }
-  ],
-  TIER_5_C: [
-    { id: 'area_a', name: 'Secret Valley', description: 'Legendary hidden gem location', rarity: 'Legendary' },
-    { id: 'area_b', name: 'Burmese Deep', description: 'Premier ruby and sapphire source', rarity: 'Legendary' },
-    { id: 'area_c', name: 'Panjshir Ridge', description: 'Famous emerald deposits', rarity: 'Legendary' }
-  ]
-};
-
-const RARITY_COLORS = {
-  Common: 'bg-gray-600',
-  Uncommon: 'bg-green-600',
-  Rare: 'bg-blue-600',
-  Epic: 'bg-purple-600',
-  Legendary: 'bg-yellow-600'
-};
-
-function getDefaultSubareas(mineId) {
-  return SUBAREAS[mineId] || SUBAREAS.TIER_1;
-}
+import { getSubareasForMine, RARITY_COLORS } from '../../../data/subareas';
 
 export default function MineDetails({ mineId }) {
   const { state, dispatch } = useGame();
   const location = LOCATION_TIERS[mineId];
   const workers = state.player?.workers || [];
   const assignedWorkers = workers.filter(w => w.assignedArea === mineId);
-  const subareas = getDefaultSubareas(mineId);
+  const subareas = getSubareasForMine(mineId);
   
   const handleBack = () => {
     dispatch({ type: CLEAR_MINING_SELECTION });
