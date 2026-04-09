@@ -41,6 +41,7 @@ export const COLLECT_QUEUE_ITEM = 'COLLECT_QUEUE_ITEM';
 export const CANCEL_QUEUE_ITEM = 'CANCEL_QUEUE_ITEM';
 export const UPDATE_PROCESS_STATS = 'UPDATE_PROCESS_STATS';
 export const UNLOCK_QUEUE_SLOT = 'UNLOCK_QUEUE_SLOT';
+export const TICK_QUEUE = 'TICK_QUEUE';
 
 // Zone actions
 export const UNLOCK_ZONE = 'UNLOCK_ZONE';
@@ -48,6 +49,7 @@ export const UNLOCK_ZONE = 'UNLOCK_ZONE';
 // Process equipment actions
 export const BUY_PROCESS_EQUIPMENT = 'BUY_PROCESS_EQUIPMENT';
 export const EQUIP_PROCESS_TOOL = 'EQUIP_PROCESS_TOOL';
+export const UPGRADE_PROCESS_EQUIPMENT = 'UPGRADE_PROCESS_EQUIPMENT';
 
 // Discover state actions
 export const SET_DISCOVER_TAB = 'SET_DISCOVER_TAB';
@@ -65,10 +67,11 @@ export const MINE_SUBAREA = 'MINE_SUBAREA';
 export const COLLECT_PENDING_MATERIALS = 'COLLECT_PENDING_MATERIALS';
 
 const INITIAL_QUEUE_SLOTS = 2;
+const PROCESS_TICK_INTERVAL = 1000; // Check queue every second
 
 const STORAGE_KEY = 'gemstone_game_save';
 
-const MIGRATION_VERSION = 5;
+const MIGRATION_VERSION = 6;
 
 // Quality ranges by mine tier (min%, max%)
 const TIER_QUALITY_RANGES = {
@@ -117,17 +120,22 @@ const initialPlayer = new Player();
     },
     unlockedZones: [], // Array of location tier keys player can access
      processState: {
-       activeProcess: null,        // { itemId, processType, startTime, quality, qualityLevel }
-       queue: [],                  // [{ itemId, processType, startTime, estimatedCompletion }]
-       queueSlots: INITIAL_QUEUE_SLOTS,  // Unlocked queue slots (level unlocks more)
-       completedQueue: [],         // Finished items waiting for collection
-       processCooldowns: {},      // { [itemId]: { low: timestamp, medium: timestamp, high: timestamp } }
-       processingStats: {
-         totalProcessed: 0,
-         masterworksCreated: 0,
-         bestQuality: 0,
-       }
-    }
+        activeProcess: null,        // { itemId, processType, startTime, quality, qualityLevel }
+        queue: [],                  // [{ itemId, processType, startTime, estimatedCompletion }]
+        queueSlots: INITIAL_QUEUE_SLOTS,  // Unlocked queue slots (level unlocks more)
+        completedQueue: [],         // Finished items waiting for collection
+        processCooldowns: {},      // { [itemId]: { low: timestamp, medium: timestamp, high: timestamp } }
+        processingStats: {
+          totalProcessed: 0,
+          masterworksCreated: 0,
+          bestQuality: 0,
+        },
+        equippedTools: {           // Currently equipped process equipment by type
+          cleaning: 'basic_tumbler',
+          cutting: 'basic_cutter',
+          faceting: 'hand_faceter'
+        }
+     }
  };
 
 function migrateState(state) {
@@ -170,21 +178,67 @@ function migrateState(state) {
     };
   }
 
-  // Migration to version 5: New Discover state structure
-  if (migrated.migrationVersion < 5) {
-    migrated = {
-      ...migrated,
-      migrationVersion: MIGRATION_VERSION,
-      discoverState: {
-        ...migrated.discoverState,
-        activeTab: migrated.discoverState?.activeTab === 'idle' ? 'idle' : 'panning',
-        selectedMine: migrated.discoverState?.selectedLocation || null,
-        selectedSubarea: null,
-        pendingMaterials: {},
-        miningCooldowns: {}
-      }
-    };
-  }
+   // Migration to version 5: New Discover state structure
+   if (migrated.migrationVersion < 5) {
+     migrated = {
+       ...migrated,
+       migrationVersion: MIGRATION_VERSION,
+       discoverState: {
+         ...migrated.discoverState,
+         activeTab: migrated.discoverState?.activeTab === 'idle' ? 'idle' : 'panning',
+         selectedMine: migrated.discoverState?.selectedLocation || null,
+         selectedSubarea: null,
+         pendingMaterials: {},
+         miningCooldowns: {}
+       }
+     };
+   }
+
+   // Migration to version 6: Add equippedTools for process equipment
+   if (migrated.migrationVersion < 6) {
+     migrated = {
+       ...migrated,
+       migrationVersion: MIGRATION_VERSION,
+       processState: {
+         ...migrated.processState,
+         equippedTools: migrated.processState?.equippedTools || {
+           cleaning: 'basic_tumbler',
+           cutting: 'basic_cutter',
+           faceting: 'hand_faceter'
+         }
+       }
+     };
+   }
+
+   // Process offline progress: Check queue completions on load
+   if (migrated.processState?.queue || migrated.processState?.activeProcess) {
+     const now = Date.now();
+     const newCompletedQueue = [];
+     const stillQueued = [];
+     
+     // Check queue items
+     const queue = migrated.processState.queue || [];
+     queue.forEach(item => {
+       if (item.estimatedCompletion && now >= item.estimatedCompletion) {
+         newCompletedQueue.push({ ...item, completedAt: now });
+       } else {
+         stillQueued.push(item);
+       }
+     });
+     
+     // Check active process
+     const activeProcess = migrated.processState.activeProcess;
+     if (activeProcess && activeProcess.estimatedCompletion && now >= activeProcess.estimatedCompletion) {
+       newCompletedQueue.push({ ...activeProcess, completedAt: now });
+     }
+     
+     migrated.processState = {
+       ...migrated.processState,
+       queue: stillQueued,
+       activeProcess: null,
+       completedQueue: [...(migrated.processState.completedQueue || []), ...newCompletedQueue]
+     };
+   }
 
    return migrated;
  }
@@ -884,10 +938,58 @@ case UNLOCK_ZONE: {
 
       const completed = completedQueue[index];
       const newCompletedQueue = completedQueue.filter((_, i) => i !== index);
-      const { itemId } = completed;
+      const { itemId, processType } = completed;
+
+      // Calculate quality based on equipped tool
+      const equippedTool = state.processState.equippedTools?.[processType];
+      let quality = 50; // Default quality
+      
+      // Import utility functions inline to avoid circular dependency issues
+      const IDLE_QUALITY_RANGES = {
+        cleaning: { min: 50, max: 75 },
+        cutting: { min: 45, max: 70 },
+        faceting: { min: 40, max: 65 },
+      };
+      
+      if (processType && IDLE_QUALITY_RANGES[processType]) {
+        const range = IDLE_QUALITY_RANGES[processType];
+        const hash = (processType + (completed.itemId || '')).split('').reduce((acc, char) => {
+          return acc + char.charCodeAt(0);
+        }, 0);
+        const ratio = (hash % 100) / 100;
+        quality = range.min + ratio * (range.max - range.min);
+        
+        // Apply equipment quality bonus (from PROCESS_EQUIPMENT)
+        const PROCESS_EQUIPMENT_BONUSES = {
+          basic_tumbler: { cleaning: 0 },
+          vibrating_tumbler: { cleaning: 5 },
+          sonic_cleaner: { cleaning: 10 },
+          industrial_cleaner: { cleaning: 15 },
+          basic_cutter: { cutting: 0 },
+          precision_cutter: { cutting: 5 },
+          diamond_cutter: { cutting: 12 },
+          quantum_cutter: { cutting: 20 },
+          hand_faceter: { faceting: 0 },
+          automatic_faceter: { faceting: 8 },
+          master_faceter: { faceting: 15 },
+          brilliance_engine: { faceting: 20 },
+        };
+        
+        const bonus = PROCESS_EQUIPMENT_BONUSES[equippedTool]?.[processType] || 0;
+        quality = Math.min(85, quality + bonus);
+      }
+      
+      quality = Math.round(quality);
 
       const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
-      const { minerals, gems } = addItemToInventory(inv, itemId);
+      const { minerals, gems } = addItemToInventory(inv, itemId, 1, quality);
+
+      // Update processing stats
+      const stats = state.processState.processingStats;
+      const newTotalProcessed = stats.totalProcessed + 1;
+      const isMasterwork = quality >= 90;
+      const newMasterworksCreated = isMasterwork ? stats.masterworksCreated + 1 : stats.masterworksCreated;
+      const newBestQuality = Math.max(stats.bestQuality, quality);
 
       return {
         ...state,
@@ -901,7 +1003,12 @@ case UNLOCK_ZONE: {
         },
         processState: {
           ...state.processState,
-          completedQueue: newCompletedQueue
+          completedQueue: newCompletedQueue,
+          processingStats: {
+            totalProcessed: newTotalProcessed,
+            masterworksCreated: newMasterworksCreated,
+            bestQuality: newBestQuality
+          }
         }
       };
     }
@@ -962,6 +1069,67 @@ case UNLOCK_ZONE: {
       };
     }
 
+    case TICK_QUEUE: {
+      const now = Date.now();
+      let { queue, activeProcess, completedQueue } = state.processState;
+      
+      // Check if active process is complete
+      if (activeProcess && activeProcess.estimatedCompletion && now >= activeProcess.estimatedCompletion) {
+        completedQueue = [...completedQueue, { ...activeProcess, completedAt: now }];
+        activeProcess = null;
+        
+        // Start next item from queue if available
+        if (queue.length > 0) {
+          const [next, ...rest] = queue;
+          activeProcess = {
+            ...next,
+            startTime: now,
+            status: 'processing'
+          };
+          queue = rest;
+        }
+      }
+      
+      // Check queue items that should now be processing (if no active process)
+      if (!activeProcess && queue.length > 0) {
+        const [next, ...rest] = queue;
+        
+        // Check if this item should start processing
+        if (next.estimatedCompletion && now >= next.estimatedCompletion) {
+          activeProcess = {
+            ...next,
+            startTime: now,
+            status: 'processing'
+          };
+          queue = rest;
+        }
+      }
+      
+      // Check remaining queue items for completion (edge case: items added while game was closed)
+      const newlyCompleted = [];
+      queue = queue.filter(item => {
+        if (item.estimatedCompletion && now >= item.estimatedCompletion) {
+          newlyCompleted.push({ ...item, completedAt: now });
+          return false;
+        }
+        return true;
+      });
+      
+      if (newlyCompleted.length > 0) {
+        completedQueue = [...completedQueue, ...newlyCompleted];
+      }
+      
+      return {
+        ...state,
+        processState: {
+          ...state.processState,
+          queue,
+          activeProcess,
+          completedQueue
+        }
+      };
+    }
+
     case BUY_PROCESS_EQUIPMENT: {
       const equipmentId = action.payload;
       const eq = PROCESS_EQUIPMENT[equipmentId];
@@ -992,7 +1160,6 @@ case UNLOCK_ZONE: {
     case EQUIP_PROCESS_TOOL: {
       const { processType, equipmentId } = action.payload;
       const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], processEquipment: [], currency: { coins: 0 } };
-      const equippedTools = state.player.equippedTools || {};
       
       return {
         ...state,
@@ -1000,10 +1167,60 @@ case UNLOCK_ZONE: {
           ...state.player,
           inventory: {
             ...inv
-          },
+          }
+        },
+        processState: {
+          ...state.processState,
           equippedTools: {
-            ...equippedTools,
+            ...state.processState.equippedTools,
             [processType]: equipmentId
+          }
+        }
+      };
+    }
+
+    case UPGRADE_PROCESS_EQUIPMENT: {
+      const { processType, newEquipmentId } = action.payload;
+      const eq = PROCESS_EQUIPMENT[newEquipmentId];
+      if (!eq) return state;
+      
+      const cost = eq.cost;
+      if (state.player.coins < cost) return state;
+      
+      const processEquipment = state.player.inventory?.processEquipment || [];
+      if (processEquipment.includes(newEquipmentId)) {
+        // Already owned, just equip it
+        return {
+          ...state,
+          player: {
+            ...state.player,
+            coins: state.player.coins - cost
+          },
+          processState: {
+            ...state.processState,
+            equippedTools: {
+              ...state.processState.equippedTools,
+              [processType]: newEquipmentId
+            }
+          }
+        };
+      }
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          coins: state.player.coins - cost,
+          inventory: {
+            ...state.player.inventory,
+            processEquipment: [...processEquipment, newEquipmentId]
+          }
+        },
+        processState: {
+          ...state.processState,
+          equippedTools: {
+            ...state.processState.equippedTools,
+            [processType]: newEquipmentId
           }
         }
       };
@@ -1049,6 +1266,20 @@ case UNLOCK_ZONE: {
       console.warn('Failed to save game on change:', e);
     }
   }, [state]);
+
+  // Queue tick effect - checks for completed queue items every second
+  useEffect(() => {
+    const tickInterval = setInterval(() => {
+      const { queue, activeProcess } = state.processState;
+      
+      // Only tick if there's work to be done
+      if (queue.length > 0 || activeProcess) {
+        dispatch({ type: TICK_QUEUE });
+      }
+    }, PROCESS_TICK_INTERVAL);
+    
+    return () => clearInterval(tickInterval);
+  }, [state.processState.queue, state.processState.activeProcess]);
 
   return (
     <GameContext.Provider value={{ state, dispatch }}>

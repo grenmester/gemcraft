@@ -73,4 +73,24 @@ test.describe('Process Phase - UI Component Structure', () => {
     // Should show some content related to the queue
     await expect(page.locator('text=Idle Queue')).toBeVisible();
   });
+
+  test('equipment tab shows process equipment', async ({ page }) => {
+    await page.getByRole('button', { name: 'Equipment', exact: true }).click();
+    await expect(page.locator('text=Process Equipment')).toBeVisible();
+    await expect(page.locator('text=Currently Equipped')).toBeVisible();
+  });
+
+  test('equipment tab has process type tabs', async ({ page }) => {
+    await page.getByRole('button', { name: 'Equipment', exact: true }).click();
+    // Should see the three process type buttons
+    await expect(page.getByRole('button', { name: /Cleaning/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Cutting/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Faceting/ })).toBeVisible();
+  });
+
+  test('equipment shows upgrade options', async ({ page }) => {
+    await page.getByRole('button', { name: 'Equipment', exact: true }).click();
+    // Should show Basic Tumbler as the first option for cleaning
+    await expect(page.locator('text=Basic Tumbler')).toBeVisible();
+  });
 });
