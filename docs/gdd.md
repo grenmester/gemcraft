@@ -3,8 +3,9 @@
 > **Version:** 4.0  
 > **Last Updated:** 2026-03-30  
 > **Status:** Active Specification
-
+>
 > **Related Documentation:**
+>
 > - [Worker System Detail](./docs/plans/2026-03-30-phase-1-workers-design.md) — Full worker mechanics specification
 > - [Data Schema Reference](./src/schemas/) — Zod schemas for all data types
 > - [Implementation Plans](./docs/plans/) — Phase-by-phase build roadmap
@@ -31,6 +32,7 @@
 **Gemstone Collector** is a casual idle/active hybrid game where players build a gem empire through discovery, collection, and strategic value-addition. The game emphasizes the journey from raw material to crafted treasure.
 
 **Core Pillars:**
+
 1. **Discovery-Driven** — Finding materials creates anticipation and excitement
 2. **Earned Idle** — Rewards collected through active play, accumulated passively
 3. **Layered Depth** — Simple at first, increasingly complex strategic decisions
@@ -46,10 +48,10 @@
 ### 1.3 Core Game Loop
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              CORE GAME LOOP                                 │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
+┌────────────────────────────────────────────────────────────────────────────┐
+│                              CORE GAME LOOP                                │
+├────────────────────────────────────────────────────────────────────────────┤
+│                                                                            │
 │  ┌─────────────┐     ┌──────────────┐     ┌─────────────┐                  │
 │  │  DISCOVER   │────►│  PROCESS     │────►│   CRAFT     │                  │
 │  │             │     │              │     │             │                  │
@@ -72,12 +74,12 @@
 │         │                              ┌─────────────┐                     │
 │         │                              │   UPGRADES  │                     │
 │         │                              │             │                     │
-│         └──────────────────────────────►│  - Workers  │                     │
+│         └─────────────────────────────►│  - Workers  │                     │
 │                                        │  - Areas    │                     │
 │                                        │  - Process  │                     │
 │                                        └─────────────┘                     │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 1.4 Item Flow
@@ -87,11 +89,11 @@ DISCOVER (Mine Raw Materials)
         │
         ▼
 ┌───────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Raw Materials   │────►│    PROCESS      │────►│  Processed Gems │
+│  Raw Materials    │────►│    PROCESS      │────►│  Processed Gems │
 │                   │     │                 │     │                 │
-│  - rough_quartz   │     │  - Cleaning    │     │  - clear_quartz │
-│  - rough_ruby     │     │  - Cutting     │     │  - ruby          │
-│  - raw_malachite  │     │  - Faceting    │     │  - malachite     │
+│  - rough_quartz   │     │  - Cleaning     │     │  - clear_quartz │
+│  - rough_ruby     │     │  - Cutting      │     │  - ruby         │
+│  - raw_malachite  │     │  - Faceting     │     │  - malachite    │
 └───────────────────┘     └─────────────────┘     └─────────────────┘
                                                            │
                                                            ▼
@@ -120,6 +122,7 @@ DISCOVER (Mine Raw Materials)
 **Purpose:** Find and collect raw materials through workers and manual extraction.
 
 **Key Concepts:**
+
 - **Areas:** Each mine location can have ONE worker assigned
 - **Idle Generation:** Assigned workers produce materials automatically (1-minute tick)
 - **Manual Extraction:** Player can manually mine for immediate rewards
@@ -128,6 +131,7 @@ DISCOVER (Mine Raw Materials)
 **Area Progression:** Unlocked through upgrades purchased with Cash.
 
 **Sub-Modes:**
+
 | Mode | Description | Trigger |
 |------|-------------|---------|
 | **Idle** | Worker auto-generates materials | Worker assigned to area |
@@ -138,6 +142,7 @@ DISCOVER (Mine Raw Materials)
 **Purpose:** Transform raw materials into refined gems/minerals.
 
 **Processing Stages:**
+
 | Stage | Description | Available To | Value Increase |
 |-------|-------------|--------------|-----------------|
 | **Cleaning** | Removes matrix/impurities, reveals base gem | All raw materials | +30-40% |
@@ -145,11 +150,13 @@ DISCOVER (Mine Raw Materials)
 | **Faceting** | Adds brilliance/polish | Premium gems only | +80-125% |
 
 **Processing Restrictions:**
+
 - **Cleaning:** All raw materials can be cleaned
 - **Cutting:** Most gems; some minerals (those with crystalline structure)
 - **Faceting:** Only premium gems — **OPAL, TURQUOISE excluded** (too soft, Mohs < 6)
 
 **Quality System:**
+
 - Range: 40-110%
 - Higher quality = higher sell value
 - Idle processing: Queue-based, capped at 85% quality
@@ -160,6 +167,7 @@ DISCOVER (Mine Raw Materials)
 **Purpose:** Combine processed gems with metals to create valuable jewelry.
 
 **Jewelry Types:**
+
 | Type | Gem Slots | Metal Required | Base Multiplier |
 |------|-----------|----------------|-----------------|
 | Ring | 1 | Any metal | 2.5x |
@@ -176,11 +184,13 @@ DISCOVER (Mine Raw Materials)
 **Access:** Menu item (not separate phase)
 
 **Mechanics:**
+
 - **Quick-sell:** Instant sale at base market rates
 - **List items:** Set custom prices, wait for buyers
 - **Price history:** View market trends
 
 **Profit Margins:**
+
 | Item Type | Margin |
 |-----------|--------|
 | Raw materials | Lowest (encourages processing) |
@@ -194,12 +204,14 @@ DISCOVER (Mine Raw Materials)
 **Purpose:** Track discovered items, workers, and upgrades.
 
 **Four Tabs:**
+
 1. **Raw Materials** — All unprocessed items discovered
 2. **Processed** — Refined gems and minerals
 3. **Workers** — All owned workers, XP, assignments
 4. **Upgrades** — Purchased upgrades, current bonuses
 
 **Features:**
+
 - Search function
 - Progress tracking (X/Y discovered, percentage)
 - Each entry shows: name, stack size, location found, processing options, market price
@@ -209,6 +221,7 @@ DISCOVER (Mine Raw Materials)
 **Purpose:** Manage worker hiring, assignment, and progression.
 
 **Features:**
+
 - View all owned workers
 - Hire new workers from shop
 - Assign/unassign workers to areas
@@ -223,6 +236,7 @@ DISCOVER (Mine Raw Materials)
 ### 3.1 Overview
 
 Workers are the primary source of idle material generation. Each worker:
+
 - Can be assigned to ONE mine area
 - Generates materials automatically over time
 - Earns XP and levels up
@@ -230,13 +244,13 @@ Workers are the primary source of idle material generation. Each worker:
 
 ### 3.2 Worker Types
 
-| ID | Name | Cost | Max Level | Efficiency | Luck | Speed | Description |
-|----|------|------|-----------|------------|------|-------|-------------|
-| `novice_miner` | Novice Miner | 100 | 10 | 30 | 20 | 50 | Beginner learning the ropes |
-| `seasoned_prospector` | Seasoned Prospector | 500 | 25 | 50 | 40 | 40 | Years of reliable experience |
-| `crystal_specialist` | Crystal Specialist | 2,000 | 50 | 75 | 30 | 25 | Expert in extracting precious gems |
-| `fortune_seeker` | Fortune Seeker | 3,500 | 50 | 40 | 80 | 45 | Lucky by nature, finds rare gems |
-| `master_gemologist` | Master Gemologist | 10,000 | 100 | 90 | 70 | 60 | Pinnacle of mining expertise |
+| ID                    | Name                | Cost   | Max Level | Efficiency | Luck | Speed | Description                        |
+| --------------------- | ------------------- | ------ | --------- | ---------- | ---- | ----- | ---------------------------------- |
+| `novice_miner`        | Novice Miner        | 100    | 10        | 30         | 20   | 50    | Beginner learning the ropes        |
+| `seasoned_prospector` | Seasoned Prospector | 500    | 25        | 50         | 40   | 40    | Years of reliable experience       |
+| `crystal_specialist`  | Crystal Specialist  | 2,000  | 50        | 75         | 30   | 25    | Expert in extracting precious gems |
+| `fortune_seeker`      | Fortune Seeker      | 3,500  | 50        | 40         | 80   | 45    | Lucky by nature, finds rare gems   |
+| `master_gemologist`   | Master Gemologist   | 10,000 | 100       | 90         | 70   | 60    | Pinnacle of mining expertise       |
 
 ### 3.3 Worker Instance Properties
 
@@ -244,12 +258,12 @@ Each worker instance in player state has:
 
 ```typescript
 interface WorkerInstance {
-  id: string;                    // Unique instance ID (e.g., "worker-1700000000000-abc123")
-  workerTypeId: string;          // Reference to worker type (e.g., "novice_miner")
-  level: number;                 // Current level (1 to workerType.maxLevel)
-  xp: number;                    // Current XP (resets to 0 on level up)
-  assignedArea: string | null;   // Location tier (e.g., "TIER_1") or null if unassigned
-  assignedAt: number | null;    // Timestamp when assigned
+  id: string; // Unique instance ID (e.g., "worker-1700000000000-abc123")
+  workerTypeId: string; // Reference to worker type (e.g., "novice_miner")
+  level: number; // Current level (1 to workerType.maxLevel)
+  xp: number; // Current XP (resets to 0 on level up)
+  assignedArea: string | null; // Location tier (e.g., "TIER_1") or null if unassigned
+  assignedAt: number | null; // Timestamp when assigned
 }
 ```
 
@@ -257,15 +271,16 @@ interface WorkerInstance {
 
 Each worker type has base stats (0-100 scale):
 
-| Stat | Effect |
-|------|--------|
-| **Efficiency** | Affects material yield per tick |
-| **Luck** | Increases chance of rare drops |
-| **Speed** | Affects tick interval (not currently implemented) |
+| Stat           | Effect                                            |
+| -------------- | ------------------------------------------------- |
+| **Efficiency** | Affects material yield per tick                   |
+| **Luck**       | Increases chance of rare drops                    |
+| **Speed**      | Affects tick interval (not currently implemented) |
 
 ### 3.5 Leveling System
 
 **XP to Next Level:**
+
 ```
 XP_required = baseXpToLevel * (1.1 ^ (level - 1))
 
@@ -277,15 +292,17 @@ Examples (baseXpToLevel = 100):
 ```
 
 **Level Up Bonuses:**
+
 - Worker level increases by 1
 - XP resets to 0
-- Efficiency bonus = baseEfficiency * (1 + level * 0.05)
+- Efficiency bonus = baseEfficiency _(1 + level_ 0.05)
 
 ### 3.6 Generation Mechanics
 
 **Tick Interval:** 1 minute (60 seconds)
 
 **Per Tick Calculation:**
+
 ```
 1. Get area loot table for assigned area
 2. Roll for base yield from loot table
@@ -299,6 +316,7 @@ Examples (baseXpToLevel = 100):
 ```
 
 **Rare Drop Bonus:**
+
 - If random roll > 0.95 (5% chance): Upgrade rarity one tier
 
 ### 3.7 Offline Progress
@@ -306,6 +324,7 @@ Examples (baseXpToLevel = 100):
 Workers continue generating while the player is away.
 
 **On App Load:**
+
 1. Calculate elapsed time since last session
 2. Cap offline ticks at 8 hours (480 ticks at 1 min each)
 3. Process accumulated ticks
@@ -325,39 +344,40 @@ Workers continue generating while the player is away.
 
 ### 4.1 Currency Types
 
-| Currency | Source | Use |
-|----------|--------|-----|
-| **Cash (Coins)** | Selling items in marketplace | Purchasing upgrades, hiring workers, unlocking areas |
-| **XP (Experience)** | Worker generation, manual mining, processing | Leveling up workers |
+| Currency            | Source                                       | Use                                                  |
+| ------------------- | -------------------------------------------- | ---------------------------------------------------- |
+| **Cash (Coins)**    | Selling items in marketplace                 | Purchasing upgrades, hiring workers, unlocking areas |
+| **XP (Experience)** | Worker generation, manual mining, processing | Leveling up workers                                  |
 
 ### 4.2 Player State
 
 ```typescript
 interface PlayerState {
-  coins: number;                    // Cash balance
-  level: number;                   // Player level (not currently used for progression)
-  xp: number;                      // Player XP (not currently implemented)
-  gems: Array<{gemId: string, quality: number}>;  // Inventory: gems
-  minerals: Array<{id: string, quantity: number}>; // Inventory: minerals
-  equipment: string[];              // Owned discovery equipment IDs
-  processEquipment: string[];      // Owned processing equipment IDs
-  gemdex: string[];                // Discovered gem IDs
-  workers: WorkerInstance[];       // Owned workers
-  lastOnlineTimestamp: number;      // For offline progress
-  totalWorkerXp: number;            // Lifetime worker XP (stats tracking)
+  coins: number; // Cash balance
+  level: number; // Player level (not currently used for progression)
+  xp: number; // Player XP (not currently implemented)
+  gems: Array<{ gemId: string; quality: number }>; // Inventory: gems
+  minerals: Array<{ id: string; quantity: number }>; // Inventory: minerals
+  equipment: string[]; // Owned discovery equipment IDs
+  processEquipment: string[]; // Owned processing equipment IDs
+  gemdex: string[]; // Discovered gem IDs
+  workers: WorkerInstance[]; // Owned workers
+  lastOnlineTimestamp: number; // For offline progress
+  totalWorkerXp: number; // Lifetime worker XP (stats tracking)
 }
 ```
 
 ### 4.3 Value Progression
 
-| Stage | Quality Range | Value Multiplier |
-|-------|---------------|------------------|
-| Raw (from Discover) | 60-100% | 1.0x |
-| Cleaned | 50-115% | 1.3-1.5x |
-| Cut | 40-115% | 1.5-2.0x |
-| Faceted | 40-110% | 2.0-3.0x |
+| Stage               | Quality Range | Value Multiplier |
+| ------------------- | ------------- | ---------------- |
+| Raw (from Discover) | 60-100%       | 1.0x             |
+| Cleaned             | 50-115%       | 1.3-1.5x         |
+| Cut                 | 40-115%       | 1.5-2.0x         |
+| Faceted             | 40-110%       | 2.0-3.0x         |
 
 **Example Chain:**
+
 ```
 rough_quartz (raw):        $10 base
   → clear_quartz (cleaned): $14 (+40%)
@@ -375,37 +395,37 @@ rough_quartz (raw):        $10 base
 
 Purchased with Cash, unlocks new mine areas.
 
-| Equipment ID | Name | Cost | Unlock Level | Drop Rate Bonus | Extra Items | Unlocks |
-|--------------|------|------|--------------|-----------------|-------------|---------|
-| `NONE` | None | 0 | 0 | 0% | 0 | TIER_1 |
-| `BASIC_PICKAXE` | Basic Pickaxe | 100 | 2 | +10% | 0 | TIER_1_B, TIER_1_C |
-| `IRON_PICKAXE` | Iron Pickaxe | 500 | 5 | +20% | 0 | TIER_2_A, TIER_2_B |
-| `STEEL_DRILL` | Steel Drill | 2,000 | 10 | +30% | 1 | TIER_2_C, TIER_3_A |
-| `DIAMOND_DRILL` | Diamond Drill | 5,000 | 20 | +40% | 1 | TIER_3_B, TIER_3_C |
-| `HEAVY_MACHINERY` | Heavy Machinery | 15,000 | 35 | +50% | 2 | TIER_4_A, TIER_4_B |
-| `ELITE_OPERATIONS` | Elite Operations | 50,000 | 50 | +60% | 2 | TIER_4_C, TIER_5_A, TIER_5_B, TIER_5_C |
+| Equipment ID       | Name             | Cost   | Unlock Level | Drop Rate Bonus | Extra Items | Unlocks                                |
+| ------------------ | ---------------- | ------ | ------------ | --------------- | ----------- | -------------------------------------- |
+| `NONE`             | None             | 0      | 0            | 0%              | 0           | TIER_1                                 |
+| `BASIC_PICKAXE`    | Basic Pickaxe    | 100    | 2            | +10%            | 0           | TIER_1_B, TIER_1_C                     |
+| `IRON_PICKAXE`     | Iron Pickaxe     | 500    | 5            | +20%            | 0           | TIER_2_A, TIER_2_B                     |
+| `STEEL_DRILL`      | Steel Drill      | 2,000  | 10           | +30%            | 1           | TIER_2_C, TIER_3_A                     |
+| `DIAMOND_DRILL`    | Diamond Drill    | 5,000  | 20           | +40%            | 1           | TIER_3_B, TIER_3_C                     |
+| `HEAVY_MACHINERY`  | Heavy Machinery  | 15,000 | 35           | +50%            | 2           | TIER_4_A, TIER_4_B                     |
+| `ELITE_OPERATIONS` | Elite Operations | 50,000 | 50           | +60%            | 2           | TIER_4_C, TIER_5_A, TIER_5_B, TIER_5_C |
 
 ### 5.2 Mine Locations (Areas)
 
 15 location tiers, organized by unlock level.
 
-| Tier | Location ID | Name | Unlock Level | Unlock Equipment | Unlock Materials |
-|------|-------------|------|--------------|------------------|------------------|
-| 1 | TIER_1 | River Panning | 0 | NONE | — |
-| 1 | TIER_1_B | Ozark Hills | 2 | BASIC_PICKAXE | — |
-| 1 | TIER_1_C | Bavarian Fields | 3 | BASIC_PICKAXE | — |
-| 2 | TIER_2_A | Ural Shores | 5 | IRON_PICKAXE | — |
-| 2 | TIER_2_B | Bahia Mines | 7 | IRON_PICKAXE | clear_quartz: 10 |
-| 2 | TIER_2_C | Montana Streambed | 10 | STEEL_DRILL | — |
-| 3 | TIER_3_A | Minas Gerais | 15 | STEEL_DRILL | clear_quartz: 20, obsidian: 10 |
-| 3 | TIER_3_B | Mogok Valley | 20 | DIAMOND_DRILL | — |
-| 3 | TIER_3_C | Sri Lanka Fields | 25 | DIAMOND_DRILL | lapis_lazuli: 5 |
-| 4 | TIER_4_A | Muzo Highlands | 30 | HEAVY_MACHINERY | — |
-| 4 | TIER_4_B | Kashmir Heights | 35 | HEAVY_MACHINERY | malachite: 10, azurite: 5 |
-| 4 | TIER_4_C | Argyle Caverns | 40 | ELITE_OPERATIONS | — |
-| 5 | TIER_5_A | Golconda Depths | 50 | ELITE_OPERATIONS | hematite: 20, pyrite: 10 |
-| 5 | TIER_5_B | Androy Dunes | 60 | ELITE_OPERATIONS | labradorite: 5, celestite: 5 |
-| 5 | TIER_5_C | Mogok Hidden | 75 | ELITE_OPERATIONS | lapis_lazuli: 3, malachite: 3, azurite: 3 |
+| Tier | Location ID | Name              | Unlock Level | Unlock Equipment | Unlock Materials                          |
+| ---- | ----------- | ----------------- | ------------ | ---------------- | ----------------------------------------- |
+| 1    | TIER_1      | River Panning     | 0            | NONE             | —                                         |
+| 1    | TIER_1_B    | Ozark Hills       | 2            | BASIC_PICKAXE    | —                                         |
+| 1    | TIER_1_C    | Bavarian Fields   | 3            | BASIC_PICKAXE    | —                                         |
+| 2    | TIER_2_A    | Ural Shores       | 5            | IRON_PICKAXE     | —                                         |
+| 2    | TIER_2_B    | Bahia Mines       | 7            | IRON_PICKAXE     | clear_quartz: 10                          |
+| 2    | TIER_2_C    | Montana Streambed | 10           | STEEL_DRILL      | —                                         |
+| 3    | TIER_3_A    | Minas Gerais      | 15           | STEEL_DRILL      | clear_quartz: 20, obsidian: 10            |
+| 3    | TIER_3_B    | Mogok Valley      | 20           | DIAMOND_DRILL    | —                                         |
+| 3    | TIER_3_C    | Sri Lanka Fields  | 25           | DIAMOND_DRILL    | lapis_lazuli: 5                           |
+| 4    | TIER_4_A    | Muzo Highlands    | 30           | HEAVY_MACHINERY  | —                                         |
+| 4    | TIER_4_B    | Kashmir Heights   | 35           | HEAVY_MACHINERY  | malachite: 10, azurite: 5                 |
+| 4    | TIER_4_C    | Argyle Caverns    | 40           | ELITE_OPERATIONS | —                                         |
+| 5    | TIER_5_A    | Golconda Depths   | 50           | ELITE_OPERATIONS | hematite: 20, pyrite: 10                  |
+| 5    | TIER_5_B    | Androy Dunes      | 60           | ELITE_OPERATIONS | labradorite: 5, celestite: 5              |
+| 5    | TIER_5_C    | Mogok Hidden      | 75           | ELITE_OPERATIONS | lapis_lazuli: 3, malachite: 3, azurite: 3 |
 
 ### 5.3 Process Equipment
 
@@ -424,6 +444,7 @@ Twelve equipment items across three categories (cleaning, cutting, faceting), ea
 Purchased with Cash, providing permanent bonuses.
 
 **Categories:**
+
 | Category | Description |
 |----------|-------------|
 | **Processing** | Faster cleaning/cutting/faceting, quality bonuses |
@@ -432,6 +453,7 @@ Purchased with Cash, providing permanent bonuses.
 | **Marketplace** | Lower fees, price history |
 
 **Upgrade Properties:**
+
 ```yaml
 - id: upgrade_id
   name: Display Name
@@ -454,6 +476,7 @@ Purchased with Cash, providing permanent bonuses.
 ### 6.1 Items (40 Total)
 
 **Gems (24):**
+
 | Rarity | Count | Examples |
 |--------|-------|-----------|
 | Legendary | 6 | Diamond, Blue Diamond, Alexandrite, Taaffeite, Musgravite, Red Beryl |
@@ -463,6 +486,7 @@ Purchased with Cash, providing permanent bonuses.
 | Common | 2 | Amethyst, Clear Quartz |
 
 **Minerals (16):**
+
 | Rarity | Count | Examples |
 |--------|-------|-----------|
 | Uncommon | 7 | Malachite, Azurite, Lapis Lazuli, Rose Quartz, Labradorite, Celestite, Quartz Geode |
@@ -472,31 +496,31 @@ Purchased with Cash, providing permanent bonuses.
 
 ```yaml
 items:
-  - id: string              # unique identifier (e.g., "ruby", "clear_quartz")
-    name: string            # display name (e.g., "Ruby")
-    category: Gem|Mineral  # item category
-    hardness: number       # Mohs scale (1-10)
-    value: number          # base coin value
+  - id: string # unique identifier (e.g., "ruby", "clear_quartz")
+    name: string # display name (e.g., "Ruby")
+    category: Gem|Mineral # item category
+    hardness: number # Mohs scale (1-10)
+    value: number # base coin value
     rarity: Common|Uncommon|Rare|Epic|Legendary
-    realWorldLocations:     # for flavor/flair
+    realWorldLocations: # for flavor/flair
       - string
     processing:
       canClean: boolean
       canCut: boolean
       canFacet: boolean
-      baseProcessTime: number    # seconds
-      processDifficulty: number   # 1-5
+      baseProcessTime: number # seconds
+      processDifficulty: number # 1-5
 ```
 
 ### 6.3 Location Schema
 
 ```yaml
 TIER_X:
-  name: string              # display name
-  color: string             # hex color for UI (#RRGGBB)
-  unlockLevel: number       # player level required
-  unlockEquipment: string   # equipment ID required
-  unlockMaterials:          # materials required (null if none)
+  name: string # display name
+  color: string # hex color for UI (#RRGGBB)
+  unlockLevel: number # player level required
+  unlockEquipment: string # equipment ID required
+  unlockMaterials: # materials required (null if none)
     item_id: quantity
 ```
 
@@ -504,18 +528,18 @@ TIER_X:
 
 ```yaml
 workers:
-  - id: string              # unique type identifier
-    name: string            # display name
-    description: string    # flavor text
-    maxLevel: number       # maximum level for this type
+  - id: string # unique type identifier
+    name: string # display name
+    description: string # flavor text
+    maxLevel: number # maximum level for this type
     baseXpPerAction: number # XP earned per tick
-    xpToLevel: number      # base XP to reach level 2
+    xpToLevel: number # base XP to reach level 2
     stats:
-      efficiency: number   # 0-100
-      luck: number        # 0-100
-      speed: number       # 0-100
+      efficiency: number # 0-100
+      luck: number # 0-100
+      speed: number # 0-100
     cost:
-      coins: number        # purchase cost
+      coins: number # purchase cost
 ```
 
 ### 6.5 Equipment Schema
@@ -527,12 +551,12 @@ equipment_id:
   cost: number
   unlockLevel: number
   effect:
-    dropRateBonus: number  # 0-1 (percentage)
-    extraItems: number      # additional items per discovery
-  unlocks:                  # array of location IDs this equipment unlocks
+    dropRateBonus: number # 0-1 (percentage)
+    extraItems: number # additional items per discovery
+  unlocks: # array of location IDs this equipment unlocks
     - string
   description: string
-  craftRecipe:             # null if purchase-only
+  craftRecipe: # null if purchase-only
     materials:
       item_id: quantity
     coins: number
@@ -668,26 +692,27 @@ npm run test:run # Run tests once
 
 ## Appendix A: Glossary
 
-| Term | Definition |
-|------|------------|
-| **Area** | A mine location where workers can be assigned |
-| **Cleaning** | First stage of processing, removes matrix |
-| **Cutting** | Second stage of processing, shapes the gem |
-| **Faceting** | Final stage of processing, adds brilliance |
-| **Gemdex** | Collection/encyclopedia tracking discovered items |
-| **Loot Table** | Probability distribution for item drops |
-| **Player Level** | Overall player progression (not currently used) |
-| **Quality** | Percentage affecting item value (40-110%) |
-| **Raw Material** | Item before processing (e.g., rough_quartz) |
-| **Processed** | Item after processing (e.g., clear_quartz) |
-| **Tick** | Time interval for worker generation (1 minute) |
-| **Worker** | Assignable entity that generates materials |
+| Term             | Definition                                        |
+| ---------------- | ------------------------------------------------- |
+| **Area**         | A mine location where workers can be assigned     |
+| **Cleaning**     | First stage of processing, removes matrix         |
+| **Cutting**      | Second stage of processing, shapes the gem        |
+| **Faceting**     | Final stage of processing, adds brilliance        |
+| **Gemdex**       | Collection/encyclopedia tracking discovered items |
+| **Loot Table**   | Probability distribution for item drops           |
+| **Player Level** | Overall player progression (not currently used)   |
+| **Quality**      | Percentage affecting item value (40-110%)         |
+| **Raw Material** | Item before processing (e.g., rough_quartz)       |
+| **Processed**    | Item after processing (e.g., clear_quartz)        |
+| **Tick**         | Time interval for worker generation (1 minute)    |
+| **Worker**       | Assignable entity that generates materials        |
 
 ---
 
 ## Appendix B: File Inventory
 
 ### Data Files
+
 - `src/data/items.yaml` — 40 items (gems + minerals)
 - `src/data/workers.yaml` — 5 worker types
 - `src/data/upgrades.yaml` — 10 upgrades
@@ -696,6 +721,7 @@ npm run test:run # Run tests once
 - `src/data/processEquipment.yaml` — 12 processing equipment
 
 ### Schema Files
+
 - `src/schemas/items.js`
 - `src/schemas/workers.js`
 - `src/schemas/upgrades.js`
@@ -703,6 +729,7 @@ npm run test:run # Run tests once
 - `src/schemas/equipment.js`
 
 ### Loader Files
+
 - `src/loaders/items.js`
 - `src/loaders/workers.js`
 - `src/loaders/upgrades.js`
@@ -711,4 +738,4 @@ npm run test:run # Run tests once
 
 ---
 
-*This document is the authoritative source for game mechanics. All implementation should follow this specification. For detailed worker system mechanics, see the linked Worker System Design document.*
+_This document is the authoritative source for game mechanics. All implementation should follow this specification. For detailed worker system mechanics, see the linked Worker System Design document._
