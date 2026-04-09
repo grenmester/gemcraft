@@ -1,6 +1,14 @@
 # Discover — Design Doc
 
-| Status: Implemented | Owner: System | Last Updated: 2026-03-30 |
+| Status: In Progress (Refactoring) | Owner: System | Last Updated: 2026-04-09 |
+
+**Clarified Decisions (2026-04-09, updated 2026-04-09 v2):**
+- **Tab Order:** Panning/Active is DEFAULT tab
+- **Active Tab:** Shows mine selection directly (no intermediate button)
+- **Navigation Flow:** Mine Selection → Mine Details (with subareas) → Subarea Details
+- **Manual Mining:** Subarea view has "Mine" button with Small/Medium/Large reward options
+- **Idle Tab:** Shows idle mine selection with worker info (placeholder until Workers implemented)
+- **Starting state:** Empty (no starter worker, prompt to hire)
 
 ---
 
@@ -142,38 +150,241 @@ Raw materials are items found in the wild before processing.
 
 ## 8. User Experience
 
+### Tab Structure
+
+| Tab | Default | Description |
+|-----|---------|-------------|
+| **Panning (Active)** | ✓ DEFAULT | Mine selection → Mine details → Subarea details |
+| **Idle** | - | Idle mine selection with worker info |
+
+### Navigation Flow (Active/Panning Tab)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  DISCOVER → PANNNING TAB (Default)                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  [ Panning ✓ ]  [ Idle ]    ← Tabs                        │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  🗺 MINE SELECTION                                   │   │
+│  │                                                      │   │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐           │   │
+│  │  │ River    │ │ Ozark    │ │ Bavarian │  ...       │   │
+│  │  │ Panning  │ │ Hills    │ │ Fields   │           │   │
+│  │  │ TIER 1   │ │ TIER 1   │ │ TIER 1   │           │   │
+│  │  └──────────┘ └──────────┘ └──────────┘           │   │
+│  │                                                      │   │
+│  │  (Grid of mine cards, clickable)                     │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼ (click mine)
+┌─────────────────────────────────────────────────────────────┐
+│  DISCOVER → MINE DETAILS                                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  [← Back to Mines]    TIER 1: River Panning                │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  📍 River Panning                                    │   │
+│  │  A gentle stream where beginners find their first     │   │
+│  │  gems. Perfect for learning the basics.              │   │
+│  │                                                      │   │
+│  │  Workers Assigned: 1/3                              │   │
+│  │  ┌─────────────────────────────────────────────┐   │   │
+│  │  │ 🧑‍🔧 Novice Miner (Lv.3) - Area A         │   │   │
+│  │  └─────────────────────────────────────────────┘   │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  SUBAREAS                                           │   │
+│  │                                                      │   │
+│  │  ┌────────────────────────────────────────────┐   │   │
+│  │  │  Area A - River Bend                       │   │   │
+│  │  │  Common gems • Loot table preview          │   │   │
+│  │  │  [View Details →]                          │   │   │
+│  │  └────────────────────────────────────────────┘   │   │
+│  │                                                      │   │
+│  │  ┌────────────────────────────────────────────┐   │   │
+│  │  │  Area B - Sandbar                         │   │   │
+│  │  │  Common gems • Loot table preview          │   │   │
+│  │  │  [View Details →]                          │   │   │
+│  │  └────────────────────────────────────────────┘   │   │
+│  │                                                      │   │
+│  │  ┌────────────────────────────────────────────┐   │   │
+│  │  │  Area C - Rocky Shore                      │   │   │
+│  │  │  Uncommon gems • Loot table preview        │   │   │
+│  │  │  [View Details →]                          │   │   │
+│  │  └────────────────────────────────────────────┘   │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼ (click subarea)
+┌─────────────────────────────────────────────────────────────┐
+│  DISCOVER → SUBAREA DETAILS                                │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  [← Back to Mine]    Area A - River Bend                  │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  🌊 Area A - River Bend                              │   │
+│  │                                                      │   │
+│  │  A calm bend in the river with excellent gem         │   │
+│  │  deposits in the shallow water.                       │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  💎 LOOT TABLE                                      │   │
+│  │                                                      │   │
+│  │  Clear Quartz        ████████████████░░░░  40%      │   │
+│  │  Raw Obsidian        █████████████░░░░░░░  30%      │   │
+│  │  Raw Fluorite        ██████████░░░░░░░░░░  25%      │   │
+│  │  Amethyst            ████░░░░░░░░░░░░░░░░   5%      │   │
+│  │                                                      │   │
+│  │  ⚠️ 5% chance for rarity upgrade                   │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  🧑‍🔧 ASSIGNED WORKERS                               │   │
+│  │                                                      │   │
+│  │  ┌────────────────────────────────────────────┐   │   │
+│  │  │ 🧑‍🔧 Novice Miner (Lv.3)                    │   │   │
+│  │  │ EFF: 45 | LCK: 30 | Lv XP: ████░░ 67%     │   │   │
+│  │  └────────────────────────────────────────────┘   │   │
+│  │                                                      │   │
+│  │  + Assign more workers (dropdown)                   │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  ⛏️ MANUAL MINING                                   │   │
+│  │                                                      │   │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐           │   │
+│  │  │  Small   │ │  Medium  │ │   Large  │           │   │
+│  │  │  Reward  │ │  Reward  │ │  Reward  │           │   │
+│  │  │  1 item  │ │  3 items │ │  5 items │           │   │
+│  │  │  +5s CD   │ │  +15s CD │ │  +30s CD │           │   │
+│  │  └──────────┘ └──────────┘ └──────────┘           │   │
+│  │                                                      │   │
+│  │  Cooldowns reset after 5 minutes                    │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Navigation Flow (Idle Tab)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  DISCOVER → IDLE TAB                                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  [ Panning ]  [ Idle ✓ ]    ← Tabs                        │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  🧑‍🔧 WORKERS OVERVIEW                                │   │
+│  │                                                      │   │
+│  │  Total Workers: 3 / 10                            │   │
+│  │  Assigned: 2 | Idle: 1                            │   │
+│  │                                                      │   │
+│  │  ┌────────────────────────────────────────────┐   │   │
+│  │  │ 🧑‍🔧 Novice Miner (Lv.5)                    │   │   │
+│  │  │ Assigned to: Area A - River Bend           │   │   │
+│  │  │ Next tick: 45s                            │   │   │
+│  │  │ Pending: 3 items [Collect]                 │   │   │
+│  │  └────────────────────────────────────────────┘   │   │
+│  │                                                      │   │
+│  │  ┌────────────────────────────────────────────┐   │   │
+│  │  │ 🧑‍🔧 Seasoned Prospector (Lv.8)             │   │   │
+│  │  │ Assigned to: Area B - Sandbar              │   │   │
+│  │  │ Next tick: 12s                            │   │   │
+│  │  │ Pending: 1 item [Collect]                  │   │   │
+│  │  └────────────────────────────────────────────┘   │   │
+│  │                                                      │   │
+│  │  ┌────────────────────────────────────────────┐   │   │
+│  │  │ 🧑‍🔧 Crystal Specialist (Lv.12) ⚡ Idle      │   │   │
+│  │  │ No assignment                              │   │   │
+│  │  │ [Assign to mine →]                        │   │   │
+│  │  └────────────────────────────────────────────┘   │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  ⏱ NEXT GENERATION: River Panning                 │   │
+│  │  ████████████████░░░░░░░░░░░  45s                  │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Empty State (No Workers)
+
+When `workers.length === 0`:
+```
+┌─────────────────────────────────────────────────────────────┐
+│  No workers hired yet.                                      │
+│  Go to [Workers] tab to hire your first!                   │
+│                                                             │
+│  Mines are ready but waiting for workers to generate       │
+│  materials while you're away.                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ### Inputs
-- Click area tab → Switch to that area
-- Click "Mine" button → Manual extraction
-- Assign worker dropdown → Assign to area
+- Click Panning tab → Mine selection (DEFAULT)
+- Click Idle tab → Worker overview with idle info
+- Click mine card → Mine details with subareas
+- Click subarea → Subarea details with loot table, workers, mine buttons
+- Click "Mine (Small/Medium/Large)" → Simulate resource gathering
+- Click "Collect" → Add pending materials to inventory
 
 ### Outputs / Feedback
-- Area shows current worker and status
-- "Mine" button shows last drop result
-- Materials added to inventory
-- XP gained notification
-
-### Screens / UI Elements
-- **DiscoverScreen** — Main mining view
-  - Area selector tabs
-  - Worker assignment panel
-  - Manual mine button
-  - Loot preview
+- Subarea loot tables visible
+- Worker assignment status per subarea
+- Mining cooldowns per subarea
+- Pending materials count
+- "Collect" adds materials to inventory
 
 ---
 
-## 9. Failure & Mitigation
+## 9. Generation Flow
+
+### Per-Tick Generation (1 minute)
+
+```
+1. Timer reaches 0
+2. Check if area has assigned worker
+3. If yes:
+   a. Roll loot from area loot table
+   b. Apply worker efficiency bonus
+   c. Apply worker luck bonus
+   d. Add item(s) to area's pending pile
+   e. Reset timer
+4. If no worker:
+   - No generation occurs
+   - Display "Assign a worker to generate materials"
+```
+
+### Pending Materials
+
+- Each area has its own pending pile (Map: `areaId -> PendingItem[]`)
+- Pending items shown with count badge
+- "Collect" button transfers all pending to inventory
+- Offline progress calculates accumulated ticks (capped at 8 hours)
+
+## 10. Failure & Mitigation
 
 | Failure | Handling |
 |---------|----------|
-| No worker assigned | Show "Assign a worker" prompt |
-| Area locked | Show unlock requirements |
-| Insufficient materials for unlock | Gray out with cost shown |
-| Empty loot table | Fallback to lowest tier drops |
+| No worker assigned | Show empty state with prompt to hire |
+| Area locked | Show unlock requirements (equipment, level) |
+| No pending materials | "Collect" button disabled, shows "No materials to collect" |
+| Inventory full | Show warning, materials stay in pending |
 
 ---
 
-## 10. Tuning & Metrics
+## 11. Tuning & Metrics
 
 ### Exposed Variables for Balancing
 
@@ -190,9 +401,16 @@ Raw materials are items found in the wild before processing.
 
 ---
 
-## 11. Open Questions / Risks
+## 12. Open Questions / Risks
 
 - [x] Area count (decided: 15 across 5 tiers)
 - [x] Equipment progression (decided: 7 tiers)
-- [ ] Manual mining scaling (deferred)
-- [ ] Area-specific minigames (out of scope)
+- [x] Worker assignment flow (decided: Hybrid)
+- [x] Material accumulation (decided: Per-area pending)
+- [x] Starting state (decided: Empty, prompt to hire)
+- [x] Tab order (decided: Panning default)
+- [x] Subarea navigation (decided: Mine Selection → Mine Details → Subarea Details)
+- [x] Manual mining rewards (decided: Small/Medium/Large buttons)
+- [ ] Subarea data structure (TBD: how to define subareas per mine)
+- [ ] Mining cooldown persistence (TBD: store in localStorage?)
+- [ ] Worker generation logic (Phase 1)

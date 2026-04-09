@@ -78,8 +78,8 @@
 
 | Mechanic  | Status      | Summary                                                     | Link                           |
 | --------- | ----------- | ----------------------------------------------------------- | ------------------------------ |
-| Workers   | Implemented | Assignable units that generate materials idle               | [workers.md](./workers.md)     |
-| Discover  | Implemented | Mining areas, manual extraction, loot tables                | [discover.md](./discover.md)   |
+| Discover  | In Progress | Mine selection → details → subareas, manual mining           | [discover.md](./discover.md)   |
+| Workers   | Planned     | Assignable units that generate materials idle               | [workers.md](./workers.md)     |
 | Process   | Design      | Transform raw materials through cleaning, cutting, faceting | [process.md](./process.md)     |
 | Craft     | Design      | Combine gems with metals to create jewelry                  | [craft.md](./craft.md)         |
 | Sell      | Design      | Marketplace for buying/selling items                        | [sell.md](./sell.md)           |
@@ -214,11 +214,13 @@ Unlock Equipment ──────────► Unlock Equipment ────
 
 | Phase   | Focus           | Key Deliverables                                 |
 | ------- | --------------- | ------------------------------------------------ |
-| Phase 0 | Data Foundation | YAML data files, loaders, schemas                |
+| Phase 0 | Data Foundation | YAML data files, loaders, schemas ✅              |
 | Phase 1 | Workers         | Worker system, idle generation, offline progress |
 | Phase 2 | Processing      | Cleaning, cutting, faceting mechanics            |
 | Phase 3 | Crafting        | Jewelry creation system                          |
 | Phase 4 | Marketplace     | Buy/sell mechanics, price history                |
+
+> **Current Work:** Discover Refactor (preparing UI for Workers)
 
 ---
 

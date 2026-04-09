@@ -36,3 +36,9 @@ The game is in `.worktrees/prototype/`. Current structure:
 1. **Loot Tables:** Per-location loot objects with rarity tiers
 2. **Discover Tabs:** UI tabs (not separate screens)
 3. **Rewards Summary:** Show earned rewards with names
+
+## Notes
+
+- Follow conventional commits style for commit messages
+- Use `pnpm` over `npm`
+- Use `uv python` over `python`
