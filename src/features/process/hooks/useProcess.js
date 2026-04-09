@@ -70,8 +70,8 @@ export function useProcess() {
    * Returns items that are currently in inventory
    */
   const availableItems = [
-    ...(inventory.minerals || []).map(m => ({ id: m.id, gemId: m.id, quantity: m.quantity, type: 'mineral' })),
-    ...(inventory.gems || []).map(g => ({ id: g.gemId, gemId: g.gemId, quantity: g.quantity, type: 'gem' }))
+    ...(inventory.minerals || []).map(m => ({ id: m.id, gemId: m.id, quantity: m.quantity, quality: m.quality, type: 'mineral' })),
+    ...(inventory.gems || []).map(g => ({ id: g.gemId, gemId: g.gemId, quantity: g.quantity, quality: g.quality, type: 'gem' }))
   ];
   
   return {

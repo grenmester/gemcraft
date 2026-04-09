@@ -66,6 +66,7 @@ export default function Inventory() {
         gemId: invItem.gemId,
         name: itemData?.name || invItem.gemId,
         quantity: invItem.quantity,
+        quality: invItem.quality,
         value: itemData?.value || 0,
         hardness: itemData?.hardness || 0,
         rarity: itemData?.rarity || 'Unknown',
@@ -166,6 +167,15 @@ export default function Inventory() {
         ) : (
           filteredItems.map(item => {
             const ItemIcon = item.Icon;
+            // Quality badge color based on quality percentage
+            const getQualityColor = (quality) => {
+              if (quality === undefined || quality === null) return 'text-gray-400';
+              if (quality >= 90) return 'text-yellow-400';
+              if (quality >= 75) return 'text-green-400';
+              if (quality >= 60) return 'text-blue-400';
+              return 'text-gray-400';
+            };
+            const qualityColor = getQualityColor(item.quality);
             return (
               <div
                 key={item.id}
@@ -181,6 +191,9 @@ export default function Inventory() {
                 {activeTab !== 'equipment' && (
                   <>
                     <div className="text-sm text-teal-400">x{item.quantity}</div>
+                    <div className={`text-xs font-medium ${qualityColor}`}>
+                      Q: {item.quality !== undefined && item.quality !== null ? `${Math.round(item.quality)}%` : 'N/A'}
+                    </div>
                     <div className="text-xs text-yellow-400 flex items-center justify-center gap-1">
                       {item.value} <FaGem className="text-xs" />
                     </div>

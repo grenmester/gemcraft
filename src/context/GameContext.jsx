@@ -70,6 +70,36 @@ const STORAGE_KEY = 'gemstone_game_save';
 
 const MIGRATION_VERSION = 5;
 
+// Quality ranges by mine tier (min%, max%)
+const TIER_QUALITY_RANGES = {
+  TIER_1: { min: 95, max: 100 },
+  TIER_1_B: { min: 90, max: 98 },
+  TIER_1_C: { min: 85, max: 95 },
+  TIER_2: { min: 85, max: 95 },
+  TIER_2_B: { min: 80, max: 92 },
+  TIER_2_C: { min: 75, max: 88 },
+  TIER_3: { min: 75, max: 88 },
+  TIER_3_B: { min: 70, max: 85 },
+  TIER_3_C: { min: 65, max: 80 },
+  TIER_4: { min: 65, max: 80 },
+  TIER_4_B: { min: 60, max: 78 },
+  TIER_4_C: { min: 55, max: 75 },
+  TIER_5: { min: 55, max: 75 },
+  TIER_5_B: { min: 50, max: 72 },
+  TIER_5_C: { min: 45, max: 68 },
+};
+
+/**
+ * Generate a random quality within the tier range
+ * @param {string} mineId - The tier key
+ * @returns {number} Quality percentage (rounded to 1 decimal)
+ */
+function generateCollectionQuality(mineId) {
+  const range = TIER_QUALITY_RANGES[mineId] || TIER_QUALITY_RANGES.TIER_1;
+  const quality = range.min + Math.random() * (range.max - range.min);
+  return Math.round(quality * 10) / 10;
+}
+
 const initialPlayer = new Player();
 
  const initialState = {
@@ -621,55 +651,58 @@ case UNLOCK_ZONE: {
            }
          }
        };
-     }
+      }
 
-     case COLLECT_PENDING_MATERIALS: {
-       const { mineId } = action.payload;
-       const pending = state.discoverState.pendingMaterials[mineId] || [];
-       if (pending.length === 0) return state;
-       
-       const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
-       const newMinerals = [...(inv.minerals || [])];
-       const newGems = [...(inv.gems || [])];
-       
-       pending.forEach(({ itemId, quantity }) => {
-         const itemData = itemsById[itemId];
-         if (itemData?.category === 'Mineral') {
-           const existing = newMinerals.find(m => m.id === itemId);
-           if (existing) {
-             existing.quantity += quantity;
-           } else {
-             newMinerals.push({ id: itemId, quantity });
-           }
-         } else {
-           const existing = newGems.find(g => g.gemId === itemId);
-           if (existing) {
-             existing.quantity += quantity;
-           } else {
-             newGems.push({ gemId: itemId, quantity });
-           }
-         }
-       });
-       
-       return {
-         ...state,
-         discoverState: {
-           ...state.discoverState,
-           pendingMaterials: {
-             ...state.discoverState.pendingMaterials,
-             [mineId]: []
-           }
-         },
-         player: {
-           ...state.player,
-           inventory: {
-             ...inv,
-             minerals: newMinerals,
-             gems: newGems
-           }
-         }
-       };
-     }
+      case COLLECT_PENDING_MATERIALS: {
+        const { mineId } = action.payload;
+        const pending = state.discoverState.pendingMaterials[mineId] || [];
+        if (pending.length === 0) return state;
+        
+        // Generate quality for this collection batch (same for all items)
+        const batchQuality = generateCollectionQuality(mineId);
+        
+        const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+        const newMinerals = [...(inv.minerals || [])];
+        const newGems = [...(inv.gems || [])];
+        
+        pending.forEach(({ itemId, quantity }) => {
+          const itemData = itemsById[itemId];
+          if (itemData?.category === 'Mineral') {
+            const existing = newMinerals.find(m => m.id === itemId);
+            if (existing) {
+              existing.quantity += quantity;
+            } else {
+              newMinerals.push({ id: itemId, quantity, quality: batchQuality });
+            }
+          } else {
+            const existing = newGems.find(g => g.gemId === itemId);
+            if (existing) {
+              existing.quantity += quantity;
+            } else {
+              newGems.push({ gemId: itemId, quantity, quality: batchQuality });
+            }
+          }
+        });
+        
+        return {
+          ...state,
+          discoverState: {
+            ...state.discoverState,
+            pendingMaterials: {
+              ...state.discoverState.pendingMaterials,
+              [mineId]: []
+            }
+          },
+          player: {
+            ...state.player,
+            inventory: {
+              ...inv,
+              minerals: newMinerals,
+              gems: newGems
+            }
+          }
+        };
+      }
 
     // Process actions
     case START_ACTIVE_PROCESS: {

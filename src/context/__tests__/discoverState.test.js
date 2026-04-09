@@ -191,7 +191,7 @@ describe('Discover State', () => {
   });
 
   describe('COLLECT_PENDING_MATERIALS', () => {
-    it('moves pending to inventory', () => {
+    it('moves pending to inventory with quality', () => {
       const withPending = {
         ...baseState,
         discoverState: {
@@ -203,8 +203,42 @@ describe('Discover State', () => {
       };
       const action = { type: COLLECT_PENDING_MATERIALS, payload: { mineId: 'TIER_1' } };
       const newState = gameReducer(withPending, action);
-      expect(newState.player.inventory.minerals).toContainEqual({ id: 'clear_quartz', quantity: 5 });
+      const mineral = newState.player.inventory.minerals.find(m => m.id === 'clear_quartz');
+      expect(mineral).toBeDefined();
+      expect(mineral.quantity).toBe(5);
+      expect(mineral.quality).toBeDefined();
+      expect(mineral.quality).toBeGreaterThanOrEqual(95);
+      expect(mineral.quality).toBeLessThanOrEqual(100);
       expect(newState.discoverState.pendingMaterials.TIER_1).toHaveLength(0);
+    });
+
+    it('sets different quality ranges for different tiers', () => {
+      const testCases = [
+        { tier: 'TIER_1', min: 95, max: 100 },
+        { tier: 'TIER_2', min: 85, max: 95 },
+        { tier: 'TIER_3', min: 75, max: 88 },
+        { tier: 'TIER_4', min: 65, max: 80 },
+        { tier: 'TIER_5', min: 55, max: 75 },
+        { tier: 'TIER_1_C', min: 85, max: 95 },
+        { tier: 'TIER_5_C', min: 45, max: 68 },
+      ];
+
+      testCases.forEach(({ tier, min, max }) => {
+        const withPending = {
+          ...baseState,
+          discoverState: {
+            ...baseState.discoverState,
+            pendingMaterials: {
+              [tier]: [{ itemId: 'clear_quartz', quantity: 1 }]
+            }
+          }
+        };
+        const action = { type: COLLECT_PENDING_MATERIALS, payload: { mineId: tier } };
+        const newState = gameReducer(withPending, action);
+        const mineral = newState.player.inventory.minerals.find(m => m.id === 'clear_quartz');
+        expect(mineral.quality).toBeGreaterThanOrEqual(min);
+        expect(mineral.quality).toBeLessThanOrEqual(max);
+      });
     });
 
     it('does nothing when no pending materials', () => {
@@ -213,14 +247,14 @@ describe('Discover State', () => {
       expect(newState).toEqual(baseState);
     });
 
-    it('accumulates minerals in inventory', () => {
+    it('accumulates minerals in inventory with quality preserved', () => {
       const withExisting = {
         ...baseState,
         player: {
           ...baseState.player,
           inventory: {
             ...baseState.player.inventory,
-            minerals: [{ id: 'clear_quartz', quantity: 3 }]
+            minerals: [{ id: 'clear_quartz', quantity: 3, quality: 92 }]
           }
         }
       };
@@ -235,10 +269,12 @@ describe('Discover State', () => {
       };
       const action = { type: COLLECT_PENDING_MATERIALS, payload: { mineId: 'TIER_1' } };
       const newState = gameReducer(withPending, action);
-      expect(newState.player.inventory.minerals).toContainEqual({ id: 'clear_quartz', quantity: 5 });
+      // Existing mineral quantity should increase
+      const mineral = newState.player.inventory.minerals.find(m => m.id === 'clear_quartz');
+      expect(mineral.quantity).toBe(5);
     });
 
-    it('handles multiple different items', () => {
+    it('handles multiple different items with same quality', () => {
       const withPending = {
         ...baseState,
         discoverState: {
@@ -246,15 +282,21 @@ describe('Discover State', () => {
           pendingMaterials: {
             TIER_1: [
               { itemId: 'clear_quartz', quantity: 2 },
-              { itemId: 'raw_obsidian', quantity: 3 }
+              { itemId: 'obsidian', quantity: 3 }
             ]
           }
         }
       };
       const action = { type: COLLECT_PENDING_MATERIALS, payload: { mineId: 'TIER_1' } };
       const newState = gameReducer(withPending, action);
-      expect(newState.player.inventory.minerals).toContainEqual({ id: 'clear_quartz', quantity: 2 });
-      expect(newState.player.inventory.minerals).toContainEqual({ id: 'raw_obsidian', quantity: 3 });
+      const quartz = newState.player.inventory.minerals.find(m => m.id === 'clear_quartz');
+      const obsidian = newState.player.inventory.minerals.find(m => m.id === 'obsidian');
+      expect(quartz.quantity).toBe(2);
+      expect(quartz.quality).toBeDefined();
+      expect(obsidian.quantity).toBe(3);
+      expect(obsidian.quality).toBeDefined();
+      // Both items from same batch should have same quality
+      expect(quartz.quality).toBe(obsidian.quality);
       expect(newState.discoverState.pendingMaterials.TIER_1).toHaveLength(0);
     });
   });

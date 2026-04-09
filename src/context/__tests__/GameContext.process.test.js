@@ -23,6 +23,7 @@ function createInitialState(customState = {}) {
       queue: [],
       queueSlots: 2,
       completedQueue: [],
+      processCooldowns: {},
       processingStats: {
         totalProcessed: 0,
         masterworksCreated: 0,
@@ -67,16 +68,18 @@ describe('GameContext Process Actions', () => {
 
       const action = {
         type: 'START_ACTIVE_PROCESS',
-        payload: { itemId: 'clear_quartz', processType: 'cut', quality: 50 }
+        payload: { itemId: 'clear_quartz', processType: 'cut', qualityLevel: 'low' }
       };
 
       const newState = gameReducer(state, action);
 
-      expect(newState.processState.activeProcess).toEqual({
+      expect(newState.processState.activeProcess).toMatchObject({
         itemId: 'clear_quartz',
         processType: 'cut',
         startTime: expect.any(Number),
-        quality: 50
+        quality: expect.any(Number),
+        qualityLevel: 'low',
+        cooldownDuration: 3000
       });
       expect(newState.player.inventory.minerals).toHaveLength(0);
     });
