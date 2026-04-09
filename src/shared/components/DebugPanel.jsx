@@ -60,6 +60,11 @@ export default function DebugPanel() {
     dispatch({ type: 'DEBUG_RESET' });
   };
 
+  const handleClearLocalStorage = () => {
+    localStorage.removeItem('gemstone_game_save');
+    window.location.reload();
+  };
+
   return (
     <div className="fixed bottom-4 right-4 z-[9999] bg-slate-800 border-2 border-red-400 rounded-lg shadow-lg min-w-[280px] max-w-md text-sm" style={{ boxShadow: '0 8px 16px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 107, 107, 0.3)' }}>
       <div className="flex justify-between items-center p-3 bg-slate-700 cursor-pointer select-none hover:bg-red-400 hover:text-white transition-colors" onClick={() => setIsOpen(!isOpen)}>
@@ -106,6 +111,7 @@ export default function DebugPanel() {
             <h4 className="m-0 mb-2 text-xs uppercase tracking-wide text-red-400">Danger Zone</h4>
             <div className="flex flex-wrap gap-2">
               <button onClick={handleResetProgress} className="px-3 py-1.5 text-xs bg-slate-700 border border-red-400 rounded text-red-400 hover:bg-red-400 hover:text-white transition-all">Reset All Progress</button>
+              <button onClick={handleClearLocalStorage} className="px-3 py-1.5 text-xs bg-slate-700 border border-red-400 rounded text-red-400 hover:bg-red-400 hover:text-white transition-all">Clear Save Data</button>
             </div>
           </div>
 

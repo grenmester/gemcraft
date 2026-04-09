@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGame, GAME_PHASES, SET_REWARDS, ADD_MINERAL, ADD_TO_INVENTORY } from '../../../context/GameContext';
+import { useGame, SET_PHASE, GAME_PHASES, SET_REWARDS, ADD_MINERAL, ADD_TO_INVENTORY } from '../../../context/GameContext';
 import { rollLoot, getItemById } from '../../../data/lootTables';
 import { EQUIPMENT } from '../../../loaders/equipment';
 
@@ -60,7 +60,7 @@ export default function TempMinigame() {
   };
 
   const handleClaimRewards = () => {
-    dispatch({ type: GAME_PHASES.DISCOVER });
+    dispatch({ type: SET_PHASE, payload: GAME_PHASES.DISCOVER });
     setIsPlaying(false);
     setShowRewards(false);
     setCurrentRewards(null);
@@ -110,7 +110,7 @@ export default function TempMinigame() {
           <button
             className="px-6 py-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
             onClick={() => {
-              dispatch({ type: GAME_PHASES.DISCOVER });
+              dispatch({ type: SET_PHASE, payload: GAME_PHASES.DISCOVER });
               setIsPlaying(false);
               setShowRewards(false);
             }}
@@ -164,7 +164,7 @@ export default function TempMinigame() {
 
       <button
         className="px-6 py-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
-        onClick={() => dispatch({ type: GAME_PHASES.DISCOVER })}
+        onClick={() => dispatch({ type: SET_PHASE, payload: GAME_PHASES.DISCOVER })}
       >
         ← Back to Discover
       </button>

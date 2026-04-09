@@ -23,24 +23,14 @@ function GameContent() {
       phaseContent = <Menu />;
       break;
     case GAME_PHASES.DISCOVER: {
-      const { activeTab, selectedLocation, selectedArea, lastRewards } = state.discoverState || {};
+      const { activeTab, selectedMine, selectedSubarea, lastRewards } = state.discoverState || {};
       
       // If rewards exist, show summary
       if (lastRewards) {
         phaseContent = <RewardsSummary />;
       }
-      // If area is selected, show rewards selector
-      else if (selectedArea) {
-        phaseContent = <RewardsSelector />;
-      }
-      // If location is selected (not null), show subarea selector
-      else if (selectedLocation) {
-        phaseContent = <SubareaSelector />;
-      }
-      // If activeTab is panning and no location selected, show location selector
-      else if (activeTab === 'panning' && !selectedLocation) {
-        phaseContent = <LocationSelector />;
-      }
+      // If subarea is selected, show subarea details (handled by Discover component)
+      // If mine is selected, show mine details (handled by Discover component)
       // Default: show discover tabs
       else {
         phaseContent = <Discover />;

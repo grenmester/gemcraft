@@ -1,4 +1,4 @@
-import { useGame, CLEAR_DISCOVER_SELECTION, GAME_PHASES } from '../../../context/GameContext';
+import { useGame, SET_PHASE, CLEAR_DISCOVER_SELECTION, CLEAR_MINING_SELECTION, GAME_PHASES } from '../../../context/GameContext';
 import { getItemById } from '../../../data/lootTables';
 import { GemIcon, MineralIcon } from '../../../shared/components/ItemIcons';
 import { FaCoins, FaBox, FaArrowLeft, FaHome } from 'react-icons/fa';
@@ -133,14 +133,22 @@ export default function RewardsSummary() {
       {/* Navigation buttons */}
       <div className="flex gap-4">
         <button
-          className="px-6 py-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
-          onClick={() => dispatch({ type: CLEAR_DISCOVER_SELECTION })}
+          className="px-6 py-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors flex items-center gap-2"
+          onClick={() => {
+            dispatch({ type: CLEAR_MINING_SELECTION });
+            dispatch({ type: CLEAR_DISCOVER_SELECTION });
+            dispatch({ type: SET_PHASE, payload: GAME_PHASES.DISCOVER });
+          }}
         >
           <FaArrowLeft /> Back to Discover
         </button>
         <button
-          className="px-6 py-3 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 transition-colors"
-          onClick={() => dispatch({ type: CLEAR_DISCOVER_SELECTION })}
+          className="px-6 py-3 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 transition-colors flex items-center gap-2"
+          onClick={() => {
+            dispatch({ type: CLEAR_MINING_SELECTION });
+            dispatch({ type: CLEAR_DISCOVER_SELECTION });
+            dispatch({ type: SET_PHASE, payload: GAME_PHASES.MENU });
+          }}
         >
           <FaHome /> Main Menu
         </button>
