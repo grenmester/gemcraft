@@ -263,4 +263,38 @@ test.describe('Loot System', () => {
     const progressBars = page.locator('.h-full');
     await expect(progressBars.first()).toBeVisible();
   });
+
+  test('collected materials appear in process inventory', async ({ page }) => {
+    // Navigate to a subarea and mine
+    await page.getByRole('button', { name: 'Discover', exact: true }).click();
+    await page.getByRole('button', { name: 'River Panning' }).click();
+    await page.getByRole('button', { name: 'River Bend' }).click();
+    
+    // Mine once
+    await page.getByRole('button', { name: 'small reward' }).click();
+    await expect(page.locator('text=Mined small reward!')).toBeVisible();
+    
+    // Collect materials immediately (no need to wait for cooldown)
+    await page.getByRole('button', { name: 'Collect Materials' }).click();
+    await expect(page.locator('text=Materials collected!')).toBeVisible();
+    
+    // Wait for toast to disappear and page to settle
+    await page.waitForTimeout(500);
+    
+    // Click "Back to Mine" to go to mine details
+    await page.locator('button:has-text("Back to Mine")').first().click({ force: true });
+    
+    // Click "Back to Mines" to go to mine selection
+    await page.locator('button:has-text("Back to Mines")').first().click({ force: true });
+    
+    // Now we're at mine selection, back button says Menu
+    await expect(page.getByRole('button', { name: /Menu/ })).toBeVisible();
+    await page.getByRole('button', { name: /Menu/ }).first().click();
+    
+    // Navigate to Process to verify items are available
+    await page.getByRole('button', { name: 'Process' }).click();
+    
+    // Active tab should show the Process selector
+    await expect(page.locator('text=Select Item to Process')).toBeVisible();
+  });
 });

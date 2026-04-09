@@ -627,13 +627,26 @@ case UNLOCK_ZONE: {
        const pending = state.discoverState.pendingMaterials[mineId] || [];
        if (pending.length === 0) return state;
        
-       const newMinerals = [...(state.player.inventory?.minerals || [])];
+       const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+       const newMinerals = [...(inv.minerals || [])];
+       const newGems = [...(inv.gems || [])];
+       
        pending.forEach(({ itemId, quantity }) => {
-         const existing = newMinerals.find(m => m.id === itemId);
-         if (existing) {
-           existing.quantity += quantity;
+         const itemData = itemsById[itemId];
+         if (itemData?.category === 'Mineral') {
+           const existing = newMinerals.find(m => m.id === itemId);
+           if (existing) {
+             existing.quantity += quantity;
+           } else {
+             newMinerals.push({ id: itemId, quantity });
+           }
          } else {
-           newMinerals.push({ id: itemId, quantity });
+           const existing = newGems.find(g => g.gemId === itemId);
+           if (existing) {
+             existing.quantity += quantity;
+           } else {
+             newGems.push({ gemId: itemId, quantity });
+           }
          }
        });
        
@@ -649,8 +662,9 @@ case UNLOCK_ZONE: {
          player: {
            ...state.player,
            inventory: {
-             ...state.player.inventory,
-             minerals: newMinerals
+             ...inv,
+             minerals: newMinerals,
+             gems: newGems
            }
          }
        };
