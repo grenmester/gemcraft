@@ -56,27 +56,36 @@ export const SET_REWARDS = 'SET_REWARDS';
 export const CLEAR_REWARDS = 'CLEAR_REWARDS';
 export const CLEAR_DISCOVER_SELECTION = 'CLEAR_DISCOVER_SELECTION';
 
+// New Discover navigation actions
+export const SELECT_MINE = 'SELECT_MINE';
+export const SELECT_SUBAREA = 'SELECT_SUBAREA';
+export const CLEAR_MINING_SELECTION = 'CLEAR_MINING_SELECTION';
+export const MINE_SUBAREA = 'MINE_SUBAREA';
+export const COLLECT_PENDING_MATERIALS = 'COLLECT_PENDING_MATERIALS';
+
 const INITIAL_QUEUE_SLOTS = 2;
 
 const STORAGE_KEY = 'gemstone_game_save';
 
-const MIGRATION_VERSION = 4;
+const MIGRATION_VERSION = 5;
 
 const initialPlayer = new Player();
 
  const initialState = {
-   player: initialPlayer.toJSON(),
-   migrationVersion: MIGRATION_VERSION,
-   phase: GAME_PHASES.MENU,
-   activeMinigame: null,
-   discoverState: {
-     activeTab: 'idle',       // 'idle' | 'panning'
-     selectedLocation: null,  // 'TIER_1' | 'TIER_1_B' | ... | null
-     selectedArea: null,      // 'area_1' | 'area_2' | 'area_3' | null
-     lastRewards: null        // { coins, gems } | null
-   },
-   unlockedZones: [], // Array of location tier keys player can access
-    processState: {
+    player: initialPlayer.toJSON(),
+    migrationVersion: MIGRATION_VERSION,
+    phase: GAME_PHASES.MENU,
+    activeMinigame: null,
+    discoverState: {
+      activeTab: 'panning',     // 'panning' | 'idle' (default: panning)
+      selectedMine: null,        // 'TIER_1' | 'TIER_1_B' | ... | null
+      selectedSubarea: null,     // 'area_a' | 'area_b' | 'area_c' | null
+      pendingMaterials: {},      // { TIER_1: [{ itemId, quantity }], ... }
+      miningCooldowns: {},       // { TIER_1_area_a: { small: timestamp } }
+      lastRewards: null          // { coins, gems } | null (legacy)
+    },
+    unlockedZones: [], // Array of location tier keys player can access
+     processState: {
       activeProcess: null,        // { itemId, processType, startTime, quality }
       queue: [],                  // [{ itemId, processType, startTime, estimatedCompletion }]
       queueSlots: INITIAL_QUEUE_SLOTS,  // Unlocked queue slots (level unlocks more)
@@ -126,6 +135,22 @@ function migrateState(state) {
       ...migrated,
       migrationVersion: MIGRATION_VERSION,
       unlockedZones: migrated.unlockedZones || []
+    };
+  }
+
+  // Migration to version 5: New Discover state structure
+  if (migrated.migrationVersion < 5) {
+    migrated = {
+      ...migrated,
+      migrationVersion: MIGRATION_VERSION,
+      discoverState: {
+        ...migrated.discoverState,
+        activeTab: migrated.discoverState?.activeTab === 'idle' ? 'idle' : 'panning',
+        selectedMine: migrated.discoverState?.selectedLocation || null,
+        selectedSubarea: null,
+        pendingMaterials: {},
+        miningCooldowns: {}
+      }
     };
   }
 
@@ -489,12 +514,117 @@ case UNLOCK_ZONE: {
        return {
          ...state,
          discoverState: {
-           activeTab: 'idle',
-           selectedLocation: null,
-           selectedArea: null,
-           lastRewards: null
+           ...state.discoverState,
+           selectedMine: null,
+           selectedSubarea: null
          }
        };
+
+     // New Discover navigation actions
+     case SELECT_MINE:
+       return {
+         ...state,
+         discoverState: {
+           ...state.discoverState,
+           selectedMine: action.payload,
+           selectedSubarea: null
+         }
+       };
+
+     case SELECT_SUBAREA:
+       return {
+         ...state,
+         discoverState: {
+           ...state.discoverState,
+           selectedSubarea: action.payload
+         }
+       };
+
+     case CLEAR_MINING_SELECTION:
+       return {
+         ...state,
+         discoverState: {
+           ...state.discoverState,
+           selectedMine: null,
+           selectedSubarea: null
+         }
+       };
+
+     case MINE_SUBAREA: {
+       const { mineId, subareaId, rewardSize } = action.payload;
+       const cooldownKey = `${mineId}_${subareaId}`;
+       const now = Date.now();
+       
+       const cooldowns = state.discoverState.miningCooldowns[cooldownKey] || {};
+       const lastMined = cooldowns[rewardSize] || 0;
+       const cooldownDuration = rewardSize === 'small' ? 5000 : rewardSize === 'medium' ? 15000 : 30000;
+       
+       if (now - lastMined < cooldownDuration) {
+         throw new Error(`Mining on cooldown. Try again in ${Math.ceil((cooldownDuration - (now - lastMined)) / 1000)}s`);
+       }
+       
+       const itemCount = rewardSize === 'small' ? 1 : rewardSize === 'medium' ? 3 : 5;
+       const pending = state.discoverState.pendingMaterials[mineId] || [];
+       
+       // Placeholder loot - will be replaced with actual loot tables
+       const sampleItems = [
+         { itemId: 'clear_quartz', quantity: itemCount }
+       ];
+       
+       const newPending = [...pending, ...sampleItems];
+       
+       return {
+         ...state,
+         discoverState: {
+           ...state.discoverState,
+           pendingMaterials: {
+             ...state.discoverState.pendingMaterials,
+             [mineId]: newPending
+           },
+           miningCooldowns: {
+             ...state.discoverState.miningCooldowns,
+             [cooldownKey]: {
+               ...cooldowns,
+               [rewardSize]: now
+             }
+           }
+         }
+       };
+     }
+
+     case COLLECT_PENDING_MATERIALS: {
+       const { mineId } = action.payload;
+       const pending = state.discoverState.pendingMaterials[mineId] || [];
+       if (pending.length === 0) return state;
+       
+       const newMinerals = [...(state.player.inventory?.minerals || [])];
+       pending.forEach(({ itemId, quantity }) => {
+         const existing = newMinerals.find(m => m.id === itemId);
+         if (existing) {
+           existing.quantity += quantity;
+         } else {
+           newMinerals.push({ id: itemId, quantity });
+         }
+       });
+       
+       return {
+         ...state,
+         discoverState: {
+           ...state.discoverState,
+           pendingMaterials: {
+             ...state.discoverState.pendingMaterials,
+             [mineId]: []
+           }
+         },
+         player: {
+           ...state.player,
+           inventory: {
+             ...state.player.inventory,
+             minerals: newMinerals
+           }
+         }
+       };
+     }
 
     // Process actions
     case START_ACTIVE_PROCESS: {
