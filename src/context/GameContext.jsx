@@ -87,15 +87,16 @@ const initialPlayer = new Player();
     },
     unlockedZones: [], // Array of location tier keys player can access
      processState: {
-      activeProcess: null,        // { itemId, processType, startTime, quality }
-      queue: [],                  // [{ itemId, processType, startTime, estimatedCompletion }]
-      queueSlots: INITIAL_QUEUE_SLOTS,  // Unlocked queue slots (level unlocks more)
-      completedQueue: [],         // Finished items waiting for collection
-      processingStats: {
-        totalProcessed: 0,
-        masterworksCreated: 0,
-        bestQuality: 0,
-      }
+       activeProcess: null,        // { itemId, processType, startTime, quality, qualityLevel }
+       queue: [],                  // [{ itemId, processType, startTime, estimatedCompletion }]
+       queueSlots: INITIAL_QUEUE_SLOTS,  // Unlocked queue slots (level unlocks more)
+       completedQueue: [],         // Finished items waiting for collection
+       processCooldowns: {},      // { [itemId]: { low: timestamp, medium: timestamp, high: timestamp } }
+       processingStats: {
+         totalProcessed: 0,
+         masterworksCreated: 0,
+         bestQuality: 0,
+       }
     }
  };
 
@@ -672,11 +673,29 @@ case UNLOCK_ZONE: {
 
     // Process actions
     case START_ACTIVE_PROCESS: {
-      const { itemId, processType, quality = 0 } = action.payload || {};
+      const { itemId, processType, qualityLevel } = action.payload || {};
+      
+      // Quality level configuration
+      const QUALITY_CONFIG = {
+        low: { base: 40, variance: 20, cooldown: 3000 },    // 40-60%, 3s cooldown
+        medium: { base: 60, variance: 20, cooldown: 8000 }, // 60-80%, 8s cooldown
+        high: { base: 80, variance: 20, cooldown: 15000 }   // 80-100%, 15s cooldown
+      };
+      
+      const config = QUALITY_CONFIG[qualityLevel] || QUALITY_CONFIG.low;
+      
+      // Calculate quality based on level
+      const quality = config.base + Math.random() * config.variance;
+      
       const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
       const { minerals, gems, removed } = removeItemFromInventory(inv, itemId);
 
       if (!removed) return state;
+      
+      // Set cooldown for this quality level
+      const cooldownKey = `${itemId}_${qualityLevel}`;
+      const now = Date.now();
+      const currentCooldowns = state.processState.processCooldowns[itemId] || {};
 
       return {
         ...state,
@@ -690,7 +709,21 @@ case UNLOCK_ZONE: {
         },
         processState: {
           ...state.processState,
-          activeProcess: { itemId, processType, startTime: Date.now(), quality }
+          activeProcess: { 
+            itemId, 
+            processType, 
+            startTime: now, 
+            quality: Math.round(quality * 10) / 10,
+            qualityLevel,
+            cooldownDuration: config.cooldown
+          },
+          processCooldowns: {
+            ...state.processState.processCooldowns,
+            [itemId]: {
+              ...currentCooldowns,
+              [qualityLevel]: now + config.cooldown
+            }
+          }
         }
       };
     }
@@ -701,13 +734,27 @@ case UNLOCK_ZONE: {
 
       const { quality = active.quality || 0 } = action.payload || {};
       const { itemId } = active;
+      
+      // Get item data for value calculation
+      const itemData = itemsById[itemId];
+      const baseValue = itemData?.value || 0;
+      
+      // Apply quality multiplier
+      const qualityMultiplier = quality / 100;
+      const qualityAdjustedValue = Math.round(baseValue * qualityMultiplier);
+      
+      // Apply masterwork bonus at 90%+ quality
+      const isMasterwork = quality >= 90;
+      const finalValue = isMasterwork 
+        ? Math.round(qualityAdjustedValue * 1.25) 
+        : qualityAdjustedValue;
 
       const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
-      const { minerals, gems } = addItemToInventory(inv, itemId);
+      const { minerals, gems } = addItemToInventory(inv, itemId, 1, Math.round(quality * 10) / 10);
 
       const stats = state.processState.processingStats;
       const newTotalProcessed = stats.totalProcessed + 1;
-      const newMasterworksCreated = quality >= 90 ? stats.masterworksCreated + 1 : stats.masterworksCreated;
+      const newMasterworksCreated = isMasterwork ? stats.masterworksCreated + 1 : stats.masterworksCreated;
       const newBestQuality = Math.max(stats.bestQuality, quality);
 
       return {

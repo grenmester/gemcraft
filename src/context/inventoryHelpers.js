@@ -59,31 +59,41 @@ export function removeItemFromInventory(inventory, itemId) {
  * Adds one unit of an item to inventory
  * @param {Object} inventory - The inventory object with minerals, gems arrays
  * @param {string} itemId - The ID of the item to add
+ * @param {number} [quantity=1] - Number of items to add
+ * @param {number} [quality] - Quality value (0-100) to store with the item
  * @returns {Object} { minerals, gems } - Updated arrays
  */
-export function addItemToInventory(inventory, itemId) {
+export function addItemToInventory(inventory, itemId, quantity = 1, quality = null) {
   const minerals = [...(inventory.minerals || [])];
   const gems = [...(inventory.gems || [])];
 
   const mineralIndex = minerals.findIndex(m => m.id === itemId);
   if (mineralIndex >= 0) {
     const mineral = minerals[mineralIndex];
-    minerals[mineralIndex] = { ...mineral, quantity: mineral.quantity + 1 };
+    minerals[mineralIndex] = { 
+      ...mineral, 
+      quantity: mineral.quantity + quantity,
+      ...(quality !== null && { quality })
+    };
     return { minerals, gems };
   }
 
   const gemIndex = gems.findIndex(g => g.gemId === itemId);
   if (gemIndex >= 0) {
     const gem = gems[gemIndex];
-    gems[gemIndex] = { ...gem, quantity: gem.quantity + 1 };
+    gems[gemIndex] = { 
+      ...gem, 
+      quantity: gem.quantity + quantity,
+      ...(quality !== null && { quality })
+    };
     return { minerals, gems };
   }
 
   // Determine correct array based on item category
   if (isMineral(itemId)) {
-    minerals.push({ id: itemId, quantity: 1 });
+    minerals.push({ id: itemId, quantity, ...(quality !== null && { quality }) });
   } else {
-    gems.push({ gemId: itemId, quantity: 1 });
+    gems.push({ gemId: itemId, quantity, ...(quality !== null && { quality }) });
   }
   return { minerals, gems };
 }

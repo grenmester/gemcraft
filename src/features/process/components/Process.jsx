@@ -2,21 +2,16 @@ import { useState } from 'react';
 import { useGame, GAME_PHASES, SET_PHASE } from '../../../context/GameContext';
 import { useProcess } from '../hooks/useProcess';
 import ProcessQueue from './ProcessQueue';
-import ProcessSelector from './ProcessSelector';
+import ActiveProcessing from './ActiveProcessing';
 import { FaBolt, FaHourglassHalf, FaArrowLeft } from 'react-icons/fa';
 
 export default function Process() {
   const { dispatch } = useGame();
-  const { activeProcess, availableItems } = useProcess();
+  const { availableItems } = useProcess();
   const [activeTab, setActiveTab] = useState('active'); // 'active' | 'idle'
 
   const handleBack = () => {
     dispatch({ type: SET_PHASE, payload: GAME_PHASES.MENU });
-  };
-
-  const handleTumbleSortComplete = (quality) => {
-    console.log('Tumble sort complete with quality:', quality);
-    // The minigame handles completing the process
   };
 
   return (
@@ -60,20 +55,11 @@ export default function Process() {
       {/* Content */}
       <div className="flex-1 overflow-auto">
         {activeTab === 'active' ? (
-          <ActiveProcessing 
-            activeProcess={activeProcess}
-            availableItems={availableItems}
-            onComplete={handleTumbleSortComplete}
-          />
+          <ActiveProcessing />
         ) : (
           <ProcessQueue />
         )}
       </div>
     </div>
   );
-}
-
-function ActiveProcessing({ activeProcess, availableItems, onComplete }) {
-  // Use ProcessSelector for now (temporary replacement for TumbleSort minigame)
-  return <ProcessSelector />;
 }
