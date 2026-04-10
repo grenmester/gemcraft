@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useGame, GAME_PHASES, SET_PHASE } from '../../../context/GameContext';
+import { useGame, GAME_PHASES, SET_PHASE, CRAFT_ITEM } from '../../../context/GameContext';
 import { FaGem, FaArrowLeft, FaCrown, FaRing, FaStar, FaMagic } from 'react-icons/fa';
 import { RECIPES, JEWELRY_TYPES, SETTINGS, FINDINGS, getRecipesByType, calculateCraftValue } from '../../../data/recipes';
 
@@ -16,6 +16,7 @@ export default function Craft() {
   const { state, dispatch } = useGame();
   const [activeTab, setActiveTab] = useState('ring');
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [craftingMessage, setCraftingMessage] = useState(null);
   
   const playerXP = state.player?.craftingXP || 0;
   const inventory = state.player?.inventory || {};
@@ -52,6 +53,13 @@ export default function Craft() {
         <div className="text-amber-400 text-sm">XP: {playerXP}</div>
       </div>
 
+      {/* Crafting Message */}
+      {craftingMessage && (
+        <div className={`mb-4 p-3 rounded-lg text-center font-bold ${craftingMessage.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+          {craftingMessage.text}
+        </div>
+      )}
+
       {/* Jewelry Type Tabs */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {jewelryTypes.map(type => {
@@ -86,6 +94,8 @@ export default function Craft() {
             gems={getInventoryGems()}
             metals={getInventoryMetals()}
             onBack={() => setSelectedRecipe(null)}
+            dispatch={dispatch}
+            onCrafted={(msg) => setCraftingMessage(msg)}
           />
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -121,7 +131,7 @@ export default function Craft() {
   );
 }
 
-function RecipeDetail({ recipe, gems, metals, onBack }) {
+function RecipeDetail({ recipe, gems, metals, onBack, dispatch, onCrafted }) {
   const [selectedGems, setSelectedGems] = useState([]);
   const [selectedMetal, setSelectedMetal] = useState(null);
   const [selectedSetting, setSelectedSetting] = useState(recipe.settings[0]);
@@ -240,6 +250,19 @@ function RecipeDetail({ recipe, gems, metals, onBack }) {
         {/* Craft Button */}
         <button
           disabled={!canCraft}
+          onClick={() => {
+            dispatch({
+              type: CRAFT_ITEM,
+              payload: {
+                recipeId: recipe.id,
+                selectedGems,
+                selectedMetal,
+                selectedSetting
+              }
+            });
+            onCrafted({ type: 'success', text: `Crafted ${recipe.name}! +${10 + Math.max(0, Math.floor((selectedGems.reduce((s, g) => s + (g.quality || 0), 0) / selectedGems.length) - 80))} XP` });
+            onBack();
+          }}
           className={`
             w-full py-3 rounded-lg font-bold text-lg transition-all
             ${canCraft

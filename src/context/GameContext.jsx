@@ -66,6 +66,10 @@ export const CLEAR_MINING_SELECTION = 'CLEAR_MINING_SELECTION';
 export const MINE_SUBAREA = 'MINE_SUBAREA';
 export const COLLECT_PENDING_MATERIALS = 'COLLECT_PENDING_MATERIALS';
 
+// Craft actions
+export const CRAFT_ITEM = 'CRAFT_ITEM';
+export const CRAFT_ITEM_SUCCESS = 'CRAFT_ITEM_SUCCESS';
+
 const INITIAL_QUEUE_SLOTS = 2;
 const PROCESS_TICK_INTERVAL = 1000; // Check queue every second
 
@@ -1230,6 +1234,85 @@ case UNLOCK_ZONE: {
           equippedTools: {
             ...state.processState.equippedTools,
             [processType]: newEquipmentId
+          }
+        }
+      };
+    }
+
+    case CRAFT_ITEM: {
+      const { recipeId, selectedGems, selectedMetal, selectedSetting } = action.payload;
+      
+      // Import recipe data here to avoid circular deps
+      const { getRecipeById, JEWELRY_TYPES, SETTINGS } = require('../../data/recipes');
+      const recipe = getRecipeById(recipeId);
+      if (!recipe) return state;
+      
+      const inv = state.player.inventory || {};
+      const gems = [...(inv.gems || [])];
+      const metals = [...(inv.metals || [])];
+      
+      // Remove gems used
+      selectedGems.forEach(gem => {
+        const idx = gems.findIndex(g => (g.gemId || g.id) === (gem.id || gem.gemId));
+        if (idx >= 0) {
+          if (gems[idx].quantity > 1) {
+            gems[idx] = { ...gems[idx], quantity: gems[idx].quantity - 1 };
+          } else {
+            gems.splice(idx, 1);
+          }
+        }
+      });
+      
+      // Remove metal used
+      const metalIdx = metals.findIndex(m => m.id === selectedMetal.id);
+      if (metalIdx >= 0) {
+        if (metals[metalIdx].quantity > 1) {
+          metals[metalIdx] = { ...metals[metalIdx], quantity: metals[metalIdx].quantity - 1 };
+        } else {
+          metals.splice(metalIdx, 1);
+        }
+      }
+      
+      // Calculate final value
+      const gemValue = selectedGems.reduce((sum, gem) => {
+        const itemValues = { diamond: 5000, ruby: 800, sapphire: 700, emerald: 600, amethyst: 20, citrine: 40, tourmaline: 120, peridot: 90, clear_quartz: 5, rose_quartz: 8 };
+        return sum + (itemValues[gem.id || gem.gemId] || 10) * (gem.quality || 50) / 100;
+      }, 0);
+      
+      const metalValue = (selectedMetal.value || 10) * (selectedMetal.quality || 50) / 100;
+      const jewelryMultiplier = JEWELRY_TYPES[recipe.type]?.multiplier || 1;
+      const settingMultiplier = SETTINGS[selectedSetting]?.multiplier || 1;
+      const finalValue = Math.round((gemValue + metalValue) * jewelryMultiplier * settingMultiplier * recipe.multiplier);
+      
+      // Create crafted jewelry item
+      const jewelry = [...(inv.jewelry || [])];
+      jewelry.push({
+        id: `crafted_${recipe.id}_${Date.now()}`,
+        recipeId,
+        name: recipe.name,
+        type: recipe.type,
+        gems: selectedGems.map(g => g.id || g.gemId),
+        metal: selectedMetal.id,
+        setting: selectedSetting,
+        quality: selectedGems.reduce((s, g) => s + (g.quality || 50), 0) / selectedGems.length,
+        value: finalValue,
+        craftedAt: Date.now()
+      });
+      
+      // Award crafting XP
+      const xpGained = 10 + Math.max(0, Math.floor((selectedGems.reduce((s, g) => s + (g.quality || 0), 0) / selectedGems.length) - 80));
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          coins: state.player.coins + finalValue,
+          craftingXP: (state.player.craftingXP || 0) + xpGained,
+          inventory: {
+            ...inv,
+            gems,
+            metals,
+            jewelry
           }
         }
       };
