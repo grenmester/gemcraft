@@ -3,6 +3,7 @@ import { useGame, START_ACTIVE_PROCESS, COMPLETE_ACTIVE_PROCESS, REFINING } from
 import { useProcess } from '../hooks/useProcess';
 import { getItemById } from '../../../data/items';
 import { FaTools, FaCut, FaCog, FaArrowLeft, FaStar, FaGem, FaSpinner, FaFire } from 'react-icons/fa';
+import { GemIcon, MineralIcon, OreIcon, MetalIcon } from '../../../shared/components/ItemIcons';
 
 const PROCESS_TYPES = [
   { id: 'cleaning', label: 'Cleaning', description: 'Tumble and clean', Icon: FaTools },
@@ -40,6 +41,8 @@ const COOLDOWN_COLORS = {
 const CATEGORY_ICONS = {
   Gem: GemIcon,
   Mineral: MineralIcon,
+  Ore: OreIcon,
+  Metal: MetalIcon,
 };
 
 export default function ActiveProcessing() {
