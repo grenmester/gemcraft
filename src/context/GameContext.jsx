@@ -66,6 +66,9 @@ export const CLEAR_MINING_SELECTION = 'CLEAR_MINING_SELECTION';
 export const MINE_SUBAREA = 'MINE_SUBAREA';
 export const COLLECT_PENDING_MATERIALS = 'COLLECT_PENDING_MATERIALS';
 
+// Process actions
+export const REFINING = 'REFINING';
+
 // Craft actions
 export const CRAFT_ITEM = 'CRAFT_ITEM';
 export const CRAFT_ITEM_SUCCESS = 'CRAFT_ITEM_SUCCESS';
@@ -874,6 +877,61 @@ case UNLOCK_ZONE: {
             totalProcessed: newTotalProcessed,
             masterworksCreated: newMasterworksCreated,
             bestQuality: newBestQuality
+          }
+        }
+        };
+    }
+
+    case REFINING: {
+      const { itemId } = action.payload;
+      
+      // Get ore data
+      const oreData = itemsById[itemId];
+      if (!oreData) return state;
+      
+      // Determine metal output
+      const metalId = oreData.processing?.refineOutput || oreData.id.replace('_ore', '');
+      
+      // Calculate quality based on ore type
+      const QUALITY_RANGES = {
+        copper: { min: 60, max: 80 },
+        silver: { min: 65, max: 82 },
+        gold: { min: 70, max: 88 },
+        platinum: { min: 75, max: 92 }
+      };
+      const range = QUALITY_RANGES[metalId] || { min: 70, max: 85 };
+      const quality = range.min + Math.random() * (range.max - range.min);
+      
+      const inv = state.player.inventory || {};
+      const ores = [...(inv.ores || [])];
+      const metals = [...(inv.metals || [])];
+      
+      // Remove ore
+      const oreIdx = ores.findIndex(o => o.id === itemId);
+      if (oreIdx >= 0) {
+        if (ores[oreIdx].quantity > 1) {
+          ores[oreIdx] = { ...ores[oreIdx], quantity: ores[oreIdx].quantity - 1 };
+        } else {
+          ores.splice(oreIdx, 1);
+        }
+      }
+      
+      // Add metal
+      const existingMetal = metals.find(m => m.id === metalId && Math.round(m.quality / 5) * 5 === Math.round(quality / 5) * 5);
+      if (existingMetal) {
+        existingMetal.quantity += 1;
+      } else {
+        metals.push({ id: metalId, quantity: 1, quality: Math.round(quality * 10) / 10 });
+      }
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          inventory: {
+            ...inv,
+            ores,
+            metals
           }
         }
       };

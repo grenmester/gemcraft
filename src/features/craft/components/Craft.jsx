@@ -135,15 +135,17 @@ function RecipeDetail({ recipe, gems, metals, onBack, dispatch, onCrafted }) {
   const [selectedGems, setSelectedGems] = useState([]);
   const [selectedMetal, setSelectedMetal] = useState(null);
   const [selectedSetting, setSelectedSetting] = useState(recipe.settings[0]);
+  const [showGemPicker, setShowGemPicker] = useState(null); // which gem slot to fill
   
   const gemRequirements = recipe.requirements.gems;
   const metalRequirement = recipe.requirements.metal;
   
-  const eligibleGems = gems.filter(g => {
-    const req = gemRequirements[selectedGems.length];
-    if (!req) return false;
-    return g.quality >= req.qualityMin;
-  });
+  // Get all eligible gems for each requirement slot
+  const getEligibleGemsForSlot = (slotIdx) => {
+    const req = gemRequirements[slotIdx];
+    if (!req) return [];
+    return gems.filter(g => g.quality >= req.qualityMin);
+  };
   
   const eligibleMetals = metals.filter(m => {
     return m.id === metalRequirement.id && m.quality >= metalRequirement.qualityMin;
@@ -152,6 +154,18 @@ function RecipeDetail({ recipe, gems, metals, onBack, dispatch, onCrafted }) {
   const canCraft = selectedGems.length >= gemRequirements.length && selectedMetal;
   
   const estimatedValue = canCraft ? calculateCraftValue(recipe, selectedGems, selectedMetal, selectedSetting) : 0;
+
+  const handleSelectGem = (gem, slotIdx) => {
+    const newSelected = [...selectedGems];
+    newSelected[slotIdx] = gem;
+    setSelectedGems(newSelected);
+    setShowGemPicker(null);
+  };
+
+  const handleRemoveGem = (slotIdx) => {
+    const newSelected = selectedGems.filter((_, idx) => idx !== slotIdx);
+    setSelectedGems(newSelected);
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -165,58 +179,84 @@ function RecipeDetail({ recipe, gems, metals, onBack, dispatch, onCrafted }) {
         
         {/* Requirements */}
         <div className="space-y-3 mb-4">
+          {/* Gem Selection */}
           <div>
             <div className="text-gray-400 text-sm mb-2">Gems Required ({selectedGems.length}/{gemRequirements.length})</div>
             <div className="flex gap-2 flex-wrap">
               {gemRequirements.map((req, idx) => {
                 const hasGem = selectedGems[idx];
                 return (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      if (hasGem) {
-                        setSelectedGems(prev => prev.filter((_, i) => i !== idx));
-                      } else if (eligibleGems.length > 0) {
-                        setSelectedGems(prev => [...prev, eligibleGems[0]]);
-                      }
-                    }}
-                    className={`
-                      px-3 py-1 rounded text-sm
-                      ${hasGem 
-                        ? 'bg-cyan-600 text-white' 
-                        : 'bg-slate-700 text-gray-400'
-                      }
-                    `}
-                  >
-                    {hasGem ? hasGem.gemId || hasGem.id : `Gem ${idx + 1} (${req.qualityMin}%+)`}
-                  </button>
+                  <div key={idx} className="relative">
+                    {hasGem ? (
+                      <button
+                        onClick={() => handleRemoveGem(idx)}
+                        className="px-3 py-1 rounded text-sm bg-cyan-600 text-white hover:bg-red-600 transition-colors"
+                      >
+                        {hasGem.gemId || hasGem.id} ({Math.round(hasGem.quality || 50)}%)
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setShowGemPicker(idx)}
+                        className="px-3 py-1 rounded text-sm bg-slate-700 text-gray-400 hover:bg-slate-600"
+                      >
+                        + Gem {idx + 1} ({req.qualityMin}%+)
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>
+            
+            {/* Gem Picker Modal */}
+            {showGemPicker !== null && (
+              <div className="mt-2 p-3 bg-slate-900 rounded-lg max-h-48 overflow-auto">
+                <div className="text-gray-400 text-xs mb-2">Select a gem for slot {showGemPicker + 1}:</div>
+                {getEligibleGemsForSlot(showGemPicker).length === 0 ? (
+                  <div className="text-gray-500 text-sm">No eligible gems available</div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {getEligibleGemsForSlot(showGemPicker).map((gem, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleSelectGem(gem, showGemPicker)}
+                        className="px-2 py-1 text-xs bg-slate-700 text-white rounded hover:bg-cyan-600"
+                      >
+                        {gem.gemId || gem.id} (Q:{Math.round(gem.quality || 50)}%) x{gem.quantity}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           
+          {/* Metal Selection */}
           <div>
-            <div className="text-gray-400 text-sm mb-2">Metal Required ({selectedMetal ? 'selected' : 'none'})</div>
-            <div className="flex gap-2">
+            <div className="text-gray-400 text-sm mb-2">Metal Required</div>
+            <div className="flex gap-2 flex-wrap">
               {eligibleMetals.length > 0 ? (
-                <button
-                  onClick={() => setSelectedMetal(eligibleMetals[0])}
-                  className={`
-                    px-3 py-1 rounded text-sm
-                    ${selectedMetal?.id === metalRequirement.id
-                      ? 'bg-cyan-600 text-white'
-                      : 'bg-slate-700 text-gray-400'
-                    }
-                  `}
-                >
-                  {metalRequirement.id} ({metalRequirement.qualityMin}%+)
-                </button>
+                eligibleMetals.map((metal, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedMetal(metal)}
+                    className={`
+                      px-3 py-1 rounded text-sm
+                      ${selectedMetal?.id === metal.id && selectedMetal?.quality === metal.quality
+                        ? 'bg-cyan-600 text-white'
+                        : 'bg-slate-700 text-gray-400 hover:bg-slate-600'
+                      }
+                    `}
+                  >
+                    {metal.id} (Q:{Math.round(metal.quality || 50)}%) x{metal.quantity}
+                  </button>
+                ))
               ) : (
-                <span className="text-gray-500 text-sm">No eligible metals</span>
+                <span className="text-gray-500 text-sm">No eligible metals - process ores first</span>
               )}
             </div>
           </div>
           
+          {/* Setting Selection */}
           <div>
             <div className="text-gray-400 text-sm mb-2">Setting</div>
             <div className="flex gap-2">

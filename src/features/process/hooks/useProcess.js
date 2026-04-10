@@ -100,6 +100,22 @@ export function useProcess() {
       quality: g.quality, 
       type: 'gem',
       stackId: `${g.gemId}-${g.quality || 'unprocessed'}-${idx}` // Unique key for React
+    })),
+    ...(inventory.ores || []).map((o, idx) => ({ 
+      id: o.id, 
+      gemId: o.id,
+      quantity: o.quantity, 
+      quality: null, // Ores don't have quality until refined
+      type: 'ore',
+      stackId: `${o.id}-ore-${idx}`
+    })),
+    ...(inventory.metals || []).map((m, idx) => ({ 
+      id: m.id, 
+      gemId: m.id,
+      quantity: m.quantity, 
+      quality: m.quality, 
+      type: 'metal',
+      stackId: `${m.id}-${m.quality || 'unprocessed'}-${idx}`
     }))
   ];
   

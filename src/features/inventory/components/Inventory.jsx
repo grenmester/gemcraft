@@ -3,11 +3,13 @@ import { useGame, SET_PHASE, GAME_PHASES } from '../../../context/GameContext';
 import { useInventory } from '../hooks/useInventory';
 import { items as ITEMS_DATA } from '../../../loaders/items.js';
 import { EQUIPMENT } from '../../../loaders/equipment.js';
-import { FaGem, FaMountain, FaShieldAlt, FaBackspace } from 'react-icons/fa';
+import { FaGem, FaMountain, FaShieldAlt, FaBackspace, FaCubes, FaLayerGroup } from 'react-icons/fa';
 
 const TABS = [
   { id: 'gems', label: 'Gems', Icon: FaGem },
   { id: 'minerals', label: 'Minerals', Icon: FaMountain },
+  { id: 'ores', label: 'Ores', Icon: FaLayerGroup },
+  { id: 'metals', label: 'Metals', Icon: FaCubes },
   { id: 'equipment', label: 'Equipment', Icon: FaShieldAlt }
 ];
 
@@ -19,6 +21,8 @@ const SORT_OPTIONS = [
 const EMPTY_STATE_MESSAGES = {
   gems: 'No gems collected yet. Explore locations to find precious gems!',
   minerals: 'No minerals in inventory. Mine rocks to collect raw minerals.',
+  ores: 'No ores in inventory. Explore higher tier mines to find ore.',
+  metals: 'No metals in inventory. Process ores in the Process tab to refine metals.',
   equipment: 'No equipment owned. Visit the shop to purchase tools.'
 };
 
@@ -50,19 +54,25 @@ export default function Inventory() {
 
     // For gems and minerals tabs, get items from the correct inventory category
     // gems tab shows items with category "Gem", minerals tab shows "Mineral"
+    // ores tab shows items with category "Ore", metals tab shows "Metal"
     const categoryMap = {
       gems: 'gems',
-      minerals: 'minerals'
+      minerals: 'minerals',
+      ores: 'ores',
+      metals: 'metals'
     };
 
     const invCategory = categoryMap[activeTab];
     const invItems = inventory[invCategory] || [];
 
     return invItems.map(invItem => {
-      // Minerals use 'id', gems use 'gemId'
+      // Minerals use 'id', gems use 'gemId', ores use 'id', metals use 'id'
       const itemId = invItem.gemId || invItem.id;
       const itemData = ITEMS_DATA.find(item => item.id === itemId);
-      const Icon = itemData?.category === 'Gem' ? FaGem : FaMountain;
+      let Icon = FaGem;
+      if (activeTab === 'minerals') Icon = FaMountain;
+      else if (activeTab === 'ores') Icon = FaLayerGroup;
+      else if (activeTab === 'metals') Icon = FaCubes;
       return {
         id: itemId,
         gemId: invItem.gemId || null,

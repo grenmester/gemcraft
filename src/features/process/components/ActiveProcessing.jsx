@@ -1,14 +1,14 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useGame, START_ACTIVE_PROCESS, COMPLETE_ACTIVE_PROCESS } from '../../../context/GameContext';
+import { useGame, START_ACTIVE_PROCESS, COMPLETE_ACTIVE_PROCESS, REFINING } from '../../../context/GameContext';
 import { useProcess } from '../hooks/useProcess';
 import { getItemById } from '../../../data/items';
-import { FaTools, FaCut, FaCog, FaArrowLeft, FaStar, FaGem, FaSpinner } from 'react-icons/fa';
-import { GemIcon, MineralIcon } from '../../../shared/components/ItemIcons';
+import { FaTools, FaCut, FaCog, FaArrowLeft, FaStar, FaGem, FaSpinner, FaFire } from 'react-icons/fa';
 
 const PROCESS_TYPES = [
   { id: 'cleaning', label: 'Cleaning', description: 'Tumble and clean', Icon: FaTools },
   { id: 'cutting', label: 'Cutting', description: 'Shape and cut facets', Icon: FaCut },
   { id: 'faceting', label: 'Faceting', description: 'Polish for brilliance', Icon: FaCog },
+  { id: 'refine', label: 'Refine', description: 'Refine ore to metal', Icon: FaFire },
 ];
 
 const QUALITY_LEVELS = [
@@ -97,12 +97,39 @@ export default function ActiveProcessing() {
 
   const handleSelectType = (type) => {
     setSelectedType(type);
-    setStep('quality');
+    // If refining ore, skip quality selection
+    if (type.id === 'refine') {
+      handleRefineOre();
+    } else {
+      setStep('quality');
+    }
   };
 
   const handleSelectQuality = (qualityLevel) => {
     setSelectedQuality(qualityLevel);
     startProcessing(qualityLevel);
+  };
+
+  const handleRefineOre = () => {
+    if (!selectedItem) return;
+    
+    // Immediately refine the ore (no quality selection needed)
+    dispatch({
+      type: REFINING,
+      payload: {
+        itemId: selectedItem.id
+      }
+    });
+    
+    // Show result
+    const oreData = getItemById(selectedItem.id);
+    const metalId = oreData.processing?.refineOutput || oreData.id.replace('_ore', '');
+    setProcessingResult({
+      type: 'refine',
+      oreName: oreData.name,
+      metalName: metalId.charAt(0).toUpperCase() + metalId.slice(1),
+    });
+    setStep('result');
   };
 
   const startProcessing = (qualityLevel) => {
@@ -178,7 +205,14 @@ export default function ActiveProcessing() {
 
   const getAvailableTypes = () => {
     if (!selectedItem) return [];
+    
+    // If it's an ore, show refine option
+    if (selectedItem.type === 'ore') {
+      return PROCESS_TYPES.filter(type => type.id === 'refine');
+    }
+    
     return PROCESS_TYPES.filter(type => {
+      if (type.id === 'refine') return false;
       if (type.id === 'cleaning') return selectedItem.canClean;
       if (type.id === 'cutting') return selectedItem.canCut;
       if (type.id === 'faceting') return selectedItem.canFacet;
@@ -193,7 +227,7 @@ export default function ActiveProcessing() {
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-bold text-amber-400">
             {step === 'select' && 'Select Item to Process'}
-            {step === 'type' && 'Select Process Type'}
+            {step === 'type' && selectedType?.id === 'refine' ? 'Refine Ore' : 'Select Process Type'}
             {step === 'quality' && 'Select Quality Level'}
             {step === 'processing' && 'Processing...'}
             {step === 'result' && 'Processing Complete!'}
