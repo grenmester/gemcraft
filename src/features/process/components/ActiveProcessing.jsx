@@ -252,11 +252,16 @@ export default function ActiveProcessing() {
 function ItemSelection({ items, onSelect }) {
   // Quality badge color based on quality percentage
   const getQualityColor = (quality) => {
-    if (quality === undefined || quality === null) return 'text-gray-400';
+    if (quality === undefined || quality === null) return 'text-gray-500';
     if (quality >= 90) return 'text-yellow-400';
     if (quality >= 75) return 'text-green-400';
     if (quality >= 60) return 'text-blue-400';
     return 'text-gray-400';
+  };
+
+  const formatQuality = (quality) => {
+    if (quality === undefined || quality === null) return '?';
+    return `${Math.round(quality)}%`;
   };
 
   return (
@@ -264,17 +269,22 @@ function ItemSelection({ items, onSelect }) {
       {items.map(item => {
         const ItemIcon = item.Icon;
         const qualityColor = getQualityColor(item.quality);
+        const isUnprocessed = item.quality === undefined || item.quality === null;
         return (
           <button
-            key={`${item.id}-${item.type}`}
+            key={item.stackId}
             onClick={() => onSelect(item)}
-            className="flex flex-col items-center gap-2 p-4 bg-slate-800 rounded-lg hover:bg-slate-700 border border-slate-600 hover:border-amber-500 transition-all"
+            className={`flex flex-col items-center gap-2 p-4 rounded-lg border transition-all ${
+              isUnprocessed 
+                ? 'bg-slate-800 border-slate-600 hover:border-amber-500' 
+                : 'bg-slate-700 border-slate-500 hover:border-amber-500'
+            }`}
           >
             <ItemIcon className="text-2xl text-cyan-400" />
             <div className="text-sm text-white text-center">{item.displayName}</div>
             <div className="text-xs text-gray-400">x{item.quantity}</div>
             <div className={`text-xs font-medium ${qualityColor}`}>
-              Q: {item.quality !== undefined && item.quality !== null ? `${Math.round(item.quality)}%` : 'N/A'}
+              Q: {formatQuality(item.quality)}
             </div>
             <div className={`text-xs font-medium ${RARITY_COLORS[item.rarity]}`}>
               {item.rarity}

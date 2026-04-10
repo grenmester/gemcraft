@@ -712,9 +712,6 @@ case UNLOCK_ZONE: {
         const pending = state.discoverState.pendingMaterials[mineId] || [];
         if (pending.length === 0) return state;
         
-        // Generate quality for this collection batch (same for all items)
-        const batchQuality = generateCollectionQuality(mineId);
-        
         const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
         const newMinerals = [...(inv.minerals || [])];
         const newGems = [...(inv.gems || [])];
@@ -722,18 +719,20 @@ case UNLOCK_ZONE: {
         pending.forEach(({ itemId, quantity }) => {
           const itemData = itemsById[itemId];
           if (itemData?.category === 'Mineral') {
-            const existing = newMinerals.find(m => m.id === itemId);
+            // Stack with existing items that have no quality (unprocessed)
+            const existing = newMinerals.find(m => m.id === itemId && m.quality === undefined);
             if (existing) {
               existing.quantity += quantity;
             } else {
-              newMinerals.push({ id: itemId, quantity, quality: batchQuality });
+              newMinerals.push({ id: itemId, quantity }); // No quality for unprocessed
             }
           } else {
-            const existing = newGems.find(g => g.gemId === itemId);
+            // Stack with existing items that have no quality (unprocessed)
+            const existing = newGems.find(g => g.gemId === itemId && g.quality === undefined);
             if (existing) {
               existing.quantity += quantity;
             } else {
-              newGems.push({ gemId: itemId, quantity, quality: batchQuality });
+              newGems.push({ gemId: itemId, quantity }); // No quality for unprocessed
             }
           }
         });

@@ -81,11 +81,26 @@ export function useProcess() {
   
   /**
    * Get available items that can be queued
-   * Returns items that are currently in inventory
+   * Returns items that are currently in inventory, grouped by quality tier
+   * Items with different qualities appear as separate entries
    */
   const availableItems = [
-    ...(inventory.minerals || []).map(m => ({ id: m.id, gemId: m.id, quantity: m.quantity, quality: m.quality, type: 'mineral' })),
-    ...(inventory.gems || []).map(g => ({ id: g.gemId, gemId: g.gemId, quantity: g.quantity, quality: g.quality, type: 'gem' }))
+    ...(inventory.minerals || []).map((m, idx) => ({ 
+      id: m.id, 
+      gemId: m.id, 
+      quantity: m.quantity, 
+      quality: m.quality, 
+      type: 'mineral',
+      stackId: `${m.id}-${m.quality || 'unprocessed'}-${idx}` // Unique key for React
+    })),
+    ...(inventory.gems || []).map((g, idx) => ({ 
+      id: g.gemId, 
+      gemId: g.gemId, 
+      quantity: g.quantity, 
+      quality: g.quality, 
+      type: 'gem',
+      stackId: `${g.gemId}-${g.quality || 'unprocessed'}-${idx}` // Unique key for React
+    }))
   ];
   
   /**

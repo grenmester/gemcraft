@@ -28,26 +28,33 @@ export function removeItemFromInventory(inventory, itemId) {
   const minerals = [...(inventory.minerals || [])];
   const gems = [...(inventory.gems || [])];
 
-  const mineralIndex = minerals.findIndex(m => m.id === itemId);
-  if (mineralIndex >= 0) {
-    const mineral = minerals[mineralIndex];
+  // Prefer removing from unprocessed items (no quality) first, then lowest quality
+  const mineralIndex = minerals.findIndex(m => m.id === itemId && m.quality === undefined);
+  const fallbackMineralIndex = minerals.findIndex(m => m.id === itemId);
+  const actualMineralIndex = mineralIndex >= 0 ? mineralIndex : fallbackMineralIndex;
+  
+  if (actualMineralIndex >= 0) {
+    const mineral = minerals[actualMineralIndex];
     const newQty = mineral.quantity - 1;
     if (newQty <= 0) {
-      minerals.splice(mineralIndex, 1);
+      minerals.splice(actualMineralIndex, 1);
     } else {
-      minerals[mineralIndex] = { ...mineral, quantity: newQty };
+      minerals[actualMineralIndex] = { ...mineral, quantity: newQty };
     }
     return { minerals, gems, removed: true };
   }
 
-  const gemIndex = gems.findIndex(g => g.gemId === itemId);
-  if (gemIndex >= 0) {
-    const gem = gems[gemIndex];
+  const gemIndex = gems.findIndex(g => g.gemId === itemId && g.quality === undefined);
+  const fallbackGemIndex = gems.findIndex(g => g.gemId === itemId);
+  const actualGemIndex = gemIndex >= 0 ? gemIndex : fallbackGemIndex;
+  
+  if (actualGemIndex >= 0) {
+    const gem = gems[actualGemIndex];
     const newQty = gem.quantity - 1;
     if (newQty <= 0) {
-      gems.splice(gemIndex, 1);
+      gems.splice(actualGemIndex, 1);
     } else {
-      gems[gemIndex] = { ...gem, quantity: newQty };
+      gems[actualGemIndex] = { ...gem, quantity: newQty };
     }
     return { minerals, gems, removed: true };
   }
@@ -60,14 +67,20 @@ export function removeItemFromInventory(inventory, itemId) {
  * @param {Object} inventory - The inventory object with minerals, gems arrays
  * @param {string} itemId - The ID of the item to add
  * @param {number} [quantity=1] - Number of items to add
- * @param {number} [quality] - Quality value (0-100) to store with the item
+ * @param {number} [quality] - Quality value (0-100) to store with the item. 
+ *                             Items with different qualities stack separately.
  * @returns {Object} { minerals, gems } - Updated arrays
  */
 export function addItemToInventory(inventory, itemId, quantity = 1, quality = null) {
   const minerals = [...(inventory.minerals || [])];
   const gems = [...(inventory.gems || [])];
 
-  const mineralIndex = minerals.findIndex(m => m.id === itemId);
+  // Stack items only with items that have the same quality level
+  // Round quality to nearest 5 for grouping (e.g., 67%, 68%, 69% all become 65%)
+  const roundedQuality = quality !== null ? Math.round(quality / 5) * 5 : null;
+
+  const mineralIndex = minerals.findIndex(m => m.id === itemId && 
+    (roundedQuality === null ? m.quality === undefined : Math.round((m.quality || 0) / 5) * 5 === roundedQuality));
   if (mineralIndex >= 0) {
     const mineral = minerals[mineralIndex];
     minerals[mineralIndex] = { 
@@ -78,7 +91,8 @@ export function addItemToInventory(inventory, itemId, quantity = 1, quality = nu
     return { minerals, gems };
   }
 
-  const gemIndex = gems.findIndex(g => g.gemId === itemId);
+  const gemIndex = gems.findIndex(g => g.gemId === itemId && 
+    (roundedQuality === null ? g.quality === undefined : Math.round((g.quality || 0) / 5) * 5 === roundedQuality));
   if (gemIndex >= 0) {
     const gem = gems[gemIndex];
     gems[gemIndex] = { 

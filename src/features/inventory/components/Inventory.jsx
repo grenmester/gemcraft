@@ -59,12 +59,14 @@ export default function Inventory() {
     const invItems = inventory[invCategory] || [];
 
     return invItems.map(invItem => {
-      const itemData = ITEMS_DATA.find(item => item.id === invItem.gemId);
+      // Minerals use 'id', gems use 'gemId'
+      const itemId = invItem.gemId || invItem.id;
+      const itemData = ITEMS_DATA.find(item => item.id === itemId);
       const Icon = itemData?.category === 'Gem' ? FaGem : FaMountain;
       return {
-        id: invItem.gemId,
-        gemId: invItem.gemId,
-        name: itemData?.name || invItem.gemId,
+        id: itemId,
+        gemId: invItem.gemId || null,
+        name: itemData?.name || itemId,
         quantity: invItem.quantity,
         quality: invItem.quality,
         value: itemData?.value || 0,
@@ -169,30 +171,32 @@ export default function Inventory() {
             const ItemIcon = item.Icon;
             // Quality badge color based on quality percentage
             const getQualityColor = (quality) => {
-              if (quality === undefined || quality === null) return 'text-gray-400';
+              if (quality === undefined || quality === null) return 'text-gray-500';
               if (quality >= 90) return 'text-yellow-400';
               if (quality >= 75) return 'text-green-400';
               if (quality >= 60) return 'text-blue-400';
               return 'text-gray-400';
             };
             const qualityColor = getQualityColor(item.quality);
+            const isUnprocessed = item.quality === undefined || item.quality === null;
             return (
               <div
-                key={item.id}
+                key={`${item.id}-${item.quality || 'unprocessed'}`}
                 className={`
-                  bg-slate-800 border-2 border-slate-700 rounded-lg p-3 text-center transition-all hover:border-yellow-400 hover:scale-105
+                  bg-slate-800 border-2 rounded-lg p-3 text-center transition-all hover:border-yellow-400 hover:scale-105
+                  ${isUnprocessed ? 'border-slate-700' : 'border-slate-600'}
                   ${activeTab === 'equipment' && !item.owned ? 'opacity-50' : ''}
                 `}
               >
                 <div className="flex justify-center mb-2">
                   <ItemIcon className="text-3xl text-cyan-400" />
                 </div>
-                <div className="font-semibold mb-1 text-sm">{item.name}</div>
+                <div className="font-semibold mb-1 text-sm text-white">{item.name}</div>
                 {activeTab !== 'equipment' && (
                   <>
                     <div className="text-sm text-teal-400">x{item.quantity}</div>
                     <div className={`text-xs font-medium ${qualityColor}`}>
-                      Q: {item.quality !== undefined && item.quality !== null ? `${Math.round(item.quality)}%` : 'N/A'}
+                      Q: {isUnprocessed ? '?' : `${Math.round(item.quality)}%`}
                     </div>
                     <div className="text-xs text-yellow-400 flex items-center justify-center gap-1">
                       {item.value} <FaGem className="text-xs" />
