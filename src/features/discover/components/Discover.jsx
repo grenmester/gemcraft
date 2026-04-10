@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useGame, SET_DISCOVER_TAB, CLEAR_MINING_SELECTION, SELECT_SUBAREA, GAME_PHASES } from '../../../context/GameContext';
 import { useDiscover } from '../hooks/useDiscover';
 import { FaArrowLeft, FaMapMarkedAlt, FaHourglassHalf, FaCoins } from 'react-icons/fa';
+import { TutorialModal, HelpButton, DISCOVER_TUTORIAL_SECTIONS } from '../../../shared/components/TutorialModal';
 import MineSelection from './MineSelection';
 import MineDetails from './MineDetails';
 import SubareaDetails from './SubareaDetails';
@@ -9,6 +11,7 @@ import IdleMineSelection from './IdleMineSelection';
 export default function Discover() {
   const { state, dispatch } = useGame();
   const { discoverState, setActiveTab } = useDiscover();
+  const [showTutorial, setShowTutorial] = useState(false);
   
   const coins = state.player?.coins || 0;
   const activeTab = discoverState?.activeTab || 'panning';
@@ -32,7 +35,9 @@ export default function Discover() {
   };
   
   return (
-    <div className="flex flex-col gap-6 pt-4 h-full">
+    <div className="flex flex-col gap-6 pt-4 h-full relative">
+      <HelpButton onClick={() => setShowTutorial(true)} />
+      
       <div className="flex items-center justify-between">
         <button
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
@@ -87,6 +92,13 @@ export default function Discover() {
       {activeTab === 'idle' && (
         <IdleMineSelection />
       )}
+      
+      <TutorialModal
+        isOpen={showTutorial}
+        onClose={() => setShowTutorial(false)}
+        title="Discover Guide"
+        sections={DISCOVER_TUTORIAL_SECTIONS}
+      />
     </div>
   );
 }

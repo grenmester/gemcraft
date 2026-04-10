@@ -5,18 +5,22 @@ import ProcessQueue from './ProcessQueue';
 import ActiveProcessing from './ActiveProcessing';
 import ProcessEquipment from './ProcessEquipment';
 import { FaBolt, FaHourglassHalf, FaArrowLeft, FaTools } from 'react-icons/fa';
+import { TutorialModal, HelpButton, PROCESS_TUTORIAL_SECTIONS } from '../../../shared/components/TutorialModal';
 
 export default function Process() {
   const { dispatch } = useGame();
   const { availableItems } = useProcess();
   const [activeTab, setActiveTab] = useState('active'); // 'active' | 'idle' | 'equipment'
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const handleBack = () => {
     dispatch({ type: SET_PHASE, payload: GAME_PHASES.MENU });
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      <HelpButton onClick={() => setShowTutorial(true)} />
+      
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <button 
@@ -73,6 +77,13 @@ export default function Process() {
           <ProcessEquipment />
         )}
       </div>
+      
+      <TutorialModal
+        isOpen={showTutorial}
+        onClose={() => setShowTutorial(false)}
+        title="Process Guide"
+        sections={PROCESS_TUTORIAL_SECTIONS}
+      />
     </div>
   );
 }
