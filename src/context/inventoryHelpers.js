@@ -4,6 +4,8 @@
  * These helpers handle the dual property naming for minerals (id) and gems (gemId).
  * Minerals use `id` property, gems use `gemId` property. This reflects the
  * intentional distinction between the two inventory categories.
+ * 
+ * Metals also use `id` property (like minerals) and stack by quality.
  */
 
 import { getItemById } from '../data/items.js';
@@ -16,6 +18,26 @@ import { getItemById } from '../data/items.js';
 function isMineral(itemId) {
   const item = getItemById(itemId);
   return item?.category === 'Mineral';
+}
+
+/**
+ * Determines if an item is a metal based on items.json data
+ * @param {string} itemId - The ID of the item
+ * @returns {boolean} True if the item is a metal
+ */
+function isMetal(itemId) {
+  const item = getItemById(itemId);
+  return item?.category === 'Metal';
+}
+
+/**
+ * Determines if an item is an ore based on items.json data
+ * @param {string} itemId - The ID of the item
+ * @returns {boolean} True if the item is an ore
+ */
+function isOre(itemId) {
+  const item = getItemById(itemId);
+  return item?.category === 'Ore';
 }
 
 /**
@@ -110,4 +132,112 @@ export function addItemToInventory(inventory, itemId, quantity = 1, quality = nu
     gems.push({ gemId: itemId, quantity, ...(quality !== null && { quality }) });
   }
   return { minerals, gems };
+}
+
+/**
+ * Adds metal to inventory
+ * @param {Object} inventory - The inventory object with metals array
+ * @param {string} metalId - The ID of the metal to add
+ * @param {number} [quantity=1] - Number of metal units to add
+ * @param {number} [quality] - Quality value (0-100) to store with the metal
+ * @returns {Object} Updated inventory with metals array
+ */
+export function addMetalToInventory(inventory, metalId, quantity = 1, quality = null) {
+  const metals = [...(inventory.metals || [])];
+  
+  // Stack metals only with items that have the same quality level
+  const roundedQuality = quality !== null ? Math.round(quality / 5) * 5 : null;
+  
+  const metalIndex = metals.findIndex(m => m.id === metalId && 
+    (roundedQuality === null ? m.quality === undefined : Math.round((m.quality || 0) / 5) * 5 === roundedQuality));
+  
+  if (metalIndex >= 0) {
+    const metal = metals[metalIndex];
+    metals[metalIndex] = { 
+      ...metal, 
+      quantity: metal.quantity + quantity,
+      ...(quality !== null && { quality })
+    };
+    return { metals };
+  }
+  
+  // Add new metal entry
+  metals.push({ id: metalId, quantity, ...(quality !== null && { quality }) });
+  return { metals };
+}
+
+/**
+ * Removes one unit of metal from inventory
+ * @param {Object} inventory - The inventory object with metals array
+ * @param {string} metalId - The ID of the metal to remove
+ * @returns {Object} { metals, removed } - Updated metals array and removal status
+ */
+export function removeMetalFromInventory(inventory, metalId) {
+  const metals = [...(inventory.metals || [])];
+  
+  const metalIndex = metals.findIndex(m => m.id === metalId);
+  
+  if (metalIndex >= 0) {
+    const metal = metals[metalIndex];
+    const newQty = metal.quantity - 1;
+    if (newQty <= 0) {
+      metals.splice(metalIndex, 1);
+    } else {
+      metals[metalIndex] = { ...metal, quantity: newQty };
+    }
+    return { metals, removed: true };
+  }
+  
+  return { metals, removed: false };
+}
+
+/**
+ * Removes one unit of ore from inventory (for refining)
+ * @param {Object} inventory - The inventory object with ores array
+ * @param {string} oreId - The ID of the ore to remove
+ * @returns {Object} { ores, removed } - Updated ores array and removal status
+ */
+export function removeOreFromInventory(inventory, oreId) {
+  const ores = [...(inventory.ores || [])];
+  
+  const oreIndex = ores.findIndex(o => o.id === oreId);
+  
+  if (oreIndex >= 0) {
+    const ore = ores[oreIndex];
+    const newQty = ore.quantity - 1;
+    if (newQty <= 0) {
+      ores.splice(oreIndex, 1);
+    } else {
+      ores[oreIndex] = { ...ore, quantity: newQty };
+    }
+    return { ores, removed: true };
+  }
+  
+  return { ores, removed: false };
+}
+
+/**
+ * Adds ore to inventory
+ * @param {Object} inventory - The inventory object with ores array
+ * @param {string} oreId - The ID of the ore to add
+ * @param {number} [quantity=1] - Number of ore units to add
+ * @returns {Object} Updated inventory with ores array
+ */
+export function addOreToInventory(inventory, oreId, quantity = 1) {
+  const ores = [...(inventory.ores || [])];
+  
+  const oreIndex = ores.findIndex(o => o.id === oreId);
+  
+  if (oreIndex >= 0) {
+    const ore = ores[oreIndex];
+    ores[oreIndex] = { 
+      ...ore, 
+      quantity: ore.quantity + quantity
+    };
+    return { ores };
+  }
+  
+  // Add new ore entry
+  ores.push({ id: oreId, quantity });
+  return { ores };
 }

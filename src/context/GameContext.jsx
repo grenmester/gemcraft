@@ -6,7 +6,7 @@ import { items, itemsById } from '../loaders/items.js';
 import { EQUIPMENT } from '../loaders/equipment.js';
 import { PROCESS_EQUIPMENT } from '../data/processEquipment.js';
 import { LOCATION_TIERS } from '../loaders/locations.js';
-import { removeItemFromInventory, addItemToInventory } from './inventoryHelpers.js';
+import { removeItemFromInventory, addItemToInventory, addMetalToInventory, removeOreFromInventory } from './inventoryHelpers.js';
 import { SUBAREA_LOOT } from '../data/subareas.js';
 
 export { GAME_PHASES };
@@ -42,6 +42,7 @@ export const CANCEL_QUEUE_ITEM = 'CANCEL_QUEUE_ITEM';
 export const UPDATE_PROCESS_STATS = 'UPDATE_PROCESS_STATS';
 export const UNLOCK_QUEUE_SLOT = 'UNLOCK_QUEUE_SLOT';
 export const TICK_QUEUE = 'TICK_QUEUE';
+export const REFINING = 'REFINING';
 
 // Zone actions
 export const UNLOCK_ZONE = 'UNLOCK_ZONE';
@@ -71,7 +72,7 @@ const PROCESS_TICK_INTERVAL = 1000; // Check queue every second
 
 const STORAGE_KEY = 'gemstone_game_save';
 
-const MIGRATION_VERSION = 6;
+const MIGRATION_VERSION = 7;
 
 // Quality ranges by mine tier (min%, max%)
 const TIER_QUALITY_RANGES = {
@@ -194,23 +195,39 @@ function migrateState(state) {
      };
    }
 
-   // Migration to version 6: Add equippedTools for process equipment
-   if (migrated.migrationVersion < 6) {
-     migrated = {
-       ...migrated,
-       migrationVersion: MIGRATION_VERSION,
-       processState: {
-         ...migrated.processState,
-         equippedTools: migrated.processState?.equippedTools || {
-           cleaning: 'basic_tumbler',
-           cutting: 'basic_cutter',
-           faceting: 'hand_faceter'
-         }
-       }
-     };
-   }
+    // Migration to version 6: Add equippedTools for process equipment
+    if (migrated.migrationVersion < 6) {
+      migrated = {
+        ...migrated,
+        migrationVersion: MIGRATION_VERSION,
+        processState: {
+          ...migrated.processState,
+          equippedTools: migrated.processState?.equippedTools || {
+            cleaning: 'basic_tumbler',
+            cutting: 'basic_cutter',
+            faceting: 'hand_faceter'
+          }
+        }
+      };
+    }
 
-   // Process offline progress: Check queue completions on load
+    // Migration to version 7: Add metals and ores arrays to inventory
+    if (migrated.migrationVersion < 7) {
+      migrated = {
+        ...migrated,
+        migrationVersion: MIGRATION_VERSION,
+        player: {
+          ...migrated.player,
+          inventory: {
+            ...migrated.player?.inventory,
+            metals: migrated.player?.inventory?.metals || [],
+            ores: migrated.player?.inventory?.ores || []
+          }
+        }
+      };
+    }
+
+    // Process offline progress: Check queue completions on load
    if (migrated.processState?.queue || migrated.processState?.activeProcess) {
      const now = Date.now();
      const newCompletedQueue = [];
@@ -1220,6 +1237,71 @@ case UNLOCK_ZONE: {
           equippedTools: {
             ...state.processState.equippedTools,
             [processType]: newEquipmentId
+          }
+        }
+      };
+    }
+
+    case REFINING: {
+      const { oreId, metalId, quality } = action.payload;
+      
+      // Quality ranges by ore type (min%, max%)
+      const ORE_QUALITY_RANGES = {
+        copper_ore: { min: 60, max: 80 },
+        silver_ore: { min: 65, max: 82 },
+        gold_ore: { min: 70, max: 88 },
+        platinum_ore: { min: 75, max: 92 },
+      };
+      
+      const range = ORE_QUALITY_RANGES[oreId] || { min: 60, max: 80 };
+      const finalQuality = quality || Math.round(range.min + Math.random() * (range.max - range.min));
+      
+      const inv = state.player.inventory || { minerals: [], gems: [], ores: [], metals: [], equipment: [], currency: { coins: 0 } };
+      
+      // Remove ore from inventory
+      const ores = [...(inv.ores || [])];
+      const oreIndex = ores.findIndex(o => o.id === oreId);
+      
+      if (oreIndex < 0) return state;
+      
+      const ore = ores[oreIndex];
+      if (ore.quantity > 1) {
+        ores[oreIndex] = { ...ore, quantity: ore.quantity - 1 };
+      } else {
+        ores.splice(oreIndex, 1);
+      }
+      
+      // Add metal to inventory with quality
+      const metals = [...(inv.metals || [])];
+      const metalIndex = metals.findIndex(m => m.id === metalId);
+      
+      if (metalIndex >= 0) {
+        const existingMetal = metals[metalIndex];
+        // Stack only with same quality (rounded to 5)
+        const roundedQuality = Math.round(finalQuality / 5) * 5;
+        const existingRounded = Math.round((existingMetal.quality || 0) / 5) * 5;
+        
+        if (existingRounded === roundedQuality) {
+          metals[metalIndex] = { 
+            ...existingMetal, 
+            quantity: existingMetal.quantity + 1,
+            quality: finalQuality 
+          };
+        } else {
+          metals.push({ id: metalId, quantity: 1, quality: finalQuality });
+        }
+      } else {
+        metals.push({ id: metalId, quantity: 1, quality: finalQuality });
+      }
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          inventory: {
+            ...inv,
+            ores,
+            metals
           }
         }
       };

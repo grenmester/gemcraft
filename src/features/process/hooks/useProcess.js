@@ -13,7 +13,7 @@ export function useProcess() {
   
   const { queue, queueSlots, activeProcess, completedQueue, equippedTools } = processState;
   
-  const inventory = player?.inventory || { minerals: [], gems: [], equipment: [], processEquipment: [] };
+  const inventory = player?.inventory || { minerals: [], gems: [], ores: [], metals: [], equipment: [], processEquipment: [] };
   
   /**
    * Add an item to the processing queue
@@ -100,6 +100,14 @@ export function useProcess() {
       quality: g.quality, 
       type: 'gem',
       stackId: `${g.gemId}-${g.quality || 'unprocessed'}-${idx}` // Unique key for React
+    })),
+    ...(inventory.ores || []).map((o, idx) => ({ 
+      id: o.id, 
+      gemId: o.id, 
+      quantity: o.quantity, 
+      quality: o.quality, 
+      type: 'ore',
+      stackId: `${o.id}-ore-${idx}` // Unique key for React
     }))
   ];
   

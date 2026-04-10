@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const RARITY_ENUM = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
-export const CATEGORY_ENUM = ['Gem', 'Mineral'];
+export const CATEGORY_ENUM = ['Gem', 'Mineral', 'Ore', 'Metal'];
 
 export const itemProcessingSchema = z.object({
   canClean: z.boolean(),
@@ -19,7 +19,8 @@ export const itemSchema = z.object({
   value: z.number().min(0),
   rarity: z.enum(RARITY_ENUM),
   realWorldLocations: z.array(z.string()).min(1),
-  processing: itemProcessingSchema
+  processing: itemProcessingSchema.optional(),
+  refinesTo: z.string().optional()
 });
 
 export const itemsDataSchema = z.object({
