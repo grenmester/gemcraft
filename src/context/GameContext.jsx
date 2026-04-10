@@ -712,13 +712,22 @@ case UNLOCK_ZONE: {
         const pending = state.discoverState.pendingMaterials[mineId] || [];
         if (pending.length === 0) return state;
         
-        const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+        const inv = state.player.inventory || { minerals: [], gems: [], ores: [], equipment: [], currency: { coins: 0 } };
         const newMinerals = [...(inv.minerals || [])];
         const newGems = [...(inv.gems || [])];
+        const newOres = [...(inv.ores || [])];
         
         pending.forEach(({ itemId, quantity }) => {
           const itemData = itemsById[itemId];
-          if (itemData?.category === 'Mineral') {
+          if (itemData?.category === 'Ore') {
+            // Stack with existing ores (unprocessed, no quality)
+            const existing = newOres.find(o => o.id === itemId);
+            if (existing) {
+              existing.quantity += quantity;
+            } else {
+              newOres.push({ id: itemId, quantity });
+            }
+          } else if (itemData?.category === 'Mineral') {
             // Stack with existing items that have no quality (unprocessed)
             const existing = newMinerals.find(m => m.id === itemId && m.quality === undefined);
             if (existing) {
@@ -751,7 +760,8 @@ case UNLOCK_ZONE: {
             inventory: {
               ...inv,
               minerals: newMinerals,
-              gems: newGems
+              gems: newGems,
+              ores: newOres
             }
           }
         };

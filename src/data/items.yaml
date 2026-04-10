@@ -705,3 +705,84 @@ items:
       canFacet: false
       baseProcessTime: 20
       processDifficulty: 2
+
+  # Ore items (for crafting/refining)
+  - id: copper_ore
+    name: Copper Ore
+    category: Ore
+    hardness: 2.5
+    value: 2
+    rarity: Common
+    realWorldLocations:
+      - Chile
+      - USA
+      - Peru
+      - Australia
+    processing:
+      canClean: false
+      canCut: false
+      canFacet: false
+      canRefine: true
+      refineOutput: copper_ingot
+      baseProcessTime: 5
+      processDifficulty: 1
+
+  - id: silver_ore
+    name: Silver Ore
+    category: Ore
+    hardness: 2.5
+    value: 10
+    rarity: Uncommon
+    realWorldLocations:
+      - Peru
+      - Mexico
+      - Australia
+      - Poland
+    processing:
+      canClean: false
+      canCut: false
+      canFacet: false
+      canRefine: true
+      refineOutput: silver_ingot
+      baseProcessTime: 8
+      processDifficulty: 2
+
+  - id: gold_ore
+    name: Gold Ore
+    category: Ore
+    hardness: 2.5
+    value: 40
+    rarity: Rare
+    realWorldLocations:
+      - South Africa
+      - Australia
+      - USA
+      - Canada
+    processing:
+      canClean: false
+      canCut: false
+      canFacet: false
+      canRefine: true
+      refineOutput: gold_ingot
+      baseProcessTime: 12
+      processDifficulty: 3
+
+  - id: platinum_ore
+    name: Platinum Ore
+    category: Ore
+    hardness: 4
+    value: 200
+    rarity: Epic
+    realWorldLocations:
+      - South Africa
+      - Russia
+      - Canada
+      - USA
+    processing:
+      canClean: false
+      canCut: false
+      canFacet: false
+      canRefine: true
+      refineOutput: platinum_ingot
+      baseProcessTime: 15
+      processDifficulty: 4
