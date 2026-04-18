@@ -57,6 +57,7 @@ export const PlayerSchema = z.object({
   shiftPoints: z.number().int().min(0).default(0),
   craftingXP: z.number().min(0).default(0),
   inventory: InventorySchema.default(),
+  discoveredGems: z.array(z.string()).default([]),
   locationProgress: z.record(z.string(), z.number()).default({}),
   highScores: z.record(z.string(), z.number()).default({}),
 });
@@ -87,6 +88,7 @@ export function createInitialPlayer() {
     shiftPoints: 0,
     craftingXP: 0,
     inventory: createInitialInventory(),
+    discoveredGems: [],
     locationProgress: {},
     highScores: {},
   };

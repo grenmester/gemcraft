@@ -77,9 +77,8 @@ export default function DebugPanel() {
           <div className="border-b border-slate-700 pb-3">
             <h4 className="m-0 mb-2 text-xs uppercase tracking-wide text-gray-400">Current Stats</h4>
             <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
-              <span className="whitespace-nowrap"><FaGem className="inline" /> {state.player.coins?.toLocaleString() || 0}</span>
-              <span className="whitespace-nowrap flex items-center gap-1"><FaGem className="text-xs" /> Gems: {state.player.gems?.length || 0}</span>
-              <span className="whitespace-nowrap"><FaBook /> Gemdex: {state.player.gemdex?.length || 0}/{items.filter(item => item.category === 'Gem').length}</span>
+              <span className="whitespace-nowrap"><FaGem className="inline" /> {state.player.inventory?.coins?.toLocaleString() || 0}</span>
+              <span className="whitespace-nowrap"><FaBook /> Gemdex: {state.player.discoveredGems?.length || 0}/{items.filter(item => item.category === 'Gem').length}</span>
             </div>
           </div>
 

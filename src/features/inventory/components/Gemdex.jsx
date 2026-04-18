@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useGame, GAME_PHASES, SET_PHASE } from '../../../context/GameContext';
-import { useInventory } from '../hooks/useInventory';
-import { getItems, getItemById } from '../../../data/items';
+import { getItems } from '../../../data/items';
 import { FaSearch, FaArrowLeft, FaMapMarkedAlt } from 'react-icons/fa';
 import { GemIcon, MineralIcon } from '../../../shared/components/ItemIcons';
 
@@ -60,7 +59,7 @@ const ITEM_FACTS = {
 
 export default function Gemdex() {
   const { state, dispatch } = useGame();
-  const { gemdex } = useInventory();
+  const discoveredGems = state.player.discoveredGems || [];
   
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -71,15 +70,15 @@ export default function Gemdex() {
   // Modal state
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // Get all 40 items
+  // Get all items from items.yaml
   const allItems = useMemo(() => getItems(), []);
   
   // Track discovered IDs
   const discoveredIds = useMemo(() => {
-    return new Set(gemdex.map(g => g.id));
-  }, [gemdex]);
+    return new Set(discoveredGems);
+  }, [discoveredGems]);
 
-  // Stats: X/40 Discovered
+  // Stats: X/total Discovered
   const stats = useMemo(() => {
     const total = allItems.length;
     const discovered = discoveredIds.size;
@@ -87,16 +86,8 @@ export default function Gemdex() {
     return { total, discovered, percentage };
   }, [allItems, discoveredIds]);
 
-  // Recently discovered items (for "NEW" badge)
-  // Items discovered in the last 5 minutes are considered "NEW"
-  const recentlyDiscoveredIds = useMemo(() => {
-    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-    return new Set(
-      gemdex
-        .filter(g => g.discoveredAt && g.discoveredAt > fiveMinutesAgo)
-        .map(g => g.id)
-    );
-  }, [gemdex]);
+  // No "NEW" badge for now - discovery timing not tracked
+  const recentlyDiscoveredIds = useMemo(() => new Set(), []);
 
   // Filter items
   const filteredItems = useMemo(() => {

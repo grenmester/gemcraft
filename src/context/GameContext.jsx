@@ -163,6 +163,11 @@ function loadInitialState() {
           coins: savedInventory.coins ?? 100,
         };
       }
+      // Migrate discoveredGems - use old gemdex if exists, otherwise empty array
+      if (parsed.player?.gemdex && !parsed.player.discoveredGems) {
+        parsed.player.discoveredGems = parsed.player.gemdex.map(g => g.id);
+      }
+      parsed.player.discoveredGems = parsed.player.discoveredGems || [];
       return { ...initialGameState, ...parsed };
     }
   } catch (e) {
@@ -181,18 +186,15 @@ function loadInitialState() {
 
     case ADD_GEM: {
       const gem = action.payload instanceof Gem ? action.payload : new Gem(action.payload);
-      const newGems = [...state.player.gems, gem];
-      const newCoins = state.player.coins + gem.getDisplayValue().baseValue;
-      const newGemdex = state.player.gemdex.some(g => g.id === gem.id)
-        ? state.player.gemdex
-        : [...state.player.gemdex, gem];
+      const discoveredGems = [...(state.player.discoveredGems || [])];
+      if (!discoveredGems.includes(gem.id)) {
+        discoveredGems.push(gem.id);
+      }
       return {
         ...state,
         player: {
           ...state.player,
-          gems: newGems,
-          coins: newCoins,
-          gemdex: newGemdex
+          discoveredGems
         }
       };
     }
@@ -284,29 +286,29 @@ case DEBUG_UNLOCK_ALL_LOCATIONS: {
 }
 
     case DEBUG_MAX_INVENTORY: {
-      const maxGems = 100;
-      const currentCount = state.player.gems?.length || 0;
-      const needed = maxGems - currentCount;
-      if (needed <= 0) return state;
+      const inv = { ...state.player.inventory };
+      const processedMaterials = [...(inv.processedMaterials || [])];
+      const discoveredGems = [...(state.player.discoveredGems || [])];
+      
       const gemItems = items.filter(item => item.category === 'Gem');
-      const sampleGems = gemItems.slice(0, Math.min(needed, gemItems.length));
-      const newGems = [...state.player.gems];
-      for (let i = 0; i < needed; i++) {
-        const item = sampleGems[i % sampleGems.length];
-        newGems.push(new Gem({
+      gemItems.forEach(item => {
+        if (!discoveredGems.includes(item.id)) {
+          discoveredGems.push(item.id);
+        }
+        processedMaterials.push({
           id: item.id,
-          name: item.name,
-          mohs: item.hardness,
-          color: item.rarity,
-          facts: [],
-          values: [item.value]
-        }));
-      }
+          category: 'Gem',
+          quality: 70 + Math.floor(Math.random() * 25),
+          value: item.value
+        });
+      });
+      
       return {
         ...state,
         player: {
           ...state.player,
-          gems: newGems
+          discoveredGems,
+          inventory: { ...inv, processedMaterials }
         }
       };
     }
@@ -634,10 +636,17 @@ const cooldowns = state.discoverState.miningCooldowns[cooldownKey] || {};
         
         const inv = state.player.inventory || {};
         const rawMaterials = [...(inv.rawMaterials || [])];
+        const discoveredGems = [...(state.player.discoveredGems || [])];
         
         pending.forEach(({ itemId, quantity }) => {
           const itemData = itemsById[itemId];
           const category = itemData?.category || 'Mineral';
+          
+          // Track discovery for gems
+          const isGem = category === 'Gem';
+          if (isGem && !discoveredGems.includes(itemId)) {
+            discoveredGems.push(itemId);
+          }
           
           // Stack with existing raw materials of same id and category
           const existing = rawMaterials.find(m => m.id === itemId && m.category === category);
@@ -659,6 +668,7 @@ const cooldowns = state.discoverState.miningCooldowns[cooldownKey] || {};
           },
           player: {
             ...state.player,
+            discoveredGems,
             inventory: {
               ...inv,
               rawMaterials
@@ -902,6 +912,14 @@ const cooldowns = state.discoverState.miningCooldowns[cooldownKey] || {};
 
       const inv = state.player.inventory || { rawMaterials: [], processedMaterials: [], equipment: [] };
       const updatedInventory = addItemToInventory(inv, itemId, 1, quality);
+      
+      // Track gem discovery for processed gems
+      const itemData = itemsById[itemId];
+      const isGem = itemData?.category === 'Gem';
+      const discoveredGems = [...(state.player.discoveredGems || [])];
+      if (isGem && !discoveredGems.includes(itemId)) {
+        discoveredGems.push(itemId);
+      }
 
       // Update processing stats
       const stats = state.processState.processingStats;
@@ -914,6 +932,7 @@ const cooldowns = state.discoverState.miningCooldowns[cooldownKey] || {};
         ...state,
         player: {
           ...state.player,
+          discoveredGems,
           inventory: updatedInventory
         },
         processState: {
