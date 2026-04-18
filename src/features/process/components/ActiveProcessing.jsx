@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useGame, START_ACTIVE_PROCESS, COMPLETE_ACTIVE_PROCESS, REFINING } from '../../../context/GameContext';
 import { useProcess } from '../hooks/useProcess';
 import { getItemById } from '../../../data/items';
-import { FaTools, FaCut, FaCog, FaArrowLeft, FaStar, FaGem, FaSpinner, FaFire } from 'react-icons/fa';
+import { FaTools, FaCut, FaCog, FaArrowLeft, FaStar, FaGem, FaFire } from 'react-icons/fa';
 import { GemIcon, MineralIcon, OreIcon, MetalIcon } from '../../../shared/components/ItemIcons';
 
 const PROCESS_TYPES = [
@@ -13,9 +13,9 @@ const PROCESS_TYPES = [
 ];
 
 const QUALITY_LEVELS = [
-  { id: 'low', label: 'Low', description: '40-60% quality', cooldown: 3, color: 'gray', icon: FaTools },
-  { id: 'medium', label: 'Medium', description: '60-80% quality', cooldown: 8, color: 'blue', icon: FaCut },
-  { id: 'high', label: 'High', description: '80-100% quality', cooldown: 15, color: 'purple', icon: FaStar },
+  { id: 'low', label: 'Low', description: '40-60% quality', color: 'gray', icon: FaTools },
+  { id: 'medium', label: 'Medium', description: '60-80% quality', color: 'blue', icon: FaCut },
+  { id: 'high', label: 'High', description: '80-100% quality', color: 'purple', icon: FaStar },
 ];
 
 const RARITY_COLORS = {
@@ -48,18 +48,11 @@ const CATEGORY_ICONS = {
 export default function ActiveProcessing() {
   const { state, dispatch } = useGame();
   const { availableItems } = useProcess();
-  const [step, setStep] = useState('select'); // 'select' | 'type' | 'quality' | 'processing' | 'result'
+  const [step, setStep] = useState('select'); // 'select' | 'type' | 'quality' | 'result'
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
   const [selectedQuality, setSelectedQuality] = useState(null);
   const [processingResult, setProcessingResult] = useState(null);
-  const [cooldowns, setCooldowns] = useState({});
-
-  // Sync cooldowns from state
-  useEffect(() => {
-    const savedCooldowns = state.processState?.processCooldowns || {};
-    setCooldowns(savedCooldowns);
-  }, [state.processState?.processCooldowns]);
 
   // Enrich available items with data
   const itemsWithData = useMemo(() => {
@@ -81,17 +74,6 @@ export default function ActiveProcessing() {
       };
     });
   }, [availableItems]);
-
-  const getCooldownRemaining = useCallback((itemId, qualityLevel) => {
-    const itemCooldowns = cooldowns[itemId] || {};
-    const endTime = itemCooldowns[qualityLevel] || 0;
-    const remaining = endTime - Date.now();
-    return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
-  }, [cooldowns]);
-
-  const isOnCooldown = useCallback((itemId, qualityLevel) => {
-    return getCooldownRemaining(itemId, qualityLevel) > 0;
-  }, [getCooldownRemaining]);
 
   const handleSelectItem = (item) => {
     setSelectedItem(item);
@@ -138,7 +120,6 @@ export default function ActiveProcessing() {
   const startProcessing = (qualityLevel) => {
     if (!selectedItem || !selectedType) return;
 
-    // Start the active process in state
     dispatch({
       type: START_ACTIVE_PROCESS,
       payload: {
@@ -148,44 +129,29 @@ export default function ActiveProcessing() {
       }
     });
 
-    setStep('processing');
+    const itemData = getItemById(selectedItem.id);
+    const qualityConfig = { low: 50, medium: 70, high: 90 };
+    const quality = qualityConfig[qualityLevel] || 50;
+    const isMasterwork = quality >= 90;
+    const baseValue = itemData?.value || 0;
+    const qualityAdjustedValue = Math.round(baseValue * (quality / 100));
+    const finalValue = isMasterwork ? Math.round(qualityAdjustedValue * 1.25) : qualityAdjustedValue;
+
+    setProcessingResult({
+      item: selectedItem,
+      type: selectedType,
+      quality,
+      qualityLevel,
+      baseValue,
+      qualityAdjustedValue,
+      finalValue,
+      isMasterwork,
+    });
+
+    setStep('result');
   };
 
-  // Handle when activeProcess completes
-  useEffect(() => {
-    if (step === 'processing' && state.processState?.activeProcess) {
-      const active = state.processState.activeProcess;
-      const itemData = getItemById(active.itemId);
-      const quality = active.quality;
-      const isMasterwork = quality >= 90;
-      
-      // Calculate value with quality multiplier and masterwork bonus
-      const baseValue = itemData?.value || 0;
-      const qualityAdjustedValue = Math.round(baseValue * (quality / 100));
-      const finalValue = isMasterwork 
-        ? Math.round(qualityAdjustedValue * 1.25) 
-        : qualityAdjustedValue;
-
-      setProcessingResult({
-        item: selectedItem,
-        type: selectedType,
-        quality,
-        qualityLevel: active.qualityLevel,
-        baseValue,
-        qualityAdjustedValue,
-        finalValue,
-        isMasterwork,
-      });
-
-      // Complete the process
-      dispatch({
-        type: COMPLETE_ACTIVE_PROCESS,
-        payload: { quality }
-      });
-
-      setStep('result');
-    }
-  }, [state.processState?.activeProcess, step, selectedItem, selectedType, dispatch]);
+  // Remove the old useEffect that waits for activeProcess - processing is now instant
 
   const handleBack = () => {
     if (step === 'type') {
@@ -232,10 +198,9 @@ export default function ActiveProcessing() {
             {step === 'select' && 'Select Item to Process'}
             {step === 'type' && selectedType?.id === 'refine' ? 'Refine Ore' : 'Select Process Type'}
             {step === 'quality' && 'Select Quality Level'}
-            {step === 'processing' && 'Processing...'}
             {step === 'result' && 'Processing Complete!'}
           </h3>
-          {step !== 'select' && step !== 'processing' && step !== 'result' && (
+          {step !== 'select' && step !== 'result' && (
             <button
               onClick={handleBack}
               className="flex items-center gap-2 px-3 py-2 text-gray-400 hover:text-white transition-colors"
@@ -262,12 +227,7 @@ export default function ActiveProcessing() {
             item={selectedItem}
             type={selectedType}
             onSelect={handleSelectQuality}
-            isOnCooldown={isOnCooldown}
-            getCooldownRemaining={getCooldownRemaining}
           />
-        )}
-        {step === 'processing' && (
-          <ProcessingSpinner item={selectedItem} type={selectedType} />
         )}
         {step === 'result' && processingResult && (
           <ResultDisplay result={processingResult} onDone={handleDone} />
@@ -370,13 +330,12 @@ function TypeSelection({ item, types, onSelect }) {
   );
 }
 
-function QualitySelection({ item, type, onSelect, isOnCooldown, getCooldownRemaining }) {
+function QualitySelection({ item, type, onSelect }) {
   const ItemIcon = item.Icon;
   const TypeIcon = type.Icon;
   
   return (
     <div className="flex flex-col gap-4">
-      {/* Item and Type Info */}
       <div className="bg-slate-800 rounded-lg p-4 flex items-center gap-4">
         <ItemIcon className="text-2xl text-cyan-400" />
         <div className="flex-1">
@@ -390,37 +349,20 @@ function QualitySelection({ item, type, onSelect, isOnCooldown, getCooldownRemai
 
       <div className="text-gray-400 text-sm">Choose quality level:</div>
 
-      {/* Quality Level Buttons */}
       <div className="grid grid-cols-1 gap-3">
         {QUALITY_LEVELS.map(level => {
           const LevelIcon = level.icon;
-          const onCooldown = isOnCooldown(item.id, level.id);
-          const remaining = getCooldownRemaining(item.id, level.id);
-          const btnClass = onCooldown 
-            ? COOLDOWN_COLORS[level.id]
-            : QUALITY_COLORS[level.id];
-          
           return (
             <button
               key={level.id}
-              onClick={() => !onCooldown && onSelect(level.id)}
-              disabled={onCooldown}
-              className={`flex items-center gap-4 p-4 rounded-lg font-semibold transition-all ${btnClass}`}
+              onClick={() => onSelect(level.id)}
+              className={`flex items-center gap-4 p-4 rounded-lg font-semibold transition-all ${QUALITY_COLORS[level.id]}`}
             >
               <LevelIcon className="text-xl text-white" />
               <div className="flex-1 text-left">
                 <div className="text-white font-bold">{level.label} Quality</div>
                 <div className="text-sm opacity-75">{level.description}</div>
               </div>
-              <div className="text-right">
-                <div className="text-white font-bold">{level.cooldown}s</div>
-                <div className="text-xs opacity-75">cooldown</div>
-              </div>
-              {onCooldown && (
-                <div className="ml-2 text-white font-bold">
-                  {remaining}s
-                </div>
-              )}
             </button>
           );
         })}

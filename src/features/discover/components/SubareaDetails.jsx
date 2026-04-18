@@ -1,18 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useGame, MINE_SUBAREA, COLLECT_PENDING_MATERIALS, SELECT_SUBAREA, GAME_PHASES } from '../../../context/GameContext';
 import { FaArrowLeft, FaGem, FaUsers, FaCoins, FaSyncAlt } from 'react-icons/fa';
 import { getSubareaInfo, getLootForSubarea, RARITY_COLORS } from '../../../data/subareas';
 import { itemsById } from '../../../loaders/items';
 
-const COOLDOWNS = {
-  small: 5,
-  medium: 15,
-  large: 30
-};
-
 export default function SubareaDetails({ mineId, subareaId }) {
   const { state, dispatch } = useGame();
-  const [cooldownEnd, setCooldownEnd] = useState({});
   const [message, setMessage] = useState(null);
   
   const workers = state.player?.workers || [];
@@ -35,21 +28,12 @@ export default function SubareaDetails({ mineId, subareaId }) {
   };
   
   const handleMine = (rewardSize) => {
-    const now = Date.now();
-    const cooldownMs = COOLDOWNS[rewardSize] * 1000;
-    
-    if (cooldownEnd[rewardSize] && now < cooldownEnd[rewardSize]) {
-      const remaining = Math.ceil((cooldownEnd[rewardSize] - now) / 1000);
-      setMessage({ type: 'error', text: `Cooldown: ${remaining}s remaining` });
-      return;
-    }
-    
     try {
       dispatch({ 
         type: MINE_SUBAREA, 
         payload: { mineId, subareaId, rewardSize } 
       });
-      setCooldownEnd(prev => ({ ...prev, [rewardSize]: now + cooldownMs }));
+      dispatch({ type: COLLECT_PENDING_MATERIALS, payload: { mineId } });
       setMessage({ type: 'success', text: `Mined ${rewardSize} reward!` });
     } catch (e) {
       setMessage({ type: 'error', text: e.message });
@@ -63,12 +47,6 @@ export default function SubareaDetails({ mineId, subareaId }) {
   
   const handleGoToWorkers = () => {
     dispatch({ type: 'SET_PHASE', payload: GAME_PHASES.WORKERS });
-  };
-  
-  const getCooldownRemaining = (size) => {
-    const end = cooldownEnd[size] || 0;
-    const remaining = end - Date.now();
-    return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
   };
   
   return (
@@ -155,38 +133,25 @@ export default function SubareaDetails({ mineId, subareaId }) {
         
         <div className="grid grid-cols-3 gap-4">
           {['small', 'medium', 'large'].map(size => {
-            const remaining = getCooldownRemaining(size);
-            const isOnCooldown = remaining > 0;
-            
             return (
               <button
                 key={size}
                 onClick={() => handleMine(size)}
-                disabled={isOnCooldown}
                 aria-label={`${size} reward`}
                 className={`p-4 rounded-lg font-semibold transition-colors ${
-                  isOnCooldown
-                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                    : size === 'small' ? 'bg-green-600 hover:bg-green-500 text-white' :
-                      size === 'medium' ? 'bg-blue-600 hover:bg-blue-500 text-white' :
-                      'bg-purple-600 hover:bg-purple-500 text-white'
+                  size === 'small' ? 'bg-green-600 hover:bg-green-500 text-white' :
+                    size === 'medium' ? 'bg-blue-600 hover:bg-blue-500 text-white' :
+                    'bg-purple-600 hover:bg-purple-500 text-white'
                 }`}
               >
                 <p className="capitalize font-bold">{size} Reward</p>
                 <p className="text-xs opacity-75">
                   {size === 'small' ? '1 item' : size === 'medium' ? '3 items' : '5 items'}
                 </p>
-                {isOnCooldown ? (
-                  <p className="text-xs mt-1">{remaining}s</p>
-                ) : (
-                  <p className="text-xs mt-1">+{COOLDOWNS[size]}s</p>
-                )}
               </button>
             );
           })}
         </div>
-        
-        <p className="text-xs text-slate-500 mt-3">Cooldowns reset after mining</p>
       </div>
       
       <div className="bg-slate-800 rounded-xl p-6">
