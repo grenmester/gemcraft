@@ -16,13 +16,6 @@ export default function SubareaDetails({ mineId, subareaId }) {
   const lootTable = getLootForSubarea(mineId, subareaId);
   const subareaInfo = getSubareaInfo(mineId, subareaId);
   
-  useEffect(() => {
-    const savedCooldowns = state.discoverState?.miningCooldowns || {};
-    const key = `${mineId}_${subareaId}`;
-    const saved = savedCooldowns[key] || {};
-    setCooldownEnd(saved);
-  }, [mineId, subareaId]);
-  
   const handleBack = () => {
     dispatch({ type: SELECT_SUBAREA, payload: null });
   };
@@ -33,7 +26,6 @@ export default function SubareaDetails({ mineId, subareaId }) {
         type: MINE_SUBAREA, 
         payload: { mineId, subareaId, rewardSize } 
       });
-      dispatch({ type: COLLECT_PENDING_MATERIALS, payload: { mineId } });
       setMessage({ type: 'success', text: `Mined ${rewardSize} reward!` });
     } catch (e) {
       setMessage({ type: 'error', text: e.message });

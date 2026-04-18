@@ -900,8 +900,8 @@ const cooldowns = state.discoverState.miningCooldowns[cooldownKey] || {};
       
       quality = Math.round(quality);
 
-      const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
-      const { minerals, gems } = addItemToInventory(inv, itemId, 1, quality);
+      const inv = state.player.inventory || { rawMaterials: [], processedMaterials: [], equipment: [] };
+      const updatedInventory = addItemToInventory(inv, itemId, 1, quality);
 
       // Update processing stats
       const stats = state.processState.processingStats;
@@ -914,11 +914,7 @@ const cooldowns = state.discoverState.miningCooldowns[cooldownKey] || {};
         ...state,
         player: {
           ...state.player,
-          inventory: {
-            ...inv,
-            minerals,
-            gems
-          }
+          inventory: updatedInventory
         },
         processState: {
           ...state.processState,

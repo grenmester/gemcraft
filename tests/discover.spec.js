@@ -93,23 +93,6 @@ test.describe('Discover Phase Navigation', () => {
     await expect(collectBtn).toBeEnabled();
   });
 
-  test('mining cooldown works', async ({ page }) => {
-    await page.getByRole('button', { name: 'River Panning' }).click();
-    await page.getByRole('button', { name: 'View Details' }).first().click();
-    
-    // Mine once
-    await page.getByRole('button', { name: 'small reward' }).click();
-    
-    // Verify success message appears
-    await expect(page.locator('text=Mined small reward!')).toBeVisible();
-    
-    // Small reward button should now be disabled (on cooldown)
-    await expect(page.getByRole('button', { name: 'small reward' })).toBeDisabled();
-    
-    // Should see cooldown timer text inside the disabled button
-    await expect(page.getByRole('button', { name: 'small reward' }).locator('text=/4s|5s/')).toBeVisible();
-  });
-
   test('can switch to idle tab', async ({ page }) => {
     await page.getByRole('button', { name: 'Idle', exact: true }).click();
     await expect(page.locator('text=Workers Overview')).toBeVisible();

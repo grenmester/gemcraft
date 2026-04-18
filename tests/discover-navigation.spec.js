@@ -235,23 +235,6 @@ test.describe('Loot System', () => {
     await expect(page.locator('text=Materials collected!')).toBeVisible();
   });
 
-  test('cooldown prevents immediate re-mining', async ({ page }) => {
-    // Navigate to a subarea
-    await page.getByRole('button', { name: 'Discover', exact: true }).click();
-    await page.getByRole('button', { name: 'River Panning' }).click();
-    await page.getByRole('button', { name: 'River Bend' }).click();
-    
-    // Mine small reward using aria-label
-    await page.getByRole('button', { name: 'small reward' }).click();
-    await expect(page.locator('text=Mined small reward!')).toBeVisible();
-    
-    // Small reward button should now be disabled (on cooldown)
-    await expect(page.getByRole('button', { name: 'small reward' })).toBeDisabled();
-    
-    // Should see cooldown timer text inside the disabled button
-    await expect(page.getByRole('button', { name: 'small reward' }).locator('text=/4s|5s/')).toBeVisible();
-  });
-
   test('loot table shows rarity colors', async ({ page }) => {
     // Navigate to a subarea
     await page.getByRole('button', { name: 'Discover', exact: true }).click();

@@ -32,9 +32,7 @@ export default function Craft() {
   }, [activeTab]);
 
   const getInventoryGems = () => {
-    const processed = (inventory.processedMaterials || []).filter(m => m.category === 'Gem');
-    const raw = (inventory.rawMaterials || []).filter(m => m.category === 'Mineral' || m.category === 'Gem');
-    return [...processed, ...raw];
+    return (inventory.processedMaterials || []).filter(m => m.category === 'Gem');
   };
   
   const getInventoryMetals = () => {
