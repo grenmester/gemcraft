@@ -245,47 +245,9 @@ case DEBUG_UNLOCK_ALL_LOCATIONS: {
   // Unlock all zones (all tier keys from LOCATION_TIERS)
   const allZoneKeys = Object.keys(LOCATION_TIERS);
   
-  // Give all equipment
-  const allEquipmentIds = Object.keys(EQUIPMENT).filter(id => id !== 'NONE');
-  const inv = state.player.inventory || {};
-  const existingEquipment = inv.equipment || [];
-  const newEquipment = allEquipmentIds.map(id => ({ id, owned: true }));
-  
-  // Give test minerals - add to rawMaterials
-  const testMinerals = [
-    { id: 'clear_quartz', category: 'Mineral', quantity: 50 },
-    { id: 'hematite', category: 'Mineral', quantity: 50 },
-    { id: 'pyrite', category: 'Mineral', quantity: 50 },
-    { id: 'fluorite', category: 'Mineral', quantity: 50 },
-    { id: 'obsidian', category: 'Mineral', quantity: 50 },
-    { id: 'lapis_lazuli', category: 'Mineral', quantity: 30 },
-    { id: 'malachite', category: 'Mineral', quantity: 30 },
-    { id: 'azurite', category: 'Mineral', quantity: 30 },
-    { id: 'labradorite', category: 'Mineral', quantity: 20 },
-    { id: 'celestite', category: 'Mineral', quantity: 20 }
-  ];
-  
-  const rawMaterials = [...(inv.rawMaterials || [])];
-  testMinerals.forEach(tm => {
-    const existing = rawMaterials.find(m => m.id === tm.id);
-    if (existing) {
-      existing.quantity += tm.quantity;
-    } else {
-      rawMaterials.push(tm);
-    }
-  });
-  
   return {
     ...state,
-    unlockedZones: allZoneKeys,
-    player: {
-      ...state.player,
-      inventory: {
-        ...inv,
-        rawMaterials,
-        equipment: newEquipment
-      }
-    }
+    unlockedZones: allZoneKeys
   };
 }
 
