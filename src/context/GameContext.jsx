@@ -567,15 +567,9 @@ case UNLOCK_ZONE: {
        const cooldownKey = `${mineId}_${subareaId}`;
        const now = Date.now();
        
-       const cooldowns = state.discoverState.miningCooldowns[cooldownKey] || {};
-       const lastMined = cooldowns[rewardSize] || 0;
-       const cooldownDuration = rewardSize === 'small' ? 5000 : rewardSize === 'medium' ? 15000 : 30000;
-       
-       if (now - lastMined < cooldownDuration) {
-         throw new Error(`Mining on cooldown. Try again in ${Math.ceil((cooldownDuration - (now - lastMined)) / 1000)}s`);
-       }
-       
-       const itemCount = rewardSize === 'small' ? 1 : rewardSize === 'medium' ? 3 : 5;
+const cooldowns = state.discoverState.miningCooldowns[cooldownKey] || {};
+        
+        const itemCount = rewardSize === 'small' ? 1 : rewardSize === 'medium' ? 3 : 5;
        const pending = state.discoverState.pendingMaterials[mineId] || [];
        
        // Roll for loot using SUBAREA_LOOT
@@ -679,9 +673,9 @@ case UNLOCK_ZONE: {
       
       // Quality level configuration
       const QUALITY_CONFIG = {
-        low: { base: 40, variance: 20, cooldown: 3000 },    // 40-60%, 3s cooldown
-        medium: { base: 60, variance: 20, cooldown: 8000 }, // 60-80%, 8s cooldown
-        high: { base: 80, variance: 20, cooldown: 15000 }   // 80-100%, 15s cooldown
+        low: { base: 40, variance: 20, cooldown: 0 },    // 40-60%, instant
+        medium: { base: 60, variance: 20, cooldown: 0 }, // 60-80%, instant
+        high: { base: 80, variance: 20, cooldown: 0 }   // 80-100%, instant
       };
       
       const config = QUALITY_CONFIG[qualityLevel] || QUALITY_CONFIG.low;
