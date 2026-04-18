@@ -210,30 +210,26 @@ function loadInitialState() {
       return { ...initialState, ...action.payload, discoverState: { ...initialState.discoverState, ...(action.payload?.discoverState || {}) } };
 
     case DEBUG_ADD_GEM: {
-      const gem = action.payload instanceof Gem ? action.payload : new Gem(action.payload);
-      const newGemdex = state.player.gemdex.some(g => g.id === gem.id)
-        ? state.player.gemdex
-        : [...state.player.gemdex, gem];
+      const gemId = action.payload?.id || action.payload;
       
-      // Add to inventory structure (gems array)
-      const inventory = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: state.player.coins || 100 } };
-      const gems = [...(inventory.gems || [])];
-      const existingGem = gems.find(g => g.gemId === gem.id);
+      // Add to processedMaterials with Gem category
+      const inventory = { ...state.player.inventory };
+      const processedMaterials = [...(inventory.processedMaterials || [])];
       
-      if (existingGem) {
-        existingGem.quantity += 1;
-      } else {
-        gems.push({ gemId: gem.id, quantity: 1 });
-      }
+      processedMaterials.push({
+        id: gemId,
+        category: 'Gem',
+        quality: 85,
+        value: 100
+      });
       
       return {
         ...state,
         player: {
           ...state.player,
-          gemdex: newGemdex,
           inventory: {
             ...inventory,
-            gems
+            processedMaterials
           }
         }
       };
@@ -243,32 +239,34 @@ case DEBUG_UNLOCK_ALL_LOCATIONS: {
   // Unlock all zones (all tier keys from LOCATION_TIERS)
   const allZoneKeys = Object.keys(LOCATION_TIERS);
   
-  // Give all equipment (excluding NONE)
+  // Give all equipment
   const allEquipmentIds = Object.keys(EQUIPMENT).filter(id => id !== 'NONE');
-  const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+  const inv = state.player.inventory || {};
   const existingEquipment = inv.equipment || [];
-  const newEquipment = [...new Set([...existingEquipment, ...allEquipmentIds])];
+  const newEquipment = allEquipmentIds.map(id => ({ id, owned: true }));
   
-  // Give some minerals for testing
+  // Give test minerals - add to rawMaterials
   const testMinerals = [
-    { id: 'clear_quartz', quantity: 50 },
-    { id: 'hematite', quantity: 50 },
-    { id: 'pyrite', quantity: 50 },
-    { id: 'fluorite', quantity: 50 },
-    { id: 'obsidian', quantity: 50 },
-    { id: 'lapis_lazuli', quantity: 30 },
-    { id: 'malachite', quantity: 30 },
-    { id: 'azurite', quantity: 30 },
-    { id: 'labradorite', quantity: 20 },
-    { id: 'celestite', quantity: 20 }
+    { id: 'clear_quartz', category: 'Mineral', quantity: 50 },
+    { id: 'hematite', category: 'Mineral', quantity: 50 },
+    { id: 'pyrite', category: 'Mineral', quantity: 50 },
+    { id: 'fluorite', category: 'Mineral', quantity: 50 },
+    { id: 'obsidian', category: 'Mineral', quantity: 50 },
+    { id: 'lapis_lazuli', category: 'Mineral', quantity: 30 },
+    { id: 'malachite', category: 'Mineral', quantity: 30 },
+    { id: 'azurite', category: 'Mineral', quantity: 30 },
+    { id: 'labradorite', category: 'Mineral', quantity: 20 },
+    { id: 'celestite', category: 'Mineral', quantity: 20 }
   ];
-  const existingMinerals = inv.minerals || [];
-  const newMinerals = testMinerals.map(tm => {
-    const existing = existingMinerals.find(m => m.id === tm.id);
+  
+  const rawMaterials = [...(inv.rawMaterials || [])];
+  testMinerals.forEach(tm => {
+    const existing = rawMaterials.find(m => m.id === tm.id);
     if (existing) {
-      return { ...existing, quantity: existing.quantity + tm.quantity };
+      existing.quantity += tm.quantity;
+    } else {
+      rawMaterials.push(tm);
     }
-    return tm;
   });
   
   return {
@@ -278,8 +276,8 @@ case DEBUG_UNLOCK_ALL_LOCATIONS: {
       ...state.player,
       inventory: {
         ...inv,
-        equipment: newEquipment,
-        minerals: newMinerals
+        rawMaterials,
+        equipment: newEquipment
       }
     }
   };
@@ -640,37 +638,19 @@ case UNLOCK_ZONE: {
         const pending = state.discoverState.pendingMaterials[mineId] || [];
         if (pending.length === 0) return state;
         
-        const inv = state.player.inventory || { minerals: [], gems: [], ores: [], equipment: [], currency: { coins: 0 } };
-        const newMinerals = [...(inv.minerals || [])];
-        const newGems = [...(inv.gems || [])];
-        const newOres = [...(inv.ores || [])];
+        const inv = state.player.inventory || {};
+        const rawMaterials = [...(inv.rawMaterials || [])];
         
         pending.forEach(({ itemId, quantity }) => {
           const itemData = itemsById[itemId];
-          if (itemData?.category === 'Ore') {
-            // Stack with existing ores (unprocessed, no quality)
-            const existing = newOres.find(o => o.id === itemId);
-            if (existing) {
-              existing.quantity += quantity;
-            } else {
-              newOres.push({ id: itemId, quantity });
-            }
-          } else if (itemData?.category === 'Mineral') {
-            // Stack with existing items that have no quality (unprocessed)
-            const existing = newMinerals.find(m => m.id === itemId && m.quality === undefined);
-            if (existing) {
-              existing.quantity += quantity;
-            } else {
-              newMinerals.push({ id: itemId, quantity }); // No quality for unprocessed
-            }
+          const category = itemData?.category || 'Mineral';
+          
+          // Stack with existing raw materials of same id and category
+          const existing = rawMaterials.find(m => m.id === itemId && m.category === category);
+          if (existing) {
+            existing.quantity += quantity;
           } else {
-            // Stack with existing items that have no quality (unprocessed)
-            const existing = newGems.find(g => g.gemId === itemId && g.quality === undefined);
-            if (existing) {
-              existing.quantity += quantity;
-            } else {
-              newGems.push({ gemId: itemId, quantity }); // No quality for unprocessed
-            }
+            rawMaterials.push({ id: itemId, category, quantity });
           }
         });
         
@@ -687,9 +667,7 @@ case UNLOCK_ZONE: {
             ...state.player,
             inventory: {
               ...inv,
-              minerals: newMinerals,
-              gems: newGems,
-              ores: newOres
+              rawMaterials
             }
           }
         };
@@ -806,12 +784,9 @@ case UNLOCK_ZONE: {
     case REFINING: {
       const { itemId } = action.payload;
       
-      // Get ore data
       const oreData = itemsById[itemId];
       if (!oreData) return state;
       
-      // Determine metal output - use base name (copper, silver, etc.) not ingot ID
-      // This matches what recipes expect (e.g., 'copper' not 'copper_ingot')
       const oreToMetal = {
         copper_ore: 'copper',
         silver_ore: 'silver',
@@ -820,7 +795,6 @@ case UNLOCK_ZONE: {
       };
       const metalId = oreToMetal[itemId] || oreData.id.replace('_ore', '');
       
-      // Calculate quality based on ore type
       const QUALITY_RANGES = {
         copper: { min: 60, max: 80 },
         silver: { min: 65, max: 82 },
@@ -828,29 +802,30 @@ case UNLOCK_ZONE: {
         platinum: { min: 75, max: 92 }
       };
       const range = QUALITY_RANGES[metalId] || { min: 70, max: 85 };
-      const quality = range.min + Math.random() * (range.max - range.min);
+      const quality = Math.round((range.min + Math.random() * (range.max - range.min)) * 10) / 10;
+      const value = Math.round((itemsById[metalId]?.value || 10) * (quality / 100));
       
       const inv = state.player.inventory || {};
-      const ores = [...(inv.ores || [])];
-      const metals = [...(inv.metals || [])];
+      const rawMaterials = [...(inv.rawMaterials || [])];
+      const processedMaterials = [...(inv.processedMaterials || [])];
       
-      // Remove ore
-      const oreIdx = ores.findIndex(o => o.id === itemId);
+      // Remove ore from rawMaterials
+      const oreIdx = rawMaterials.findIndex(o => o.id === itemId);
       if (oreIdx >= 0) {
-        if (ores[oreIdx].quantity > 1) {
-          ores[oreIdx] = { ...ores[oreIdx], quantity: ores[oreIdx].quantity - 1 };
+        if (rawMaterials[oreIdx].quantity > 1) {
+          rawMaterials[oreIdx] = { ...rawMaterials[oreIdx], quantity: rawMaterials[oreIdx].quantity - 1 };
         } else {
-          ores.splice(oreIdx, 1);
+          rawMaterials.splice(oreIdx, 1);
         }
       }
       
-      // Add metal
-      const existingMetal = metals.find(m => m.id === metalId && Math.round(m.quality / 5) * 5 === Math.round(quality / 5) * 5);
-      if (existingMetal) {
-        existingMetal.quantity += 1;
-      } else {
-        metals.push({ id: metalId, quantity: 1, quality: Math.round(quality * 10) / 10 });
-      }
+      // Add metal to processedMaterials (each is unique, no stacking)
+      processedMaterials.push({
+        id: metalId,
+        category: 'Metal',
+        quality,
+        value
+      });
       
       return {
         ...state,
@@ -858,8 +833,8 @@ case UNLOCK_ZONE: {
           ...state.player,
           inventory: {
             ...inv,
-            ores,
-            metals
+            rawMaterials,
+            processedMaterials
           }
         }
       };
@@ -1232,32 +1207,23 @@ case UNLOCK_ZONE: {
       if (!recipe) return state;
       
       const inv = state.player.inventory || {};
-      const gems = [...(inv.gems || [])];
-      const metals = [...(inv.metals || [])];
+      const processedMaterials = [...(inv.processedMaterials || [])];
+      const jewelry = [...(inv.jewelry || [])];
       
-      // Remove gems used
+      // Remove gems used from processedMaterials
       selectedGems.forEach(gem => {
-        const idx = gems.findIndex(g => (g.gemId || g.id) === (gem.id || gem.gemId));
+        const idx = processedMaterials.findIndex(m => m.id === (gem.id || gem.gemId) && m.category === 'Gem');
         if (idx >= 0) {
-          if (gems[idx].quantity > 1) {
-            gems[idx] = { ...gems[idx], quantity: gems[idx].quantity - 1 };
-          } else {
-            gems.splice(idx, 1);
-          }
+          processedMaterials.splice(idx, 1);
         }
       });
       
-      // Remove metal used
-      const metalIdx = metals.findIndex(m => m.id === selectedMetal.id);
+      // Remove metal used from processedMaterials
+      const metalIdx = processedMaterials.findIndex(m => m.id === selectedMetal.id && m.category === 'Metal');
       if (metalIdx >= 0) {
-        if (metals[metalIdx].quantity > 1) {
-          metals[metalIdx] = { ...metals[metalIdx], quantity: metals[metalIdx].quantity - 1 };
-        } else {
-          metals.splice(metalIdx, 1);
-        }
+        processedMaterials.splice(metalIdx, 1);
       }
       
-      // Calculate final value
       const gemValue = selectedGems.reduce((sum, gem) => {
         const itemValues = { diamond: 5000, ruby: 800, sapphire: 700, emerald: 600, amethyst: 20, citrine: 40, tourmaline: 120, peridot: 90, clear_quartz: 5, rose_quartz: 8 };
         return sum + (itemValues[gem.id || gem.gemId] || 10) * (gem.quality || 50) / 100;
@@ -1268,34 +1234,30 @@ case UNLOCK_ZONE: {
       const settingMultiplier = SETTINGS[selectedSetting]?.multiplier || 1;
       const finalValue = Math.round((gemValue + metalValue) * jewelryMultiplier * settingMultiplier * recipe.multiplier);
       
-      // Create crafted jewelry item
-      const jewelry = [...(inv.jewelry || [])];
       jewelry.push({
         id: `crafted_${recipe.id}_${Date.now()}`,
         recipeId,
         name: recipe.name,
         type: recipe.type,
-        gems: selectedGems.map(g => g.id || g.gemId),
-        metal: selectedMetal.id,
+        gemIds: selectedGems.map(g => g.id || g.gemId),
+        metalId: selectedMetal.id,
         setting: selectedSetting,
         quality: selectedGems.reduce((s, g) => s + (g.quality || 50), 0) / selectedGems.length,
         value: finalValue,
         craftedAt: Date.now()
       });
       
-      // Award crafting XP
       const xpGained = 10 + Math.max(0, Math.floor((selectedGems.reduce((s, g) => s + (g.quality || 0), 0) / selectedGems.length) - 80));
       
       return {
         ...state,
         player: {
           ...state.player,
-          coins: state.player.coins + finalValue,
+          coins: (inv.coins || 0) + finalValue,
           craftingXP: (state.player.craftingXP || 0) + xpGained,
           inventory: {
             ...inv,
-            gems,
-            metals,
+            processedMaterials,
             jewelry
           }
         }

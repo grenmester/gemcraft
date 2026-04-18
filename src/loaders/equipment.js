@@ -35,12 +35,13 @@ export const canCraftEquipment = (inventory, equipmentId) => {
   const eq = EQUIPMENT[equipmentId];
   if (!eq.craftRecipe) return false;
 
+  const rawMaterials = inventory.rawMaterials || [];
   for (const [materialId, required] of Object.entries(eq.craftRecipe.materials)) {
-    const owned = inventory.minerals?.find(m => m.id === materialId)?.quantity || 0;
+    const owned = rawMaterials.find(m => m.id === materialId)?.quantity || 0;
     if (owned < required) return false;
   }
 
-  return (inventory.currency?.coins || 0) >= eq.craftRecipe.coins;
+  return (inventory.coins || 0) >= eq.craftRecipe.coins;
 };
 
 export const getEquipmentForZone = (zoneId) => {
