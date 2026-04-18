@@ -65,6 +65,7 @@ export const SELECT_SUBAREA = 'SELECT_SUBAREA';
 export const CLEAR_MINING_SELECTION = 'CLEAR_MINING_SELECTION';
 export const MINE_SUBAREA = 'MINE_SUBAREA';
 export const COLLECT_PENDING_MATERIALS = 'COLLECT_PENDING_MATERIALS';
+export const CLEAR_NEW_DISCOVERED = 'CLEAR_NEW_DISCOVERED';
 
 // Process actions
 export const REFINING = 'REFINING';
@@ -187,14 +188,17 @@ function loadInitialState() {
     case ADD_GEM: {
       const gem = action.payload instanceof Gem ? action.payload : new Gem(action.payload);
       const discoveredGems = [...(state.player.discoveredGems || [])];
+      const newDiscoveredGems = [...(state.player.newDiscoveredGems || [])];
       if (!discoveredGems.includes(gem.id)) {
         discoveredGems.push(gem.id);
+        newDiscoveredGems.push(gem.id);
       }
       return {
         ...state,
         player: {
           ...state.player,
-          discoveredGems
+          discoveredGems,
+          newDiscoveredGems
         }
       };
     }
@@ -289,11 +293,13 @@ case DEBUG_UNLOCK_ALL_LOCATIONS: {
       const inv = { ...state.player.inventory };
       const processedMaterials = [...(inv.processedMaterials || [])];
       const discoveredGems = [...(state.player.discoveredGems || [])];
+      const newDiscoveredGems = [...(state.player.newDiscoveredGems || [])];
       
       const gemItems = items.filter(item => item.category === 'Gem');
       gemItems.forEach(item => {
         if (!discoveredGems.includes(item.id)) {
           discoveredGems.push(item.id);
+          newDiscoveredGems.push(item.id);
         }
         processedMaterials.push({
           id: item.id,
@@ -308,6 +314,7 @@ case DEBUG_UNLOCK_ALL_LOCATIONS: {
         player: {
           ...state.player,
           discoveredGems,
+          newDiscoveredGems,
           inventory: { ...inv, processedMaterials }
         }
       };
@@ -635,23 +642,25 @@ const cooldowns = state.discoverState.miningCooldowns[cooldownKey] || {};
         if (pending.length === 0) return state;
         
         const inv = state.player.inventory || {};
-        const rawMaterials = [...(inv.rawMaterials || [])];
+        const rawMaterials = (inv.rawMaterials || []).map(m => ({ ...m }));
         const discoveredGems = [...(state.player.discoveredGems || [])];
+        const newDiscoveredGems = [...(state.player.newDiscoveredGems || [])];
         
         pending.forEach(({ itemId, quantity }) => {
           const itemData = itemsById[itemId];
           const category = itemData?.category || 'Mineral';
           
-          // Track discovery for gems
-          const isGem = category === 'Gem';
-          if (isGem && !discoveredGems.includes(itemId)) {
+          // Track discovery for gems and minerals
+          const isDiscovarable = category === 'Gem' || category === 'Mineral';
+          if (isDiscovarable && !discoveredGems.includes(itemId)) {
             discoveredGems.push(itemId);
+            newDiscoveredGems.push(itemId);
           }
           
           // Stack with existing raw materials of same id and category
-          const existing = rawMaterials.find(m => m.id === itemId && m.category === category);
-          if (existing) {
-            existing.quantity += quantity;
+          const existingIdx = rawMaterials.findIndex(m => m.id === itemId && m.category === category);
+          if (existingIdx >= 0) {
+            rawMaterials[existingIdx] = { ...rawMaterials[existingIdx], quantity: rawMaterials[existingIdx].quantity + quantity };
           } else {
             rawMaterials.push({ id: itemId, category, quantity });
           }
@@ -669,6 +678,7 @@ const cooldowns = state.discoverState.miningCooldowns[cooldownKey] || {};
           player: {
             ...state.player,
             discoveredGems,
+            newDiscoveredGems,
             inventory: {
               ...inv,
               rawMaterials
@@ -676,6 +686,16 @@ const cooldowns = state.discoverState.miningCooldowns[cooldownKey] || {};
           }
         };
       }
+
+    case CLEAR_NEW_DISCOVERED: {
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          newDiscoveredGems: []
+        }
+      };
+    }
 
     // Process actions
     case START_ACTIVE_PROCESS: {

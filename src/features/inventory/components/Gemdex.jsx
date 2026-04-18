@@ -1,19 +1,17 @@
-import { useState, useMemo } from 'react';
-import { useGame, GAME_PHASES, SET_PHASE } from '../../../context/GameContext';
+import { useState, useMemo, useEffect } from 'react';
+import { useGame, GAME_PHASES, SET_PHASE, CLEAR_NEW_DISCOVERED } from '../../../context/GameContext';
 import { getItems } from '../../../data/items';
 import { FaSearch, FaArrowLeft, FaMapMarkedAlt } from 'react-icons/fa';
-import { GemIcon, MineralIcon } from '../../../shared/components/ItemIcons';
+import { GemIcon, MineralIcon, MetalIcon } from '../../../shared/components/ItemIcons';
 
-// Rarity display configuration
 const RARITY_CONFIG = {
-  Common: { color: 'bg-gray-400', textColor: 'text-gray-700', borderColor: 'border-gray-400', label: 'Common' },
-  Uncommon: { color: 'bg-green-500', textColor: 'text-green-700', borderColor: 'border-green-500', label: 'Uncommon' },
-  Rare: { color: 'bg-blue-500', textColor: 'text-blue-700', borderColor: 'border-blue-500', label: 'Rare' },
-  Epic: { color: 'bg-purple-500', textColor: 'text-purple-700', borderColor: 'border-purple-500', label: 'Epic' },
-  Legendary: { color: 'bg-amber-500', textColor: 'text-amber-700', borderColor: 'border-amber-500', label: 'Legendary' },
+  Common: { color: 'bg-gray-400', label: 'Common' },
+  Uncommon: { color: 'bg-green-500', label: 'Uncommon' },
+  Rare: { color: 'bg-blue-500', label: 'Rare' },
+  Epic: { color: 'bg-purple-500', label: 'Epic' },
+  Legendary: { color: 'bg-amber-500', label: 'Legendary' },
 };
 
-// Item facts for detail modal
 const ITEM_FACTS = {
   diamond: 'April\'s birthstone. The hardest natural material on Earth, formed under extreme pressure.',
   blue_diamond: 'Among the rarest diamonds. The blue color comes from boron impurities.',
@@ -26,7 +24,7 @@ const ITEM_FACTS = {
   musgravite: 'Extremely rare, named after the Musgrave Ranges in Australia.',
   red_beryl: 'Also called "bixbite". Found primarily in the Wah Wah Mountains of Utah.',
   tanzanite: 'Discovered in 1967. Found only in Tanzania, one source worldwide.',
-  parba_tourmaline: 'Known for vivid blue-green colors from copper content.',
+  paraiba_tourmaline: 'Known for vivid blue-green colors from copper content.',
   spinel: 'Often mistaken for ruby in historical royal jewelry.',
   tsavorite: 'A green garnet discovered in 1967 in East Africa.',
   black_opal: 'The most valuable opal, showing play of color against a dark background.',
@@ -60,25 +58,18 @@ const ITEM_FACTS = {
 export default function Gemdex() {
   const { state, dispatch } = useGame();
   const discoveredGems = state.player.discoveredGems || [];
+  const newDiscoveredGems = state.player.newDiscoveredGems || [];
   
-  // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [rarityFilter, setRarityFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  
-  // Modal state
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // Get all items from items.yaml
   const allItems = useMemo(() => getItems(), []);
-  
-  // Track discovered IDs
-  const discoveredIds = useMemo(() => {
-    return new Set(discoveredGems);
-  }, [discoveredGems]);
+  const discoveredIds = useMemo(() => new Set(discoveredGems), [discoveredGems]);
+  const newIds = useMemo(() => new Set(newDiscoveredGems), [newDiscoveredGems]);
 
-  // Stats: X/total Discovered
   const stats = useMemo(() => {
     const total = allItems.length;
     const discovered = discoveredIds.size;
@@ -86,52 +77,40 @@ export default function Gemdex() {
     return { total, discovered, percentage };
   }, [allItems, discoveredIds]);
 
-  // No "NEW" badge for now - discovery timing not tracked
-  const recentlyDiscoveredIds = useMemo(() => new Set(), []);
-
-  // Filter items
   const filteredItems = useMemo(() => {
     let items = allItems.map(item => ({
       ...item,
       discovered: discoveredIds.has(item.id),
-      isNew: recentlyDiscoveredIds.has(item.id),
+      isNew: newIds.has(item.id),
     }));
 
-    // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      items = items.filter(item => 
-        item.discovered && item.name.toLowerCase().includes(query)
-      );
+      items = items.filter(item => item.name.toLowerCase().includes(query));
     }
 
-    // Category filter
     if (categoryFilter !== 'all') {
-      items = items.filter(item => 
-        categoryFilter === 'gems' ? item.category === 'Gem' : item.category === 'Mineral'
-      );
+      items = items.filter(item => item.category === categoryFilter);
     }
 
-    // Rarity filter
     if (rarityFilter !== 'all') {
       items = items.filter(item => item.rarity === rarityFilter);
     }
 
-    // Status filter
     if (statusFilter !== 'all') {
       items = items.filter(item => 
         statusFilter === 'discovered' ? item.discovered : !item.discovered
       );
     }
 
-    // Sort: discovered first, then by name
     items.sort((a, b) => {
       if (a.discovered !== b.discovered) return b.discovered ? 1 : -1;
+      if (a.isNew !== b.isNew) return b.isNew ? 1 : -1;
       return a.name.localeCompare(b.name);
     });
 
     return items;
-  }, [allItems, searchQuery, categoryFilter, rarityFilter, statusFilter, discoveredIds, recentlyDiscoveredIds]);
+  }, [allItems, searchQuery, categoryFilter, rarityFilter, statusFilter, discoveredIds, newIds]);
 
   const handleBack = () => {
     dispatch({ type: SET_PHASE, payload: GAME_PHASES.MENU });
@@ -140,6 +119,9 @@ export default function Gemdex() {
   const openItemDetail = (item) => {
     if (item.discovered) {
       setSelectedItem(item);
+      if (item.isNew && newDiscoveredGems.length > 0) {
+        dispatch({ type: CLEAR_NEW_DISCOVERED });
+      }
     }
   };
 
@@ -147,13 +129,6 @@ export default function Gemdex() {
     setSelectedItem(null);
   };
 
-  // Get icon based on category
-  const getItemIcon = (item) => {
-    if (!item.discovered) return '❓';
-    return item.category === 'Gem' ? <GemIcon /> : <MineralIcon />;
-  };
-
-  // Clear all filters
   const clearFilters = () => {
     setSearchQuery('');
     setCategoryFilter('all');
@@ -164,86 +139,80 @@ export default function Gemdex() {
   const hasActiveFilters = searchQuery || categoryFilter !== 'all' || rarityFilter !== 'all' || statusFilter !== 'all';
 
   return (
-    <div className="font-serif min-h-screen p-4 md:p-8 max-w-4xl mx-auto">
-      {/* Header */}
-      <header className="flex items-center justify-between mb-4 pb-4 border-b-2 border-amber-700">
+    <div className="flex-1 flex flex-col items-center p-4 md:p-6 w-full max-w-4xl mx-auto">
+      <div className="flex justify-between items-center w-full mb-4 pb-4 border-b-2 border-yellow-600">
         <button 
           onClick={handleBack} 
-          className="bg-transparent border border-amber-700 text-amber-900 px-4 py-2 font-serif cursor-pointer transition-all hover:bg-amber-700 hover:text-amber-50"
+          className="flex items-center gap-2 bg-slate-700 text-white font-semibold px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors"
         >
-          <FaArrowLeft /> Back
+          <FaArrowLeft />
+          <span>Back</span>
         </button>
-        <h1 className="font-serif text-2xl m-0 text-amber-900" style={{ textShadow: '1px 1px 1px rgba(184, 115, 51, 0.3)' }}>
-          📖 Gemdex
-        </h1>
+        <h2 className="text-xl md:text-2xl font-bold text-yellow-400 m-0">📖 GEMDEX</h2>
         <div className="font-bold text-lg">
-          <span className="text-amber-700">{stats.discovered}</span>
-          <span className="text-amber-900">/{stats.total} Discovered</span>
+          <span className="text-yellow-400">{stats.discovered}</span>
+          <span className="text-white">/{stats.total}</span>
         </div>
-      </header>
+      </div>
 
-      {/* Progress Bar */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="flex-1 h-4 bg-amber-200 rounded-full overflow-hidden border border-amber-700 shadow-inner">
+      <div className="flex items-center gap-3 mb-6 w-full">
+        <div className="flex-1 h-4 bg-slate-700 rounded-full overflow-hidden border border-slate-600">
           <div 
-            className="h-full bg-gradient-to-r from-amber-600 to-amber-400 transition-all duration-500 ease-out rounded-full"
+            className="h-full bg-gradient-to-r from-yellow-500 to-yellow-300 transition-all duration-500 ease-out rounded-full"
             style={{ width: `${stats.percentage}%` }}
           />
         </div>
-        <span className="font-bold text-amber-900 min-w-[4rem] text-right">{stats.percentage}%</span>
+        <span className="font-bold text-yellow-400 min-w-[4rem] text-right">{stats.percentage}%</span>
       </div>
 
-      {/* Search Bar */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 w-full">
         <div className="flex-1 relative">
-           <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-700" />
+          <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Search by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-amber-50 border border-amber-700 text-amber-900 font-serif rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent placeholder-amber-400"
+            className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-600 text-white font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 placeholder-gray-500"
           />
         </div>
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="px-4 py-2 bg-amber-200 border border-amber-700 text-amber-900 font-serif rounded-lg hover:bg-amber-300 transition-colors"
+            className="px-4 py-2 bg-slate-700 border border-slate-500 text-white font-semibold rounded-lg hover:bg-slate-600 transition-colors"
           >
             Clear
           </button>
         )}
       </div>
 
-      {/* Category Filters */}
       <div className="flex flex-wrap gap-2 mb-4">
-        <span className="text-amber-700 font-bold self-center mr-2">Category:</span>
-        {['all', 'gems', 'minerals'].map((cat) => (
+        <span className="text-yellow-400 font-bold self-center mr-2">Category:</span>
+        {['all', 'Gem', 'Mineral', 'Metal'].map((cat) => (
           <button
             key={cat}
             onClick={() => setCategoryFilter(cat)}
-            className={`px-4 py-2 font-serif text-sm cursor-pointer transition-all rounded-lg border ${
+            className={`px-4 py-2 font-semibold text-sm cursor-pointer transition-all rounded-lg border-2 border-transparent ${
               categoryFilter === cat
-                ? 'bg-amber-700 text-amber-50 border-amber-700'
-                : 'bg-transparent border-amber-700 text-amber-900 hover:bg-amber-100'
+                ? 'bg-yellow-400 text-slate-900 border-yellow-400'
+                : 'bg-slate-700 text-gray-400 hover:bg-slate-600 border-slate-600'
             }`}
           >
-            {cat === 'all' ? 'All' : cat === 'gems' ? <><GemIcon /> Gems</> : <><MineralIcon /> Minerals</>}
+            {cat === 'all' ? 'All' : cat === 'Gem' ? 'Gems' : cat === 'Mineral' ? 'Minerals' : 'Metals'}
           </button>
         ))}
       </div>
 
-      {/* Rarity Filters */}
       <div className="flex flex-wrap gap-2 mb-4">
-        <span className="text-amber-700 font-bold self-center mr-2">Rarity:</span>
+        <span className="text-yellow-400 font-bold self-center mr-2">Rarity:</span>
         {['all', 'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'].map((rarity) => (
           <button
             key={rarity}
             onClick={() => setRarityFilter(rarity)}
-            className={`px-3 py-1.5 font-serif text-xs cursor-pointer transition-all rounded-full border ${
+            className={`px-3 py-1.5 font-semibold text-xs cursor-pointer transition-all rounded-full border ${
               rarityFilter === rarity
-                ? `${RARITY_CONFIG[rarity]?.color || 'bg-amber-700'} text-white border-transparent`
-                : 'bg-transparent border-amber-700 text-amber-900 hover:bg-amber-100'
+                ? `${RARITY_CONFIG[rarity]?.color || 'bg-yellow-400'} text-white border-transparent`
+                : 'bg-slate-700 text-gray-400 hover:bg-slate-600 border-slate-600'
             }`}
           >
             {rarity === 'all' ? 'All' : rarity}
@@ -251,49 +220,46 @@ export default function Gemdex() {
         ))}
       </div>
 
-      {/* Status Filter */}
       <div className="flex flex-wrap gap-2 mb-6">
-        <span className="text-amber-700 font-bold self-center mr-2">Status:</span>
+        <span className="text-yellow-400 font-bold self-center mr-2">Status:</span>
         {['all', 'discovered', 'undiscovered'].map((status) => (
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
-            className={`px-4 py-2 font-serif text-sm cursor-pointer transition-all rounded-lg border ${
+            className={`px-4 py-2 font-semibold text-sm cursor-pointer transition-all rounded-lg border-2 border-transparent ${
               statusFilter === status
-                ? 'bg-amber-700 text-amber-50 border-amber-700'
-                : 'bg-transparent border-amber-700 text-amber-900 hover:bg-amber-100'
+                ? 'bg-yellow-400 text-slate-900 border-yellow-400'
+                : 'bg-slate-700 text-gray-400 hover:bg-slate-600 border-slate-600'
             }`}
           >
-            {status === 'all' ? 'All' : status === 'discovered' ? '✓ Discovered' : '? Undiscovered'}
+            {status === 'all' ? 'All' : status === 'discovered' ? '✓ Found' : '? Unknown'}
           </button>
         ))}
       </div>
 
-      {/* Item Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 pb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 w-full pb-8">
         {filteredItems.map((item) => (
           <div
             key={item.id}
             className={`
-              bg-amber-50 rounded-xl p-4 cursor-pointer transition-all shadow-md border-2
+              bg-slate-800 rounded-xl p-3 cursor-pointer transition-all shadow-md border-2
               ${item.discovered 
-                ? 'border-amber-300 hover:-translate-y-1 hover:shadow-lg hover:border-amber-500' 
-                : 'opacity-60 border-dashed border-amber-300 hover:opacity-80'
+                ? 'border-slate-600 hover:border-yellow-400 hover:scale-105' 
+                : 'opacity-60 border-slate-700 hover:opacity-80'
               }
             `}
             onClick={() => openItemDetail(item)}
           >
-            {/* Icon */}
-            <div className="text-4xl text-center mb-2">
-              {getItemIcon(item)}
+            <div className="text-3xl text-center mb-2">
+              {item.discovered 
+                ? item.category === 'Gem' ? <GemIcon /> 
+                  : item.category === 'Mineral' ? <MineralIcon /> 
+                  : <MetalIcon />
+                : '❓'}
             </div>
-
-            {/* Name */}
-            <h3 className="text-center font-serif text-sm mb-2 truncate">
+            <h3 className="text-center font-semibold text-sm mb-2 text-white truncate">
               {item.discovered ? item.name : '???'}
             </h3>
-
-            {/* Rarity Badge */}
             {item.discovered && (
               <div className="flex justify-center mb-2">
                 <span className={`px-2 py-0.5 rounded-full text-xs font-bold text-white ${RARITY_CONFIG[item.rarity]?.color}`}>
@@ -301,8 +267,6 @@ export default function Gemdex() {
                 </span>
               </div>
             )}
-
-            {/* NEW Badge */}
             {item.isNew && (
               <div className="flex justify-center">
                 <span className="px-2 py-0.5 rounded bg-green-500 text-white text-xs font-bold animate-pulse">
@@ -310,10 +274,8 @@ export default function Gemdex() {
                 </span>
               </div>
             )}
-
-            {/* Value */}
-            {item.discovered && (
-              <div className="text-center text-sm font-bold text-amber-700">
+            {item.discovered && !item.isNew && (
+              <div className="text-center text-sm font-bold text-yellow-400">
                 ${item.value}
               </div>
             )}
@@ -321,50 +283,45 @@ export default function Gemdex() {
         ))}
       </div>
 
-      {/* Empty State */}
       {filteredItems.length === 0 && (
-        <div className="text-center py-12 text-amber-700">
+        <div className="text-center py-12 text-gray-400">
           <div className="text-6xl mb-4"><FaSearch /></div>
-          <p className="font-serif text-lg">No items match your filters</p>
+          <p className="font-semibold text-lg">No items match your filters</p>
           <button 
             onClick={clearFilters}
-            className="mt-4 px-4 py-2 bg-amber-700 text-amber-50 rounded-lg font-serif hover:bg-amber-600 transition-colors"
+            className="mt-4 px-4 py-2 bg-yellow-400 text-slate-900 rounded-lg font-semibold hover:bg-yellow-300 transition-colors"
           >
             Clear Filters
           </button>
         </div>
       )}
 
-      {/* Detail Modal */}
       {selectedItem && (
         <div 
-          className="fixed inset-0 bg-amber-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" 
+          className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" 
           onClick={closeItemDetail}
         >
           <div 
-            className="bg-amber-50 rounded-2xl p-6 md:p-8 max-w-lg w-full border-2 border-amber-700 shadow-2xl relative max-h-[90vh] overflow-y-auto" 
+            className="bg-slate-800 rounded-2xl p-6 md:p-8 max-w-lg w-full border-2 border-yellow-600 shadow-2xl relative max-h-[90vh] overflow-y-auto" 
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
             <button 
-              className="absolute top-3 right-3 bg-transparent border-none text-3xl cursor-pointer text-amber-900 hover:text-amber-700 w-8 h-8 flex items-center justify-center" 
+              className="absolute top-3 right-3 bg-transparent border-none text-3xl cursor-pointer text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center" 
               onClick={closeItemDetail}
             >
               ×
             </button>
 
-            {/* Icon and Category */}
             <div className="text-center mb-4">
               <div className="text-6xl mb-2">
-                {selectedItem.category === 'Gem' ? <GemIcon /> : <MineralIcon />}
+                <GemIcon />
               </div>
-              <span className="text-amber-600 font-serif text-sm uppercase tracking-wide">
+              <span className="text-yellow-400 font-semibold text-sm uppercase tracking-wide">
                 {selectedItem.category}
               </span>
             </div>
 
-            {/* Name and Rarity */}
-            <h2 className="text-center font-serif text-2xl m-0 mb-2 text-amber-900">
+            <h2 className="text-center font-bold text-2xl m-0 mb-2 text-white">
               {selectedItem.name}
             </h2>
             <div className="flex justify-center mb-6">
@@ -373,21 +330,19 @@ export default function Gemdex() {
               </span>
             </div>
 
-            {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="flex flex-col items-center p-4 bg-amber-100 rounded-xl">
-                <span className="text-xs text-amber-600 uppercase tracking-wide mb-1">Value</span>
-                <span className="text-2xl font-bold text-amber-900">${selectedItem.value}</span>
+              <div className="flex flex-col items-center p-4 bg-slate-700 rounded-xl">
+                <span className="text-xs text-gray-400 uppercase tracking-wide mb-1">Value</span>
+                <span className="text-2xl font-bold text-yellow-400">${selectedItem.value}</span>
               </div>
-              <div className="flex flex-col items-center p-4 bg-amber-100 rounded-xl">
-                <span className="text-xs text-amber-600 uppercase tracking-wide mb-1">Hardness</span>
-                <span className="text-2xl font-bold text-amber-900">{selectedItem.hardness}</span>
+              <div className="flex flex-col items-center p-4 bg-slate-700 rounded-xl">
+                <span className="text-xs text-gray-400 uppercase tracking-wide mb-1">Hardness</span>
+                <span className="text-2xl font-bold text-white">{selectedItem.hardness}</span>
               </div>
             </div>
 
-            {/* Mohs Scale */}
             <div className="mb-6">
-              <h4 className="font-serif m-0 mb-2 text-sm text-amber-700">Mohs Hardness Scale</h4>
+              <h4 className="font-semibold m-0 mb-2 text-sm text-yellow-400">Mohs Hardness Scale</h4>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                   <div
@@ -395,25 +350,26 @@ export default function Gemdex() {
                     className={`flex-1 h-3 rounded-sm transition-colors ${
                       selectedItem.hardness >= n
                         ? 'bg-gradient-to-b from-cyan-300 to-slate-400'
-                        : 'bg-amber-200'
+                        : 'bg-slate-600'
                     }`}
                   />
                 ))}
               </div>
-              <div className="flex justify-between text-xs text-amber-600 mt-1">
-                <span>1 (Talc)</span>
-                <span>10 (Diamond)</span>
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>1</span>
+                <span>10</span>
               </div>
             </div>
 
-            {/* Real World Locations */}
             <div className="mb-6">
-              <h4 className="font-serif m-0 mb-2 text-sm text-amber-700 flex items-center gap-1"><FaMapMarkedAlt /> Real World Locations</h4>
+              <h4 className="font-semibold m-0 mb-2 text-sm text-yellow-400 flex items-center gap-1">
+                <FaMapMarkedAlt /> Real World Locations
+              </h4>
               <div className="flex flex-wrap gap-2">
                 {selectedItem.realWorldLocations.map((loc, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1 bg-amber-100 rounded-full text-sm text-amber-800"
+                    className="px-3 py-1 bg-slate-700 rounded-full text-sm text-gray-300"
                   >
                     {loc}
                   </span>
@@ -421,10 +377,9 @@ export default function Gemdex() {
               </div>
             </div>
 
-            {/* Fun Fact */}
-            <div className="bg-amber-100 p-4 rounded-xl border-l-4 border-amber-600">
-              <h4 className="font-serif m-0 mb-2 text-sm text-amber-700">💡 Did You Know?</h4>
-              <p className="m-0 text-sm leading-relaxed text-amber-800">
+            <div className="bg-slate-700 p-4 rounded-xl border-l-4 border-yellow-500">
+              <h4 className="font-semibold m-0 mb-2 text-sm text-yellow-400">💡 Did You Know?</h4>
+              <p className="m-0 text-sm leading-relaxed text-gray-300">
                 {ITEM_FACTS[selectedItem.id] || 'This fascinating specimen has unique properties waiting to be discovered.'}
               </p>
             </div>

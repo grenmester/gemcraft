@@ -58,7 +58,7 @@ test.describe('Navigation', () => {
     await page.locator('button:has-text("Gemdex")').click();
     
     // Verify we're on Gemdex page - heading shows 📖 Gemdex
-    await expect(page.locator('h1:has-text("Gemdex")')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('h2:has-text("Gemdex")')).toBeVisible({ timeout: 5000 });
   });
 
   test('should navigate to Inventory page', async ({ page }) => {
