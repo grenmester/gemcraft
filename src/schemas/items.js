@@ -4,12 +4,14 @@ export const RARITY_ENUM = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 export const CATEGORY_ENUM = ['Gem', 'Mineral', 'Ore', 'Metal'];
 
 export const itemProcessingSchema = z.object({
-  canClean: z.boolean(),
-  canCut: z.boolean(),
-  canFacet: z.boolean(),
-  baseProcessTime: z.number().min(1),
-  processDifficulty: z.number().min(1).max(5)
-});
+  canClean: z.boolean().optional(),
+  canCut: z.boolean().optional(),
+  canFacet: z.boolean().optional(),
+  canRefine: z.boolean().optional(),
+  refineOutput: z.string().optional(),
+  baseProcessTime: z.number().min(1).optional(),
+  processDifficulty: z.number().min(1).max(5).optional()
+}).optional();
 
 export const itemSchema = z.object({
   id: z.string().min(1),

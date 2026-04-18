@@ -226,287 +226,323 @@ export const SUBAREA_LOOT = {
   },
   TIER_2_A: {
     area_a: [
-      { itemId: 'amethyst', weight: 35, rarity: 'Common' },
-      { itemId: 'imperial_topaz', weight: 20, rarity: 'Rare' },
-      { itemId: 'tsavorite', weight: 18, rarity: 'Rare' },
-      { itemId: 'citrine', weight: 15, rarity: 'Uncommon' },
+      { itemId: 'amethyst', weight: 30, rarity: 'Common' },
+      { itemId: 'imperial_topaz', weight: 18, rarity: 'Rare' },
+      { itemId: 'tsavorite', weight: 15, rarity: 'Rare' },
+      { itemId: 'citrine', weight: 12, rarity: 'Uncommon' },
       { itemId: 'peridot', weight: 8, rarity: 'Uncommon' },
-      { itemId: 'clear_quartz', weight: 4, rarity: 'Common' }
+      { itemId: 'clear_quartz', weight: 4, rarity: 'Common' },
+      { itemId: 'copper_ore', weight: 3, rarity: 'Common' }
     ],
     area_b: [
-      { itemId: 'peridot', weight: 30, rarity: 'Uncommon' },
-      { itemId: 'amethyst', weight: 25, rarity: 'Common' },
-      { itemId: 'citrine', weight: 18, rarity: 'Uncommon' },
-      { itemId: 'imperial_topaz', weight: 15, rarity: 'Rare' },
+      { itemId: 'peridot', weight: 28, rarity: 'Uncommon' },
+      { itemId: 'amethyst', weight: 22, rarity: 'Common' },
+      { itemId: 'citrine', weight: 15, rarity: 'Uncommon' },
+      { itemId: 'imperial_topaz', weight: 12, rarity: 'Rare' },
       { itemId: 'tsavorite', weight: 8, rarity: 'Rare' },
-      { itemId: 'hematite', weight: 4, rarity: 'Common' }
+      { itemId: 'hematite', weight: 5, rarity: 'Common' },
+      { itemId: 'copper_ore', weight: 10, rarity: 'Common' }
     ],
     area_c: [
-      { itemId: 'clear_quartz', weight: 32, rarity: 'Common' },
-      { itemId: 'amethyst', weight: 25, rarity: 'Common' },
-      { itemId: 'imperial_topaz', weight: 20, rarity: 'Rare' },
-      { itemId: 'citrine', weight: 15, rarity: 'Uncommon' },
-      { itemId: 'peridot', weight: 8, rarity: 'Uncommon' }
+      { itemId: 'clear_quartz', weight: 28, rarity: 'Common' },
+      { itemId: 'amethyst', weight: 22, rarity: 'Common' },
+      { itemId: 'imperial_topaz', weight: 18, rarity: 'Rare' },
+      { itemId: 'citrine', weight: 12, rarity: 'Uncommon' },
+      { itemId: 'peridot', weight: 8, rarity: 'Uncommon' },
+      { itemId: 'silver_ore', weight: 12, rarity: 'Uncommon' }
     ]
   },
   TIER_2_B: {
     area_a: [
-      { itemId: 'tourmaline', weight: 35, rarity: 'Uncommon' },
-      { itemId: 'aquamarine', weight: 28, rarity: 'Uncommon' },
-      { itemId: 'paraiba_tourmaline', weight: 18, rarity: 'Epic' },
-      { itemId: 'peridot', weight: 12, rarity: 'Uncommon' },
-      { itemId: 'pyrite', weight: 7, rarity: 'Common' }
+      { itemId: 'tourmaline', weight: 30, rarity: 'Uncommon' },
+      { itemId: 'aquamarine', weight: 25, rarity: 'Uncommon' },
+      { itemId: 'paraiba_tourmaline', weight: 15, rarity: 'Epic' },
+      { itemId: 'peridot', weight: 10, rarity: 'Uncommon' },
+      { itemId: 'pyrite', weight: 8, rarity: 'Common' },
+      { itemId: 'copper_ore', weight: 12, rarity: 'Common' }
     ],
     area_b: [
-      { itemId: 'aquamarine', weight: 35, rarity: 'Uncommon' },
-      { itemId: 'paraiba_tourmaline', weight: 22, rarity: 'Epic' },
-      { itemId: 'tourmaline', weight: 22, rarity: 'Uncommon' },
-      { itemId: 'peridot', weight: 14, rarity: 'Uncommon' },
-      { itemId: 'hematite', weight: 7, rarity: 'Common' }
+      { itemId: 'aquamarine', weight: 30, rarity: 'Uncommon' },
+      { itemId: 'paraiba_tourmaline', weight: 18, rarity: 'Epic' },
+      { itemId: 'tourmaline', weight: 18, rarity: 'Uncommon' },
+      { itemId: 'peridot', weight: 12, rarity: 'Uncommon' },
+      { itemId: 'hematite', weight: 7, rarity: 'Common' },
+      { itemId: 'copper_ore', weight: 15, rarity: 'Common' }
     ],
     area_c: [
-      { itemId: 'aquamarine', weight: 32, rarity: 'Uncommon' },
-      { itemId: 'tourmaline', weight: 28, rarity: 'Uncommon' },
-      { itemId: 'paraiba_tourmaline', weight: 22, rarity: 'Epic' },
-      { itemId: 'peridot', weight: 12, rarity: 'Uncommon' },
-      { itemId: 'pyrite', weight: 6, rarity: 'Common' }
+      { itemId: 'aquamarine', weight: 28, rarity: 'Uncommon' },
+      { itemId: 'tourmaline', weight: 25, rarity: 'Uncommon' },
+      { itemId: 'paraiba_tourmaline', weight: 18, rarity: 'Epic' },
+      { itemId: 'peridot', weight: 10, rarity: 'Uncommon' },
+      { itemId: 'pyrite', weight: 6, rarity: 'Common' },
+      { itemId: 'silver_ore', weight: 13, rarity: 'Uncommon' }
     ]
   },
   TIER_2_C: {
     area_a: [
-      { itemId: 'sapphire', weight: 25, rarity: 'Rare' },
-      { itemId: 'spinel', weight: 22, rarity: 'Rare' },
-      { itemId: 'tsavorite', weight: 22, rarity: 'Rare' },
-      { itemId: 'tourmaline', weight: 18, rarity: 'Uncommon' },
+      { itemId: 'sapphire', weight: 22, rarity: 'Rare' },
+      { itemId: 'spinel', weight: 18, rarity: 'Rare' },
+      { itemId: 'tsavorite', weight: 18, rarity: 'Rare' },
+      { itemId: 'tourmaline', weight: 15, rarity: 'Uncommon' },
       { itemId: 'pyrite', weight: 10, rarity: 'Common' },
-      { itemId: 'hematite', weight: 3, rarity: 'Common' }
+      { itemId: 'hematite', weight: 7, rarity: 'Common' },
+      { itemId: 'copper_ore', weight: 10, rarity: 'Common' }
     ],
     area_b: [
-      { itemId: 'sapphire', weight: 30, rarity: 'Rare' },
-      { itemId: 'spinel', weight: 25, rarity: 'Rare' },
-      { itemId: 'tourmaline', weight: 20, rarity: 'Uncommon' },
-      { itemId: 'pyrite', weight: 12, rarity: 'Common' },
-      { itemId: 'tsavorite', weight: 10, rarity: 'Rare' },
-      { itemId: 'hematite', weight: 3, rarity: 'Common' }
-    ],
-    area_c: [
-      { itemId: 'sapphire', weight: 35, rarity: 'Rare' },
-      { itemId: 'spinel', weight: 28, rarity: 'Rare' },
+      { itemId: 'sapphire', weight: 25, rarity: 'Rare' },
+      { itemId: 'spinel', weight: 22, rarity: 'Rare' },
       { itemId: 'tourmaline', weight: 18, rarity: 'Uncommon' },
       { itemId: 'pyrite', weight: 10, rarity: 'Common' },
-      { itemId: 'tsavorite', weight: 9, rarity: 'Rare' }
+      { itemId: 'tsavorite', weight: 10, rarity: 'Rare' },
+      { itemId: 'hematite', weight: 5, rarity: 'Common' },
+      { itemId: 'copper_ore', weight: 10, rarity: 'Common' }
+    ],
+    area_c: [
+      { itemId: 'sapphire', weight: 30, rarity: 'Rare' },
+      { itemId: 'spinel', weight: 25, rarity: 'Rare' },
+      { itemId: 'tourmaline', weight: 15, rarity: 'Uncommon' },
+      { itemId: 'pyrite', weight: 8, rarity: 'Common' },
+      { itemId: 'tsavorite', weight: 7, rarity: 'Rare' },
+      { itemId: 'silver_ore', weight: 15, rarity: 'Uncommon' }
     ]
   },
   TIER_3_A: {
     area_a: [
-      { itemId: 'emerald', weight: 28, rarity: 'Rare' },
-      { itemId: 'imperial_topaz', weight: 25, rarity: 'Rare' },
-      { itemId: 'tourmaline', weight: 22, rarity: 'Uncommon' },
-      { itemId: 'aquamarine', weight: 18, rarity: 'Uncommon' },
-      { itemId: 'citrine', weight: 7, rarity: 'Uncommon' }
+      { itemId: 'emerald', weight: 25, rarity: 'Rare' },
+      { itemId: 'imperial_topaz', weight: 22, rarity: 'Rare' },
+      { itemId: 'tourmaline', weight: 18, rarity: 'Uncommon' },
+      { itemId: 'aquamarine', weight: 15, rarity: 'Uncommon' },
+      { itemId: 'citrine', weight: 8, rarity: 'Uncommon' },
+      { itemId: 'silver_ore', weight: 12, rarity: 'Uncommon' }
     ],
     area_b: [
-      { itemId: 'imperial_topaz', weight: 35, rarity: 'Rare' },
-      { itemId: 'emerald', weight: 22, rarity: 'Rare' },
-      { itemId: 'aquamarine', weight: 20, rarity: 'Uncommon' },
-      { itemId: 'tourmaline', weight: 16, rarity: 'Uncommon' },
-      { itemId: 'citrine', weight: 7, rarity: 'Uncommon' }
+      { itemId: 'imperial_topaz', weight: 30, rarity: 'Rare' },
+      { itemId: 'emerald', weight: 20, rarity: 'Rare' },
+      { itemId: 'aquamarine', weight: 18, rarity: 'Uncommon' },
+      { itemId: 'tourmaline', weight: 14, rarity: 'Uncommon' },
+      { itemId: 'citrine', weight: 6, rarity: 'Uncommon' },
+      { itemId: 'silver_ore', weight: 12, rarity: 'Uncommon' }
     ],
     area_c: [
-      { itemId: 'imperial_topaz', weight: 40, rarity: 'Rare' },
-      { itemId: 'emerald', weight: 28, rarity: 'Rare' },
-      { itemId: 'tourmaline', weight: 18, rarity: 'Uncommon' },
+      { itemId: 'imperial_topaz', weight: 35, rarity: 'Rare' },
+      { itemId: 'emerald', weight: 25, rarity: 'Rare' },
+      { itemId: 'tourmaline', weight: 15, rarity: 'Uncommon' },
       { itemId: 'aquamarine', weight: 10, rarity: 'Uncommon' },
-      { itemId: 'citrine', weight: 4, rarity: 'Uncommon' }
+      { itemId: 'citrine', weight: 5, rarity: 'Uncommon' },
+      { itemId: 'gold_ore', weight: 10, rarity: 'Rare' }
     ]
   },
   TIER_3_B: {
     area_a: [
-      { itemId: 'ruby', weight: 32, rarity: 'Epic' },
-      { itemId: 'sapphire', weight: 25, rarity: 'Rare' },
-      { itemId: 'spinel', weight: 20, rarity: 'Rare' },
-      { itemId: 'imperial_topaz', weight: 18, rarity: 'Rare' },
-      { itemId: 'pyrite', weight: 5, rarity: 'Common' }
+      { itemId: 'ruby', weight: 28, rarity: 'Epic' },
+      { itemId: 'sapphire', weight: 22, rarity: 'Rare' },
+      { itemId: 'spinel', weight: 18, rarity: 'Rare' },
+      { itemId: 'imperial_topaz', weight: 15, rarity: 'Rare' },
+      { itemId: 'pyrite', weight: 7, rarity: 'Common' },
+      { itemId: 'silver_ore', weight: 10, rarity: 'Uncommon' }
     ],
     area_b: [
-      { itemId: 'ruby', weight: 40, rarity: 'Epic' },
-      { itemId: 'sapphire', weight: 25, rarity: 'Rare' },
-      { itemId: 'imperial_topaz', weight: 20, rarity: 'Rare' },
+      { itemId: 'ruby', weight: 35, rarity: 'Epic' },
+      { itemId: 'sapphire', weight: 22, rarity: 'Rare' },
+      { itemId: 'imperial_topaz', weight: 18, rarity: 'Rare' },
       { itemId: 'spinel', weight: 12, rarity: 'Rare' },
-      { itemId: 'pyrite', weight: 3, rarity: 'Common' }
+      { itemId: 'pyrite', weight: 3, rarity: 'Common' },
+      { itemId: 'silver_ore', weight: 10, rarity: 'Uncommon' }
     ],
     area_c: [
-      { itemId: 'ruby', weight: 45, rarity: 'Epic' },
-      { itemId: 'imperial_topaz', weight: 25, rarity: 'Rare' },
-      { itemId: 'sapphire', weight: 18, rarity: 'Rare' },
+      { itemId: 'ruby', weight: 40, rarity: 'Epic' },
+      { itemId: 'imperial_topaz', weight: 22, rarity: 'Rare' },
+      { itemId: 'sapphire', weight: 15, rarity: 'Rare' },
       { itemId: 'spinel', weight: 10, rarity: 'Rare' },
-      { itemId: 'pyrite', weight: 2, rarity: 'Common' }
+      { itemId: 'pyrite', weight: 3, rarity: 'Common' },
+      { itemId: 'gold_ore', weight: 10, rarity: 'Rare' }
     ]
   },
   TIER_3_C: {
     area_a: [
-      { itemId: 'ruby', weight: 22, rarity: 'Epic' },
-      { itemId: 'sapphire', weight: 28, rarity: 'Rare' },
-      { itemId: 'emerald', weight: 20, rarity: 'Rare' },
-      { itemId: 'imperial_topaz', weight: 18, rarity: 'Rare' },
+      { itemId: 'ruby', weight: 18, rarity: 'Epic' },
+      { itemId: 'sapphire', weight: 25, rarity: 'Rare' },
+      { itemId: 'emerald', weight: 18, rarity: 'Rare' },
+      { itemId: 'imperial_topaz', weight: 15, rarity: 'Rare' },
       { itemId: 'lapis_lazuli', weight: 10, rarity: 'Uncommon' },
-      { itemId: 'labradorite', weight: 2, rarity: 'Uncommon' }
+      { itemId: 'labradorite', weight: 2, rarity: 'Uncommon' },
+      { itemId: 'gold_ore', weight: 12, rarity: 'Rare' }
     ],
     area_b: [
-      { itemId: 'sapphire', weight: 32, rarity: 'Rare' },
-      { itemId: 'ruby', weight: 22, rarity: 'Epic' },
-      { itemId: 'imperial_topaz', weight: 20, rarity: 'Rare' },
-      { itemId: 'emerald', weight: 15, rarity: 'Rare' },
+      { itemId: 'sapphire', weight: 28, rarity: 'Rare' },
+      { itemId: 'ruby', weight: 20, rarity: 'Epic' },
+      { itemId: 'imperial_topaz', weight: 18, rarity: 'Rare' },
+      { itemId: 'emerald', weight: 12, rarity: 'Rare' },
       { itemId: 'lapis_lazuli', weight: 8, rarity: 'Uncommon' },
-      { itemId: 'labradorite', weight: 3, rarity: 'Uncommon' }
+      { itemId: 'labradorite', weight: 3, rarity: 'Uncommon' },
+      { itemId: 'gold_ore', weight: 11, rarity: 'Rare' }
     ],
     area_c: [
-      { itemId: 'emerald', weight: 25, rarity: 'Rare' },
-      { itemId: 'ruby', weight: 22, rarity: 'Epic' },
-      { itemId: 'sapphire', weight: 22, rarity: 'Rare' },
-      { itemId: 'imperial_topaz', weight: 18, rarity: 'Rare' },
-      { itemId: 'lapis_lazuli', weight: 10, rarity: 'Uncommon' },
-      { itemId: 'labradorite', weight: 3, rarity: 'Uncommon' }
+      { itemId: 'emerald', weight: 22, rarity: 'Rare' },
+      { itemId: 'ruby', weight: 20, rarity: 'Epic' },
+      { itemId: 'sapphire', weight: 20, rarity: 'Rare' },
+      { itemId: 'imperial_topaz', weight: 15, rarity: 'Rare' },
+      { itemId: 'lapis_lazuli', weight: 8, rarity: 'Uncommon' },
+      { itemId: 'labradorite', weight: 3, rarity: 'Uncommon' },
+      { itemId: 'gold_ore', weight: 12, rarity: 'Rare' }
     ]
   },
   TIER_4_A: {
     area_a: [
-      { itemId: 'emerald', weight: 45, rarity: 'Rare' },
-      { itemId: 'ruby', weight: 20, rarity: 'Epic' },
-      { itemId: 'sapphire', weight: 18, rarity: 'Rare' },
-      { itemId: 'imperial_topaz', weight: 14, rarity: 'Rare' },
-      { itemId: 'alexandrite', weight: 3, rarity: 'Legendary' }
+      { itemId: 'emerald', weight: 40, rarity: 'Rare' },
+      { itemId: 'ruby', weight: 18, rarity: 'Epic' },
+      { itemId: 'sapphire', weight: 16, rarity: 'Rare' },
+      { itemId: 'imperial_topaz', weight: 12, rarity: 'Rare' },
+      { itemId: 'alexandrite', weight: 4, rarity: 'Legendary' },
+      { itemId: 'gold_ore', weight: 10, rarity: 'Rare' }
     ],
     area_b: [
-      { itemId: 'emerald', weight: 50, rarity: 'Rare' },
-      { itemId: 'alexandrite', weight: 18, rarity: 'Legendary' },
-      { itemId: 'imperial_topaz', weight: 18, rarity: 'Rare' },
+      { itemId: 'emerald', weight: 45, rarity: 'Rare' },
+      { itemId: 'alexandrite', weight: 15, rarity: 'Legendary' },
+      { itemId: 'imperial_topaz', weight: 15, rarity: 'Rare' },
       { itemId: 'ruby', weight: 10, rarity: 'Epic' },
-      { itemId: 'sapphire', weight: 4, rarity: 'Rare' }
+      { itemId: 'sapphire', weight: 5, rarity: 'Rare' },
+      { itemId: 'gold_ore', weight: 10, rarity: 'Rare' }
     ],
     area_c: [
-      { itemId: 'emerald', weight: 48, rarity: 'Epic' },
-      { itemId: 'ruby', weight: 20, rarity: 'Epic' },
-      { itemId: 'imperial_topaz', weight: 18, rarity: 'Rare' },
+      { itemId: 'emerald', weight: 42, rarity: 'Epic' },
+      { itemId: 'ruby', weight: 18, rarity: 'Epic' },
+      { itemId: 'imperial_topaz', weight: 16, rarity: 'Rare' },
       { itemId: 'sapphire', weight: 10, rarity: 'Rare' },
-      { itemId: 'alexandrite', weight: 4, rarity: 'Legendary' }
+      { itemId: 'alexandrite', weight: 4, rarity: 'Legendary' },
+      { itemId: 'platinum_ore', weight: 10, rarity: 'Epic' }
     ]
   },
   TIER_4_B: {
     area_a: [
-      { itemId: 'sapphire', weight: 42, rarity: 'Rare' },
-      { itemId: 'ruby', weight: 22, rarity: 'Epic' },
-      { itemId: 'emerald', weight: 18, rarity: 'Rare' },
-      { itemId: 'imperial_topaz', weight: 15, rarity: 'Rare' },
-      { itemId: 'lapis_lazuli', weight: 3, rarity: 'Uncommon' }
+      { itemId: 'sapphire', weight: 38, rarity: 'Rare' },
+      { itemId: 'ruby', weight: 20, rarity: 'Epic' },
+      { itemId: 'emerald', weight: 16, rarity: 'Rare' },
+      { itemId: 'imperial_topaz', weight: 12, rarity: 'Rare' },
+      { itemId: 'lapis_lazuli', weight: 4, rarity: 'Uncommon' },
+      { itemId: 'gold_ore', weight: 10, rarity: 'Rare' }
     ],
     area_b: [
-      { itemId: 'sapphire', weight: 45, rarity: 'Epic' },
-      { itemId: 'ruby', weight: 22, rarity: 'Epic' },
-      { itemId: 'emerald', weight: 18, rarity: 'Rare' },
-      { itemId: 'imperial_topaz', weight: 12, rarity: 'Rare' },
-      { itemId: 'lapis_lazuli', weight: 3, rarity: 'Uncommon' }
+      { itemId: 'sapphire', weight: 40, rarity: 'Epic' },
+      { itemId: 'ruby', weight: 20, rarity: 'Epic' },
+      { itemId: 'emerald', weight: 16, rarity: 'Rare' },
+      { itemId: 'imperial_topaz', weight: 10, rarity: 'Rare' },
+      { itemId: 'lapis_lazuli', weight: 4, rarity: 'Uncommon' },
+      { itemId: 'gold_ore', weight: 10, rarity: 'Rare' }
     ],
     area_c: [
-      { itemId: 'sapphire', weight: 50, rarity: 'Epic' },
-      { itemId: 'ruby', weight: 20, rarity: 'Epic' },
-      { itemId: 'emerald', weight: 15, rarity: 'Rare' },
-      { itemId: 'imperial_topaz', weight: 12, rarity: 'Rare' },
-      { itemId: 'lapis_lazuli', weight: 3, rarity: 'Uncommon' }
+      { itemId: 'sapphire', weight: 45, rarity: 'Epic' },
+      { itemId: 'ruby', weight: 18, rarity: 'Epic' },
+      { itemId: 'emerald', weight: 12, rarity: 'Rare' },
+      { itemId: 'imperial_topaz', weight: 10, rarity: 'Rare' },
+      { itemId: 'lapis_lazuli', weight: 5, rarity: 'Uncommon' },
+      { itemId: 'platinum_ore', weight: 10, rarity: 'Epic' }
     ]
   },
   TIER_4_C: {
     area_a: [
-      { itemId: 'diamond', weight: 32, rarity: 'Epic' },
-      { itemId: 'sapphire', weight: 22, rarity: 'Rare' },
-      { itemId: 'ruby', weight: 18, rarity: 'Epic' },
-      { itemId: 'opal', weight: 15, rarity: 'Uncommon' },
+      { itemId: 'diamond', weight: 28, rarity: 'Epic' },
+      { itemId: 'sapphire', weight: 20, rarity: 'Rare' },
+      { itemId: 'ruby', weight: 16, rarity: 'Epic' },
+      { itemId: 'opal', weight: 14, rarity: 'Uncommon' },
       { itemId: 'tourmaline', weight: 10, rarity: 'Uncommon' },
-      { itemId: 'black_opal', weight: 3, rarity: 'Rare' }
+      { itemId: 'black_opal', weight: 2, rarity: 'Rare' },
+      { itemId: 'gold_ore', weight: 10, rarity: 'Rare' }
     ],
     area_b: [
-      { itemId: 'diamond', weight: 42, rarity: 'Epic' },
-      { itemId: 'ruby', weight: 22, rarity: 'Epic' },
-      { itemId: 'black_opal', weight: 15, rarity: 'Rare' },
+      { itemId: 'diamond', weight: 38, rarity: 'Epic' },
+      { itemId: 'ruby', weight: 20, rarity: 'Epic' },
+      { itemId: 'black_opal', weight: 12, rarity: 'Rare' },
       { itemId: 'sapphire', weight: 12, rarity: 'Rare' },
-      { itemId: 'opal', weight: 9, rarity: 'Uncommon' }
+      { itemId: 'opal', weight: 8, rarity: 'Uncommon' },
+      { itemId: 'gold_ore', weight: 10, rarity: 'Rare' }
     ],
     area_c: [
-      { itemId: 'diamond', weight: 50, rarity: 'Epic' },
-      { itemId: 'ruby', weight: 18, rarity: 'Epic' },
-      { itemId: 'black_opal', weight: 15, rarity: 'Rare' },
+      { itemId: 'diamond', weight: 45, rarity: 'Epic' },
+      { itemId: 'ruby', weight: 16, rarity: 'Epic' },
+      { itemId: 'black_opal', weight: 12, rarity: 'Rare' },
       { itemId: 'sapphire', weight: 10, rarity: 'Rare' },
-      { itemId: 'opal', weight: 7, rarity: 'Uncommon' }
+      { itemId: 'opal', weight: 7, rarity: 'Uncommon' },
+      { itemId: 'platinum_ore', weight: 10, rarity: 'Epic' }
     ]
   },
   TIER_5_A: {
     area_a: [
-      { itemId: 'diamond', weight: 45, rarity: 'Epic' },
-      { itemId: 'emerald', weight: 22, rarity: 'Rare' },
-      { itemId: 'ruby', weight: 18, rarity: 'Epic' },
+      { itemId: 'diamond', weight: 40, rarity: 'Epic' },
+      { itemId: 'emerald', weight: 20, rarity: 'Rare' },
+      { itemId: 'ruby', weight: 16, rarity: 'Epic' },
       { itemId: 'sapphire', weight: 12, rarity: 'Rare' },
-      { itemId: 'blue_diamond', weight: 3, rarity: 'Legendary' }
+      { itemId: 'blue_diamond', weight: 2, rarity: 'Legendary' },
+      { itemId: 'gold_ore', weight: 10, rarity: 'Rare' }
     ],
     area_b: [
-      { itemId: 'diamond', weight: 55, rarity: 'Legendary' },
-      { itemId: 'emerald', weight: 18, rarity: 'Rare' },
-      { itemId: 'ruby', weight: 14, rarity: 'Epic' },
+      { itemId: 'diamond', weight: 50, rarity: 'Legendary' },
+      { itemId: 'emerald', weight: 16, rarity: 'Rare' },
+      { itemId: 'ruby', weight: 12, rarity: 'Epic' },
       { itemId: 'sapphire', weight: 10, rarity: 'Rare' },
-      { itemId: 'blue_diamond', weight: 3, rarity: 'Legendary' }
+      { itemId: 'blue_diamond', weight: 2, rarity: 'Legendary' },
+      { itemId: 'platinum_ore', weight: 10, rarity: 'Epic' }
     ],
     area_c: [
-      { itemId: 'diamond', weight: 65, rarity: 'Legendary' },
-      { itemId: 'ruby', weight: 14, rarity: 'Epic' },
+      { itemId: 'diamond', weight: 58, rarity: 'Legendary' },
+      { itemId: 'ruby', weight: 12, rarity: 'Epic' },
       { itemId: 'emerald', weight: 12, rarity: 'Rare' },
       { itemId: 'sapphire', weight: 6, rarity: 'Rare' },
-      { itemId: 'blue_diamond', weight: 3, rarity: 'Legendary' }
+      { itemId: 'blue_diamond', weight: 2, rarity: 'Legendary' },
+      { itemId: 'platinum_ore', weight: 10, rarity: 'Epic' }
     ]
   },
   TIER_5_B: {
     area_a: [
-      { itemId: 'tanzanite', weight: 42, rarity: 'Epic' },
-      { itemId: 'diamond', weight: 22, rarity: 'Epic' },
-      { itemId: 'sapphire', weight: 18, rarity: 'Rare' },
-      { itemId: 'ruby', weight: 15, rarity: 'Epic' },
-      { itemId: 'taaffeite', weight: 3, rarity: 'Legendary' }
+      { itemId: 'tanzanite', weight: 38, rarity: 'Epic' },
+      { itemId: 'diamond', weight: 20, rarity: 'Epic' },
+      { itemId: 'sapphire', weight: 16, rarity: 'Rare' },
+      { itemId: 'ruby', weight: 14, rarity: 'Epic' },
+      { itemId: 'taaffeite', weight: 2, rarity: 'Legendary' },
+      { itemId: 'gold_ore', weight: 10, rarity: 'Rare' }
     ],
     area_b: [
-      { itemId: 'tanzanite', weight: 50, rarity: 'Epic' },
-      { itemId: 'diamond', weight: 20, rarity: 'Epic' },
-      { itemId: 'ruby', weight: 15, rarity: 'Epic' },
-      { itemId: 'sapphire', weight: 12, rarity: 'Rare' },
-      { itemId: 'taaffeite', weight: 3, rarity: 'Legendary' }
+      { itemId: 'tanzanite', weight: 45, rarity: 'Epic' },
+      { itemId: 'diamond', weight: 18, rarity: 'Epic' },
+      { itemId: 'ruby', weight: 14, rarity: 'Epic' },
+      { itemId: 'sapphire', weight: 10, rarity: 'Rare' },
+      { itemId: 'taaffeite', weight: 3, rarity: 'Legendary' },
+      { itemId: 'platinum_ore', weight: 10, rarity: 'Epic' }
     ],
     area_c: [
-      { itemId: 'tanzanite', weight: 58, rarity: 'Epic' },
-      { itemId: 'diamond', weight: 18, rarity: 'Legendary' },
+      { itemId: 'tanzanite', weight: 52, rarity: 'Epic' },
+      { itemId: 'diamond', weight: 16, rarity: 'Legendary' },
       { itemId: 'ruby', weight: 12, rarity: 'Epic' },
-      { itemId: 'sapphire', weight: 10, rarity: 'Rare' },
-      { itemId: 'taaffeite', weight: 2, rarity: 'Legendary' }
+      { itemId: 'sapphire', weight: 8, rarity: 'Rare' },
+      { itemId: 'taaffeite', weight: 2, rarity: 'Legendary' },
+      { itemId: 'platinum_ore', weight: 10, rarity: 'Epic' }
     ]
   },
   TIER_5_C: {
     area_a: [
-      { itemId: 'alexandrite', weight: 28, rarity: 'Legendary' },
-      { itemId: 'taaffeite', weight: 22, rarity: 'Legendary' },
-      { itemId: 'diamond', weight: 22, rarity: 'Legendary' },
-      { itemId: 'tanzanite', weight: 15, rarity: 'Epic' },
-      { itemId: 'ruby', weight: 10, rarity: 'Epic' },
-      { itemId: 'blue_diamond', weight: 3, rarity: 'Legendary' }
+      { itemId: 'alexandrite', weight: 25, rarity: 'Legendary' },
+      { itemId: 'taaffeite', weight: 20, rarity: 'Legendary' },
+      { itemId: 'diamond', weight: 20, rarity: 'Legendary' },
+      { itemId: 'tanzanite', weight: 14, rarity: 'Epic' },
+      { itemId: 'ruby', weight: 9, rarity: 'Epic' },
+      { itemId: 'blue_diamond', weight: 2, rarity: 'Legendary' },
+      { itemId: 'platinum_ore', weight: 10, rarity: 'Epic' }
     ],
     area_b: [
-      { itemId: 'taaffeite', weight: 32, rarity: 'Legendary' },
-      { itemId: 'alexandrite', weight: 28, rarity: 'Legendary' },
-      { itemId: 'diamond', weight: 20, rarity: 'Legendary' },
+      { itemId: 'taaffeite', weight: 28, rarity: 'Legendary' },
+      { itemId: 'alexandrite', weight: 25, rarity: 'Legendary' },
+      { itemId: 'diamond', weight: 18, rarity: 'Legendary' },
       { itemId: 'tanzanite', weight: 12, rarity: 'Epic' },
-      { itemId: 'ruby', weight: 8, rarity: 'Epic' }
+      { itemId: 'ruby', weight: 7, rarity: 'Epic' },
+      { itemId: 'platinum_ore', weight: 10, rarity: 'Epic' }
     ],
     area_c: [
-      { itemId: 'taaffeite', weight: 38, rarity: 'Legendary' },
-      { itemId: 'alexandrite', weight: 32, rarity: 'Legendary' },
-      { itemId: 'diamond', weight: 18, rarity: 'Legendary' },
+      { itemId: 'taaffeite', weight: 35, rarity: 'Legendary' },
+      { itemId: 'alexandrite', weight: 28, rarity: 'Legendary' },
+      { itemId: 'diamond', weight: 16, rarity: 'Legendary' },
       { itemId: 'tanzanite', weight: 8, rarity: 'Epic' },
-      { itemId: 'ruby', weight: 4, rarity: 'Epic' }
+      { itemId: 'ruby', weight: 3, rarity: 'Epic' },
+      { itemId: 'platinum_ore', weight: 10, rarity: 'Epic' }
     ]
   }
 };

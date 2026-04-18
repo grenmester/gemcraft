@@ -6,8 +6,9 @@ import { items, itemsById } from '../loaders/items.js';
 import { EQUIPMENT } from '../loaders/equipment.js';
 import { PROCESS_EQUIPMENT } from '../data/processEquipment.js';
 import { LOCATION_TIERS } from '../loaders/locations.js';
-import { removeItemFromInventory, addItemToInventory, addMetalToInventory, removeOreFromInventory } from './inventoryHelpers.js';
+import { removeItemFromInventory, addItemToInventory } from './inventoryHelpers.js';
 import { SUBAREA_LOOT } from '../data/subareas.js';
+import { getRecipeById, JEWELRY_TYPES, SETTINGS } from '../data/recipes.js';
 
 export { GAME_PHASES };
 
@@ -42,7 +43,6 @@ export const CANCEL_QUEUE_ITEM = 'CANCEL_QUEUE_ITEM';
 export const UPDATE_PROCESS_STATS = 'UPDATE_PROCESS_STATS';
 export const UNLOCK_QUEUE_SLOT = 'UNLOCK_QUEUE_SLOT';
 export const TICK_QUEUE = 'TICK_QUEUE';
-export const REFINING = 'REFINING';
 
 // Zone actions
 export const UNLOCK_ZONE = 'UNLOCK_ZONE';
@@ -67,12 +67,20 @@ export const CLEAR_MINING_SELECTION = 'CLEAR_MINING_SELECTION';
 export const MINE_SUBAREA = 'MINE_SUBAREA';
 export const COLLECT_PENDING_MATERIALS = 'COLLECT_PENDING_MATERIALS';
 
+// Process actions
+export const REFINING = 'REFINING';
+
+// Craft actions
+export const CRAFT_ITEM = 'CRAFT_ITEM';
+export const CRAFT_ITEM_SUCCESS = 'CRAFT_ITEM_SUCCESS';
+export const SELL_ITEMS = 'SELL_ITEMS';
+
 const INITIAL_QUEUE_SLOTS = 2;
 const PROCESS_TICK_INTERVAL = 1000; // Check queue every second
 
 const STORAGE_KEY = 'gemstone_game_save';
 
-const MIGRATION_VERSION = 7;
+const MIGRATION_VERSION = 6;
 
 // Quality ranges by mine tier (min%, max%)
 const TIER_QUALITY_RANGES = {
@@ -195,39 +203,23 @@ function migrateState(state) {
      };
    }
 
-    // Migration to version 6: Add equippedTools for process equipment
-    if (migrated.migrationVersion < 6) {
-      migrated = {
-        ...migrated,
-        migrationVersion: MIGRATION_VERSION,
-        processState: {
-          ...migrated.processState,
-          equippedTools: migrated.processState?.equippedTools || {
-            cleaning: 'basic_tumbler',
-            cutting: 'basic_cutter',
-            faceting: 'hand_faceter'
-          }
-        }
-      };
-    }
+   // Migration to version 6: Add equippedTools for process equipment
+   if (migrated.migrationVersion < 6) {
+     migrated = {
+       ...migrated,
+       migrationVersion: MIGRATION_VERSION,
+       processState: {
+         ...migrated.processState,
+         equippedTools: migrated.processState?.equippedTools || {
+           cleaning: 'basic_tumbler',
+           cutting: 'basic_cutter',
+           faceting: 'hand_faceter'
+         }
+       }
+     };
+   }
 
-    // Migration to version 7: Add metals and ores arrays to inventory
-    if (migrated.migrationVersion < 7) {
-      migrated = {
-        ...migrated,
-        migrationVersion: MIGRATION_VERSION,
-        player: {
-          ...migrated.player,
-          inventory: {
-            ...migrated.player?.inventory,
-            metals: migrated.player?.inventory?.metals || [],
-            ores: migrated.player?.inventory?.ores || []
-          }
-        }
-      };
-    }
-
-    // Process offline progress: Check queue completions on load
+   // Process offline progress: Check queue completions on load
    if (migrated.processState?.queue || migrated.processState?.activeProcess) {
      const now = Date.now();
      const newCompletedQueue = [];
@@ -729,13 +721,22 @@ case UNLOCK_ZONE: {
         const pending = state.discoverState.pendingMaterials[mineId] || [];
         if (pending.length === 0) return state;
         
-        const inv = state.player.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: 0 } };
+        const inv = state.player.inventory || { minerals: [], gems: [], ores: [], equipment: [], currency: { coins: 0 } };
         const newMinerals = [...(inv.minerals || [])];
         const newGems = [...(inv.gems || [])];
+        const newOres = [...(inv.ores || [])];
         
         pending.forEach(({ itemId, quantity }) => {
           const itemData = itemsById[itemId];
-          if (itemData?.category === 'Mineral') {
+          if (itemData?.category === 'Ore') {
+            // Stack with existing ores (unprocessed, no quality)
+            const existing = newOres.find(o => o.id === itemId);
+            if (existing) {
+              existing.quantity += quantity;
+            } else {
+              newOres.push({ id: itemId, quantity });
+            }
+          } else if (itemData?.category === 'Mineral') {
             // Stack with existing items that have no quality (unprocessed)
             const existing = newMinerals.find(m => m.id === itemId && m.quality === undefined);
             if (existing) {
@@ -768,7 +769,8 @@ case UNLOCK_ZONE: {
             inventory: {
               ...inv,
               minerals: newMinerals,
-              gems: newGems
+              gems: newGems,
+              ores: newOres
             }
           }
         };
@@ -877,6 +879,68 @@ case UNLOCK_ZONE: {
             totalProcessed: newTotalProcessed,
             masterworksCreated: newMasterworksCreated,
             bestQuality: newBestQuality
+          }
+        }
+        };
+    }
+
+    case REFINING: {
+      const { itemId } = action.payload;
+      
+      // Get ore data
+      const oreData = itemsById[itemId];
+      if (!oreData) return state;
+      
+      // Determine metal output - use base name (copper, silver, etc.) not ingot ID
+      // This matches what recipes expect (e.g., 'copper' not 'copper_ingot')
+      const oreToMetal = {
+        copper_ore: 'copper',
+        silver_ore: 'silver',
+        gold_ore: 'gold',
+        platinum_ore: 'platinum'
+      };
+      const metalId = oreToMetal[itemId] || oreData.id.replace('_ore', '');
+      
+      // Calculate quality based on ore type
+      const QUALITY_RANGES = {
+        copper: { min: 60, max: 80 },
+        silver: { min: 65, max: 82 },
+        gold: { min: 70, max: 88 },
+        platinum: { min: 75, max: 92 }
+      };
+      const range = QUALITY_RANGES[metalId] || { min: 70, max: 85 };
+      const quality = range.min + Math.random() * (range.max - range.min);
+      
+      const inv = state.player.inventory || {};
+      const ores = [...(inv.ores || [])];
+      const metals = [...(inv.metals || [])];
+      
+      // Remove ore
+      const oreIdx = ores.findIndex(o => o.id === itemId);
+      if (oreIdx >= 0) {
+        if (ores[oreIdx].quantity > 1) {
+          ores[oreIdx] = { ...ores[oreIdx], quantity: ores[oreIdx].quantity - 1 };
+        } else {
+          ores.splice(oreIdx, 1);
+        }
+      }
+      
+      // Add metal
+      const existingMetal = metals.find(m => m.id === metalId && Math.round(m.quality / 5) * 5 === Math.round(quality / 5) * 5);
+      if (existingMetal) {
+        existingMetal.quantity += 1;
+      } else {
+        metals.push({ id: metalId, quantity: 1, quality: Math.round(quality * 10) / 10 });
+      }
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          inventory: {
+            ...inv,
+            ores,
+            metals
           }
         }
       };
@@ -1242,66 +1306,95 @@ case UNLOCK_ZONE: {
       };
     }
 
-    case REFINING: {
-      const { oreId, metalId, quality } = action.payload;
+    case CRAFT_ITEM: {
+      const { recipeId, selectedGems, selectedMetal, selectedSetting } = action.payload;
       
-      // Quality ranges by ore type (min%, max%)
-      const ORE_QUALITY_RANGES = {
-        copper_ore: { min: 60, max: 80 },
-        silver_ore: { min: 65, max: 82 },
-        gold_ore: { min: 70, max: 88 },
-        platinum_ore: { min: 75, max: 92 },
-      };
+      const recipe = getRecipeById(recipeId);
+      if (!recipe) return state;
       
-      const range = ORE_QUALITY_RANGES[oreId] || { min: 60, max: 80 };
-      const finalQuality = quality || Math.round(range.min + Math.random() * (range.max - range.min));
-      
-      const inv = state.player.inventory || { minerals: [], gems: [], ores: [], metals: [], equipment: [], currency: { coins: 0 } };
-      
-      // Remove ore from inventory
-      const ores = [...(inv.ores || [])];
-      const oreIndex = ores.findIndex(o => o.id === oreId);
-      
-      if (oreIndex < 0) return state;
-      
-      const ore = ores[oreIndex];
-      if (ore.quantity > 1) {
-        ores[oreIndex] = { ...ore, quantity: ore.quantity - 1 };
-      } else {
-        ores.splice(oreIndex, 1);
-      }
-      
-      // Add metal to inventory with quality
+      const inv = state.player.inventory || {};
+      const gems = [...(inv.gems || [])];
       const metals = [...(inv.metals || [])];
-      const metalIndex = metals.findIndex(m => m.id === metalId);
       
-      if (metalIndex >= 0) {
-        const existingMetal = metals[metalIndex];
-        // Stack only with same quality (rounded to 5)
-        const roundedQuality = Math.round(finalQuality / 5) * 5;
-        const existingRounded = Math.round((existingMetal.quality || 0) / 5) * 5;
-        
-        if (existingRounded === roundedQuality) {
-          metals[metalIndex] = { 
-            ...existingMetal, 
-            quantity: existingMetal.quantity + 1,
-            quality: finalQuality 
-          };
-        } else {
-          metals.push({ id: metalId, quantity: 1, quality: finalQuality });
+      // Remove gems used
+      selectedGems.forEach(gem => {
+        const idx = gems.findIndex(g => (g.gemId || g.id) === (gem.id || gem.gemId));
+        if (idx >= 0) {
+          if (gems[idx].quantity > 1) {
+            gems[idx] = { ...gems[idx], quantity: gems[idx].quantity - 1 };
+          } else {
+            gems.splice(idx, 1);
+          }
         }
-      } else {
-        metals.push({ id: metalId, quantity: 1, quality: finalQuality });
+      });
+      
+      // Remove metal used
+      const metalIdx = metals.findIndex(m => m.id === selectedMetal.id);
+      if (metalIdx >= 0) {
+        if (metals[metalIdx].quantity > 1) {
+          metals[metalIdx] = { ...metals[metalIdx], quantity: metals[metalIdx].quantity - 1 };
+        } else {
+          metals.splice(metalIdx, 1);
+        }
       }
+      
+      // Calculate final value
+      const gemValue = selectedGems.reduce((sum, gem) => {
+        const itemValues = { diamond: 5000, ruby: 800, sapphire: 700, emerald: 600, amethyst: 20, citrine: 40, tourmaline: 120, peridot: 90, clear_quartz: 5, rose_quartz: 8 };
+        return sum + (itemValues[gem.id || gem.gemId] || 10) * (gem.quality || 50) / 100;
+      }, 0);
+      
+      const metalValue = (selectedMetal.value || 10) * (selectedMetal.quality || 50) / 100;
+      const jewelryMultiplier = JEWELRY_TYPES[recipe.type]?.multiplier || 1;
+      const settingMultiplier = SETTINGS[selectedSetting]?.multiplier || 1;
+      const finalValue = Math.round((gemValue + metalValue) * jewelryMultiplier * settingMultiplier * recipe.multiplier);
+      
+      // Create crafted jewelry item
+      const jewelry = [...(inv.jewelry || [])];
+      jewelry.push({
+        id: `crafted_${recipe.id}_${Date.now()}`,
+        recipeId,
+        name: recipe.name,
+        type: recipe.type,
+        gems: selectedGems.map(g => g.id || g.gemId),
+        metal: selectedMetal.id,
+        setting: selectedSetting,
+        quality: selectedGems.reduce((s, g) => s + (g.quality || 50), 0) / selectedGems.length,
+        value: finalValue,
+        craftedAt: Date.now()
+      });
+      
+      // Award crafting XP
+      const xpGained = 10 + Math.max(0, Math.floor((selectedGems.reduce((s, g) => s + (g.quality || 0), 0) / selectedGems.length) - 80));
       
       return {
         ...state,
         player: {
           ...state.player,
+          coins: state.player.coins + finalValue,
+          craftingXP: (state.player.craftingXP || 0) + xpGained,
           inventory: {
             ...inv,
-            ores,
-            metals
+            gems,
+            metals,
+            jewelry
+          }
+        }
+      };
+    }
+
+    case SELL_ITEMS: {
+      const { category, items: updatedItems, coins } = action.payload;
+      const inv = state.player.inventory || {};
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          coins: state.player.coins + coins,
+          inventory: {
+            ...inv,
+            [category]: updatedItems
           }
         }
       };

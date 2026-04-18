@@ -9,9 +9,8 @@ const PROCESS_TYPES = [
   { id: 'cleaning', label: 'Cleaning', description: 'Tumble and clean', Icon: FaTools },
   { id: 'cutting', label: 'Cutting', description: 'Shape and cut facets', Icon: FaCut },
   { id: 'faceting', label: 'Faceting', description: 'Polish for brilliance', Icon: FaCog },
+  { id: 'refine', label: 'Refine', description: 'Refine ore to metal', Icon: FaFire },
 ];
-
-const REFINING_TYPE = { id: 'refining', label: 'Refine', description: 'Smelt ore into metal', Icon: FaFire };
 
 const QUALITY_LEVELS = [
   { id: 'low', label: 'Low', description: '40-60% quality', cooldown: 3, color: 'gray', icon: FaTools },
@@ -101,66 +100,39 @@ export default function ActiveProcessing() {
 
   const handleSelectType = (type) => {
     setSelectedType(type);
-    
-    // If refining, skip quality selection and process immediately
-    if (type.id === 'refining') {
-      startRefining();
+    // If refining ore, skip quality selection
+    if (type.id === 'refine') {
+      handleRefineOre();
     } else {
       setStep('quality');
     }
   };
 
-  const startRefining = () => {
-    if (!selectedItem || !selectedType) return;
-    
-    const itemData = getItemById(selectedItem.id);
-    const metalId = itemData?.refinesTo;
-    
-    if (!metalId) return;
-    
-    // Quality ranges by ore type (min%, max%)
-    const ORE_QUALITY_RANGES = {
-      copper_ore: { min: 60, max: 80 },
-      silver_ore: { min: 65, max: 82 },
-      gold_ore: { min: 70, max: 88 },
-      platinum_ore: { min: 75, max: 92 },
-    };
-    
-    const range = ORE_QUALITY_RANGES[selectedItem.id] || { min: 60, max: 80 };
-    const quality = Math.round(range.min + Math.random() * (range.max - range.min));
-    
-    dispatch({
-      type: REFINING,
-      payload: {
-        oreId: selectedItem.id,
-        metalId,
-        quality
-      }
-    });
-    
-    // Get the metal data for display
-    const metalData = getItemById(metalId);
-    
-    setProcessingResult({
-      item: selectedItem,
-      type: selectedType,
-      quality,
-      qualityLevel: null,
-      baseValue: itemData?.value || 0,
-      qualityAdjustedValue: 0,
-      finalValue: 0,
-      isMasterwork: quality >= 90,
-      metalId,
-      metalName: metalData?.name || metalId,
-      metalValue: metalData?.value || 0,
-    });
-    
-    setStep('result');
-  };
-
   const handleSelectQuality = (qualityLevel) => {
     setSelectedQuality(qualityLevel);
     startProcessing(qualityLevel);
+  };
+
+  const handleRefineOre = () => {
+    if (!selectedItem) return;
+    
+    // Immediately refine the ore (no quality selection needed)
+    dispatch({
+      type: REFINING,
+      payload: {
+        itemId: selectedItem.id
+      }
+    });
+    
+    // Show result
+    const oreData = getItemById(selectedItem.id);
+    const metalId = oreData.processing?.refineOutput || oreData.id.replace('_ore', '');
+    setProcessingResult({
+      type: 'refine',
+      oreName: oreData.name,
+      metalName: metalId.charAt(0).toUpperCase() + metalId.slice(1),
+    });
+    setStep('result');
   };
 
   const startProcessing = (qualityLevel) => {
@@ -219,7 +191,6 @@ export default function ActiveProcessing() {
     if (step === 'type') {
       setStep('select');
       setSelectedItem(null);
-      setSelectedType(null);
     } else if (step === 'quality') {
       setStep('type');
       setSelectedType(null);
@@ -238,17 +209,13 @@ export default function ActiveProcessing() {
   const getAvailableTypes = () => {
     if (!selectedItem) return [];
     
-    // If item is an ore, show refining option
-    if (selectedItem.type === 'ore') {
-      const itemData = getItemById(selectedItem.id);
-      if (itemData?.refinesTo) {
-        return [REFINING_TYPE];
-      }
-      return [];
+    // If it's an ore, show refine option
+    if (selectedItem.category === 'Ore') {
+      return PROCESS_TYPES.filter(type => type.id === 'refine');
     }
     
-    // Otherwise show gem processing types
     return PROCESS_TYPES.filter(type => {
+      if (type.id === 'refine') return false;
       if (type.id === 'cleaning') return selectedItem.canClean;
       if (type.id === 'cutting') return selectedItem.canCut;
       if (type.id === 'faceting') return selectedItem.canFacet;
@@ -263,7 +230,7 @@ export default function ActiveProcessing() {
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-bold text-amber-400">
             {step === 'select' && 'Select Item to Process'}
-            {step === 'type' && 'Select Process Type'}
+            {step === 'type' && selectedType?.id === 'refine' ? 'Refine Ore' : 'Select Process Type'}
             {step === 'quality' && 'Select Quality Level'}
             {step === 'processing' && 'Processing...'}
             {step === 'result' && 'Processing Complete!'}
@@ -495,16 +462,49 @@ function ProcessingSpinner({ item, type }) {
 }
 
 function ResultDisplay({ result, onDone }) {
-  const isRefining = result.type.id === 'refining';
-  
+  // Handle refine results (different structure)
+  if (result.type === 'refine') {
+    return (
+      <div className="flex flex-col items-center gap-6 text-center">
+        <div className="relative">
+          <FaFire className="text-6xl text-orange-500 animate-pulse" />
+        </div>
+        
+        <div className="bg-slate-800 rounded-xl p-6 w-full">
+          <div className="text-white text-xl font-bold mb-4">Refining Complete!</div>
+          
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="text-center">
+              <div className="text-gray-400 text-sm">Ore</div>
+              <div className="text-amber-400 font-medium">{result.oreName}</div>
+            </div>
+            <FaArrowLeft className="text-gray-500" />
+            <div className="text-center">
+              <div className="text-gray-400 text-sm">Produced</div>
+              <div className="text-cyan-400 font-medium">{result.metalName}</div>
+            </div>
+          </div>
+        </div>
+        
+        <button
+          onClick={onDone}
+          className="px-8 py-3 bg-amber-500 text-slate-900 font-bold rounded-lg hover:bg-amber-400 transition-colors"
+        >
+          Done
+        </button>
+      </div>
+    );
+  }
+
+  // Regular processing result
   const qualityColor = result.isMasterwork 
     ? 'text-yellow-400' 
     : result.quality >= 70 
       ? 'text-green-400' 
       : 'text-gray-400';
   
-  const ItemIcon = result.item.Icon;
-  const TypeIcon = result.type.Icon;
+  const ItemIcon = result.item?.Icon || GemIcon;
+  const TypeIcon = result.type?.Icon || FaCog;
 
   return (
     <div className="flex flex-col items-center gap-6 text-center">
@@ -526,100 +526,61 @@ function ResultDisplay({ result, onDone }) {
           {result.type.label} Complete!
         </div>
 
-        {isRefining ? (
-          // Refining-specific display
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="text-4xl text-orange-400">→</div>
-            <div>
-              <MetalIcon className="text-4xl text-cyan-400 mx-auto mb-2" />
-              <div className="text-white font-bold">{result.metalName}</div>
-              <div className="text-xs text-gray-400">Value: {result.metalValue}</div>
-            </div>
+        {/* Quality Display */}
+        <div className="mb-4">
+          <div className="text-gray-400 text-sm mb-1">Quality</div>
+          <div className={`text-4xl font-bold ${qualityColor}`}>
+            {Math.round(result.quality)}%
           </div>
-        ) : (
-          // Regular processing display
-          <>
-            {/* Quality Display */}
-            <div className="mb-4">
-              <div className="text-gray-400 text-sm mb-1">Quality</div>
-              <div className={`text-4xl font-bold ${qualityColor}`}>
-                {Math.round(result.quality)}%
-              </div>
-              <div className="text-xs text-gray-500 capitalize mt-1">
-                {result.qualityLevel} quality level
-              </div>
-            </div>
-
-            {/* Value Breakdown */}
-            <div className="bg-slate-900 rounded-lg p-4 mb-4">
-              <div className="text-gray-400 text-xs mb-2">Value Calculation</div>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Base Value:</span>
-                  <span className="text-white">{result.baseValue}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Quality Multiplier:</span>
-                  <span className="text-white">×{(result.quality / 100).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">After Quality:</span>
-                  <span className="text-green-400">{result.qualityAdjustedValue}</span>
-                </div>
-                {result.isMasterwork && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-yellow-400">Masterwork Bonus:</span>
-                      <span className="text-yellow-400">×1.25</span>
-                    </div>
-                    <div className="flex justify-between font-bold">
-                      <span className="text-yellow-400">Final Value:</span>
-                      <span className="text-yellow-400">{result.finalValue}</span>
-                    </div>
-                  </>
-                )}
-                {!result.isMasterwork && (
-                  <div className="flex justify-between font-bold">
-                    <span className="text-green-400">Final Value:</span>
-                    <span className="text-green-400">{result.finalValue}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Quality for refining */}
-        {isRefining && (
-          <div className="mb-4">
-            <div className="text-gray-400 text-sm mb-1">Metal Quality</div>
-            <div className={`text-4xl font-bold ${qualityColor}`}>
-              {Math.round(result.quality)}%
-            </div>
-            <div className="text-xs text-gray-500 mt-1">
-              Refined from ore
-            </div>
+          <div className="text-xs text-gray-500 capitalize mt-1">
+            {result.qualityLevel} quality level
           </div>
-        )}
+        </div>
 
-        {result.isMasterwork && !isRefining && (
+        {/* Value Breakdown */}
+        <div className="bg-slate-900 rounded-lg p-4 mb-4">
+          <div className="text-gray-400 text-xs mb-2">Value Calculation</div>
+          <div className="space-y-1 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-400">Base Value:</span>
+              <span className="text-white">{result.baseValue}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Quality Multiplier:</span>
+              <span className="text-white">×{(result.quality / 100).toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">After Quality:</span>
+              <span className="text-green-400">{result.qualityAdjustedValue}</span>
+            </div>
+            {result.isMasterwork && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-yellow-400">Masterwork Bonus:</span>
+                  <span className="text-yellow-400">×1.25</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span className="text-yellow-400">Final Value:</span>
+                  <span className="text-yellow-400">{result.finalValue}</span>
+                </div>
+              </>
+            )}
+            {!result.isMasterwork && (
+              <div className="flex justify-between font-bold">
+                <span className="text-green-400">Final Value:</span>
+                <span className="text-green-400">{result.finalValue}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {result.isMasterwork && (
           <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 mb-4">
             <div className="text-yellow-400 font-bold flex items-center justify-center gap-2">
               <FaStar /> Masterwork! <FaStar />
             </div>
             <div className="text-yellow-200 text-sm mt-1">
               Exceptional craftsmanship! +25% bonus value applied.
-            </div>
-          </div>
-        )}
-
-        {result.isMasterwork && isRefining && (
-          <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 mb-4">
-            <div className="text-yellow-400 font-bold flex items-center justify-center gap-2">
-              <FaStar /> Masterwork Metal! <FaStar />
-            </div>
-            <div className="text-yellow-200 text-sm mt-1">
-              Exceptional refining! High quality metal produced.
             </div>
           </div>
         )}

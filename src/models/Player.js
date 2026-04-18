@@ -9,7 +9,7 @@ export class Player {
     pathProgress = 0,
     shiftPoints = 0,
     calibrationMultiplier = 1.0,
-    inventory = { minerals: [], gems: [], equipment: [], processEquipment: [], currency: { coins: 100 } },
+    inventory = { minerals: [], gems: [], equipment: [], processEquipment: [], currency: { coins: 100 }, metals: [], ores: [], jewelry: [] },
     locationProgress = {},
     highScores = {},
     processState = {
@@ -22,7 +22,8 @@ export class Player {
         masterworksCreated: 0,
         bestQuality: 0,
       }
-    }
+    },
+    craftingXP = 0
   } = {}) {
     this.coins = coins;
     this.level = level;
@@ -35,6 +36,7 @@ export class Player {
     this.locationProgress = locationProgress;
     this.highScores = highScores;
     this.processState = processState;
+    this.craftingXP = craftingXP;
   }
 
   addGem(gemData) {
@@ -67,7 +69,8 @@ export class Player {
       inventory: this.inventory,
       locationProgress: this.locationProgress,
       highScores: this.highScores,
-      processState: this.processState
+      processState: this.processState,
+      craftingXP: this.craftingXP
     };
   }
 }
