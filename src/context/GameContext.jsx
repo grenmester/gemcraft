@@ -1,6 +1,4 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
-import { Player } from '../models/Player.js';
-import { Gem } from '../models/Gem.js';
 import { GAME_PHASES } from '../constants.js';
 import { items, itemsById } from '../loaders/items.js';
 import { EQUIPMENT } from '../loaders/equipment.js';
@@ -9,6 +7,7 @@ import { LOCATION_TIERS } from '../loaders/locations.js';
 import { removeItemFromInventory, addItemToInventory } from './inventoryHelpers.js';
 import { SUBAREA_LOOT } from '../data/subareas.js';
 import { getRecipeById, JEWELRY_TYPES, SETTINGS } from '../data/recipes.js';
+import { createInitialPlayer, createInitialInventory } from '../schemas/player.js';
 
 export { GAME_PHASES };
 
@@ -80,8 +79,6 @@ const PROCESS_TICK_INTERVAL = 1000; // Check queue every second
 
 const STORAGE_KEY = 'gemstone_game_save';
 
-const MIGRATION_VERSION = 6;
-
 // Quality ranges by mine tier (min%, max%)
 const TIER_QUALITY_RANGES = {
   TIER_1: { min: 95, max: 100 },
@@ -112,12 +109,11 @@ function generateCollectionQuality(mineId) {
   return Math.round(quality * 10) / 10;
 }
 
-const initialPlayer = new Player();
+const initialPlayer = createInitialPlayer();
 
- const initialState = {
-    player: initialPlayer.toJSON(),
-    migrationVersion: MIGRATION_VERSION,
-    phase: GAME_PHASES.MENU,
+const initialState = {
+  player: initialPlayer,
+  phase: GAME_PHASES.MENU,
     activeMinigame: null,
     discoverState: {
       activeTab: 'panning',     // 'panning' | 'idle' (default: panning)
@@ -147,112 +143,35 @@ const initialPlayer = new Player();
      }
  };
 
-function migrateState(state) {
-  let migrated = { ...state };
+// Use initial state directly - no migrations
+const initialGameState = initialState;
 
-  if (!migrated.migrationVersion || migrated.migrationVersion < 2) {
-    migrated = {
-      ...migrated,
-      migrationVersion: MIGRATION_VERSION,
-      player: {
-        ...migrated.player,
-        inventory: migrated.player?.inventory || { minerals: [], gems: [], equipment: [], currency: { coins: migrated.player?.coins || 100 } },
-        locationProgress: migrated.player?.locationProgress || {},
-        highScores: migrated.player?.highScores || {}
+function loadInitialState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Validate and use saved state, but ensure inventory has correct structure
+      const savedInventory = parsed.player?.inventory;
+      if (savedInventory) {
+        parsed.player.inventory = {
+          rawMaterials: savedInventory.rawMaterials || [],
+          processedMaterials: savedInventory.processedMaterials || [],
+          jewelry: savedInventory.jewelry || [],
+          equipment: savedInventory.equipment || [],
+          processEquipment: savedInventory.processEquipment || [],
+          coins: savedInventory.coins ?? 100,
+        };
       }
-    };
-    delete migrated.inventory;
+      return { ...initialGameState, ...parsed };
+    }
+  } catch (e) {
+    console.error('Failed to load saved game:', e);
   }
+  return initialGameState;
+}
 
-  // Migration to version 3: Add discoverState
-  if (migrated.migrationVersion < 3) {
-    migrated = {
-      ...migrated,
-      migrationVersion: MIGRATION_VERSION,
-      discoverState: migrated.discoverState || {
-        activeTab: 'idle',
-        selectedLocation: null,
-        selectedArea: null,
-        lastRewards: null
-      }
-    };
-  }
-
-  // Migration to version 4: Add unlockedZones
-  if (migrated.migrationVersion < 4) {
-    migrated = {
-      ...migrated,
-      migrationVersion: MIGRATION_VERSION,
-      unlockedZones: migrated.unlockedZones || []
-    };
-  }
-
-   // Migration to version 5: New Discover state structure
-   if (migrated.migrationVersion < 5) {
-     migrated = {
-       ...migrated,
-       migrationVersion: MIGRATION_VERSION,
-       discoverState: {
-         ...migrated.discoverState,
-         activeTab: migrated.discoverState?.activeTab === 'idle' ? 'idle' : 'panning',
-         selectedMine: migrated.discoverState?.selectedLocation || null,
-         selectedSubarea: null,
-         pendingMaterials: {},
-         miningCooldowns: {}
-       }
-     };
-   }
-
-   // Migration to version 6: Add equippedTools for process equipment
-   if (migrated.migrationVersion < 6) {
-     migrated = {
-       ...migrated,
-       migrationVersion: MIGRATION_VERSION,
-       processState: {
-         ...migrated.processState,
-         equippedTools: migrated.processState?.equippedTools || {
-           cleaning: 'basic_tumbler',
-           cutting: 'basic_cutter',
-           faceting: 'hand_faceter'
-         }
-       }
-     };
-   }
-
-   // Process offline progress: Check queue completions on load
-   if (migrated.processState?.queue || migrated.processState?.activeProcess) {
-     const now = Date.now();
-     const newCompletedQueue = [];
-     const stillQueued = [];
-     
-     // Check queue items
-     const queue = migrated.processState.queue || [];
-     queue.forEach(item => {
-       if (item.estimatedCompletion && now >= item.estimatedCompletion) {
-         newCompletedQueue.push({ ...item, completedAt: now });
-       } else {
-         stillQueued.push(item);
-       }
-     });
-     
-     // Check active process
-     const activeProcess = migrated.processState.activeProcess;
-     if (activeProcess && activeProcess.estimatedCompletion && now >= activeProcess.estimatedCompletion) {
-       newCompletedQueue.push({ ...activeProcess, completedAt: now });
-     }
-     
-     migrated.processState = {
-       ...migrated.processState,
-       queue: stillQueued,
-       activeProcess: null,
-       completedQueue: [...(migrated.processState.completedQueue || []), ...newCompletedQueue]
-     };
-   }
-
-   return migrated;
- }
-
- export function gameReducer(state, action) {
+  export function gameReducer(state, action) {
    switch (action.type) {
     case SET_PHASE:
       return { ...state, phase: action.payload };
@@ -1384,17 +1303,16 @@ case UNLOCK_ZONE: {
     }
 
     case SELL_ITEMS: {
-      const { category, items: updatedItems, coins } = action.payload;
-      const inv = state.player.inventory || {};
+      const { inventory: updatedInventory, coins } = action.payload;
       
       return {
         ...state,
         player: {
           ...state.player,
-          coins: state.player.coins + coins,
           inventory: {
-            ...inv,
-            [category]: updatedItems
+            ...state.player.inventory,
+            ...updatedInventory,
+            coins: (state.player.inventory.coins || 0) + coins
           }
         }
       };
@@ -1407,19 +1325,10 @@ case UNLOCK_ZONE: {
 
  const GameContext = createContext(null);
 
- export function GameProvider({ children }) {
-  const [state, dispatch] = useReducer(gameReducer, initialState, (initial) => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return migrateState({ ...initial, ...parsed });
-      }
-    } catch (e) {
-      console.warn('Failed to load saved game:', e);
-    }
-    return initial;
-  });
+export function GameProvider({ children }) {
+   const [state, dispatch] = useReducer(gameReducer, initialState, () => {
+     return loadInitialState();
+   });
 
   useEffect(() => {
     const saveInterval = setInterval(() => {

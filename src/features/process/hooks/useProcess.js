@@ -81,42 +81,56 @@ export function useProcess() {
   
   /**
    * Get available items that can be queued
-   * Returns items that are currently in inventory, grouped by quality tier
-   * Items with different qualities appear as separate entries
+   * Returns items that are currently in inventory
    */
+  const rawMaterials = inventory.rawMaterials || [];
+  const processedMaterials = inventory.processedMaterials || [];
+  
   const availableItems = [
-    ...(inventory.minerals || []).map((m, idx) => ({ 
-      id: m.id, 
-      gemId: m.id, 
-      quantity: m.quantity, 
-      quality: m.quality, 
-      type: 'mineral',
-      stackId: `${m.id}-${m.quality || 'unprocessed'}-${idx}` // Unique key for React
-    })),
-    ...(inventory.gems || []).map((g, idx) => ({ 
-      id: g.gemId, 
-      gemId: g.gemId, 
-      quantity: g.quantity, 
-      quality: g.quality, 
-      type: 'gem',
-      stackId: `${g.gemId}-${g.quality || 'unprocessed'}-${idx}` // Unique key for React
-    })),
-    ...(inventory.ores || []).map((o, idx) => ({ 
-      id: o.id, 
-      gemId: o.id,
-      quantity: o.quantity, 
-      quality: null, // Ores don't have quality until refined
-      type: 'ore',
-      stackId: `${o.id}-ore-${idx}`
-    })),
-    ...(inventory.metals || []).map((m, idx) => ({ 
-      id: m.id, 
-      gemId: m.id,
-      quantity: m.quantity, 
-      quality: m.quality, 
-      type: 'metal',
-      stackId: `${m.id}-${m.quality || 'unprocessed'}-${idx}`
-    }))
+    // Raw minerals (no quality)
+    ...rawMaterials
+      .filter(m => m.category === 'Mineral')
+      .map((m, idx) => ({ 
+        id: m.id, 
+        gemId: m.id, 
+        quantity: m.quantity, 
+        quality: null, 
+        type: 'mineral',
+        stackId: `${m.id}-mineral-${idx}`
+      })),
+    // Raw ores (no quality)
+    ...rawMaterials
+      .filter(m => m.category === 'Ore')
+      .map((o, idx) => ({ 
+        id: o.id, 
+        gemId: o.id,
+        quantity: o.quantity, 
+        quality: null,
+        type: 'ore',
+        stackId: `${o.id}-ore-${idx}`
+      })),
+    // Processed gems (has quality)
+    ...processedMaterials
+      .filter(m => m.category === 'Gem')
+      .map((g, idx) => ({ 
+        id: g.id, 
+        gemId: g.id, 
+        quantity: 1, 
+        quality: g.quality, 
+        type: 'gem',
+        stackId: `${g.id}-${g.quality || 'processed'}-${idx}`
+      })),
+    // Processed metals (has quality)
+    ...processedMaterials
+      .filter(m => m.category === 'Metal')
+      .map((m, idx) => ({ 
+        id: m.id, 
+        gemId: m.id,
+        quantity: 1, 
+        quality: m.quality, 
+        type: 'metal',
+        stackId: `${m.id}-${m.quality || 'processed'}-${idx}`
+      }))
   ];
   
   /**

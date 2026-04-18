@@ -32,11 +32,13 @@ export default function Craft() {
   }, [activeTab]);
 
   const getInventoryGems = () => {
-    return (inventory.gems || []).concat(inventory.minerals || []);
+    const processed = (inventory.processedMaterials || []).filter(m => m.category === 'Gem');
+    const raw = (inventory.rawMaterials || []).filter(m => m.category === 'Mineral' || m.category === 'Gem');
+    return [...processed, ...raw];
   };
   
   const getInventoryMetals = () => {
-    return inventory.metals || [];
+    return (inventory.processedMaterials || []).filter(m => m.category === 'Metal');
   };
 
   return (
@@ -141,10 +143,15 @@ function RecipeDetail({ recipe, gems, metals, onBack, dispatch, onCrafted }) {
   const metalRequirement = recipe.requirements.metal;
   
   // Get all eligible gems for each requirement slot
+  // Returns each unique gem instance (by id + exact quality) as separate option
   const getEligibleGemsForSlot = (slotIdx) => {
     const req = gemRequirements[slotIdx];
     if (!req) return [];
-    return gems.filter(g => g.quality >= req.qualityMin);
+    
+    return gems.filter(g => {
+      const quality = g.quality ?? 0;
+      return quality >= req.qualityMin;
+    });
   };
   
   const eligibleMetals = metals.filter(m => {
@@ -211,19 +218,33 @@ function RecipeDetail({ recipe, gems, metals, onBack, dispatch, onCrafted }) {
             {showGemPicker !== null && (
               <div className="mt-2 p-3 bg-slate-900 rounded-lg max-h-48 overflow-auto">
                 <div className="text-gray-400 text-xs mb-2">Select a gem for slot {showGemPicker + 1}:</div>
-                {getEligibleGemsForSlot(showGemPicker).length === 0 ? (
-                  <div className="text-gray-500 text-sm">No eligible gems available</div>
+                {gems.length === 0 ? (
+                  <div className="text-gray-500 text-sm">No gems or minerals in inventory</div>
+                ) : getEligibleGemsForSlot(showGemPicker).length === 0 ? (
+                  <div className="text-gray-500 text-sm">No gems meet quality requirement ({gemRequirements[showGemPicker]?.qualityMin || 0}%+)</div>
                 ) : (
                   <div className="flex flex-wrap gap-2">
-                    {getEligibleGemsForSlot(showGemPicker).map((gem, i) => (
-                      <button
-                        key={i}
-                        onClick={() => handleSelectGem(gem, showGemPicker)}
-                        className="px-2 py-1 text-xs bg-slate-700 text-white rounded hover:bg-cyan-600"
-                      >
-                        {gem.gemId || gem.id} (Q:{Math.round(gem.quality || 50)}%) x{gem.quantity}
-                      </button>
-                    ))}
+                    {getEligibleGemsForSlot(showGemPicker).map((gem, idx) => {
+                      const uniqueKey = `${gem.gemId || gem.id}-${gem.quality ?? 'unprocessed'}-${idx}`;
+                      const isSelected = selectedGems[showGemPicker] && 
+                        (selectedGems[showGemPicker].gemId || selectedGems[showGemPicker].id) === (gem.gemId || gem.id) &&
+                        String(selectedGems[showGemPicker].quality ?? '') === String(gem.quality ?? '');
+                      return (
+                        <button
+                          key={uniqueKey}
+                          onClick={() => handleSelectGem(gem, showGemPicker)}
+                          className={`
+                            px-2 py-1 text-xs rounded
+                            ${isSelected
+                              ? 'bg-cyan-600 text-white'
+                              : 'bg-slate-700 text-white hover:bg-cyan-600'
+                            }
+                          `}
+                        >
+                          {gem.gemId || gem.id} (Q:{Math.round(gem.quality || 50)}%) x{gem.quantity}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -234,24 +255,32 @@ function RecipeDetail({ recipe, gems, metals, onBack, dispatch, onCrafted }) {
           <div>
             <div className="text-gray-400 text-sm mb-2">Metal Required</div>
             <div className="flex gap-2 flex-wrap">
-              {eligibleMetals.length > 0 ? (
-                eligibleMetals.map((metal, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedMetal(metal)}
-                    className={`
-                      px-3 py-1 rounded text-sm
-                      ${selectedMetal?.id === metal.id && selectedMetal?.quality === metal.quality
-                        ? 'bg-cyan-600 text-white'
-                        : 'bg-slate-700 text-gray-400 hover:bg-slate-600'
-                      }
-                    `}
-                  >
-                    {metal.id} (Q:{Math.round(metal.quality || 50)}%) x{metal.quantity}
-                  </button>
-                ))
+              {metals.length > 0 && eligibleMetals.length > 0 ? (
+                eligibleMetals.map((metal, idx) => {
+                  const uniqueKey = `${metal.id}-${metal.quality ?? 'unprocessed'}-${idx}`;
+                  const isSelected = selectedMetal && 
+                    selectedMetal.id === metal.id && 
+                    String(selectedMetal.quality ?? '') === String(metal.quality ?? '');
+                  return (
+                    <button
+                      key={uniqueKey}
+                      onClick={() => setSelectedMetal(metal)}
+                      className={`
+                        px-3 py-1 rounded text-sm
+                        ${isSelected
+                          ? 'bg-cyan-600 text-white'
+                          : 'bg-slate-700 text-gray-400 hover:bg-slate-600'
+                        }
+                      `}
+                    >
+                      {metal.id} (Q:{Math.round(metal.quality || 50)}%) x{metal.quantity}
+                    </button>
+                  );
+                })
+              ) : metals.length === 0 ? (
+                <span className="text-gray-500 text-sm">No metals in inventory - refine ores first</span>
               ) : (
-                <span className="text-gray-500 text-sm">No eligible metals - process ores first</span>
+                <span className="text-gray-500 text-sm">No eligible metals for this recipe</span>
               )}
             </div>
           </div>

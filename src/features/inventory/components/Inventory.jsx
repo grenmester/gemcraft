@@ -35,78 +35,112 @@ export default function Inventory() {
   const [sortBy, setSortBy] = useState('quantity');
   const [filter, setFilter] = useState('');
 
-  const playerLevel = Math.floor((state.player.shiftPoints || 0) / 100);
+const playerLevel = Math.floor((state.player.shiftPoints || 0) / 100);
   
-  const items = useMemo(() => {
-    if (activeTab === 'equipment') {
-      return Object.values(EQUIPMENT).map(eq => {
-        const noneEquipmentOwned = eq.id === 'NONE' && playerLevel >= eq.unlockLevel;
-        const isOwned = inventory.equipment?.includes(eq.id) || noneEquipmentOwned;
-        return {
-          id: eq.id,
-          name: eq.name,
+  const getItemsForTab = () => {
+    const rawMaterials = inventory.rawMaterials || [];
+    const processedMaterials = inventory.processedMaterials || [];
+    const jewelry = inventory.jewelry || [];
+    
+    switch (activeTab) {
+      case 'gems':
+        // Processed gems (has quality)
+        return processedMaterials
+          .filter(m => m.category === 'Gem')
+          .map(item => {
+            const itemData = ITEMS_DATA.find(i => i.id === item.id);
+            return {
+              id: item.id,
+              name: itemData?.name || item.id,
+              quantity: 1,
+              quality: item.quality,
+              value: item.value || itemData?.value || 0,
+              rarity: itemData?.rarity || 'Unknown',
+              category: 'Gem',
+              Icon: FaGem
+            };
+          });
+      case 'minerals':
+        // Raw minerals
+        return rawMaterials
+          .filter(m => m.category === 'Mineral')
+          .map(item => {
+            const itemData = ITEMS_DATA.find(i => i.id === item.id);
+            return {
+              id: item.id,
+              name: itemData?.name || item.id,
+              quantity: item.quantity,
+              quality: null,
+              value: itemData?.value || 0,
+              rarity: itemData?.rarity || 'Unknown',
+              category: 'Mineral',
+              Icon: FaMountain
+            };
+          });
+      case 'ores':
+        // Raw ore
+        return rawMaterials
+          .filter(m => m.category === 'Ore')
+          .map(item => {
+            const itemData = ITEMS_DATA.find(i => i.id === item.id);
+            return {
+              id: item.id,
+              name: itemData?.name || item.id,
+              quantity: item.quantity,
+              quality: null,
+              value: itemData?.value || 0,
+              rarity: itemData?.rarity || 'Unknown',
+              category: 'Ore',
+              Icon: FaLayerGroup
+            };
+          });
+      case 'metals':
+        // Processed metals
+        return processedMaterials
+          .filter(m => m.category === 'Metal')
+          .map(item => {
+            const itemData = ITEMS_DATA.find(i => i.id === item.id);
+            return {
+              id: item.id,
+              name: itemData?.name || item.id,
+              quantity: 1,
+              quality: item.quality,
+              value: item.value || itemData?.value || 0,
+              rarity: itemData?.rarity || 'Unknown',
+              category: 'Metal',
+              Icon: FaCubes
+            };
+          });
+      case 'jewelry':
+        return jewelry.map((item, idx) => ({
+          id: item.id || `jewelry-${idx}`,
+          name: item.name,
           quantity: 1,
-          owned: isOwned,
-          unlockLevel: eq.unlockLevel,
-          cost: eq.cost,
-          Icon: FaShieldAlt
-        };
-      });
+          quality: item.quality,
+          value: item.value || 0,
+          type: item.type,
+          Icon: FaRing
+        }));
+      case 'equipment':
+        return Object.values(EQUIPMENT).map(eq => {
+          const noneEquipmentOwned = eq.id === 'NONE' && playerLevel >= eq.unlockLevel;
+          const isOwned = inventory.equipment?.some(e => e.id === eq.id) || noneEquipmentOwned;
+          return {
+            id: eq.id,
+            name: eq.name,
+            quantity: 1,
+            owned: isOwned,
+            unlockLevel: eq.unlockLevel,
+            cost: eq.cost,
+            Icon: FaShieldAlt
+          };
+        });
+      default:
+        return [];
     }
-
-    // For gems and minerals tabs, get items from the correct inventory category
-    // gems tab shows items with category "Gem", minerals tab shows "Mineral"
-    // ores tab shows items with category "Ore", metals tab shows "Metal"
-    // jewelry tab shows crafted jewelry items
-    const categoryMap = {
-      gems: 'gems',
-      minerals: 'minerals',
-      ores: 'ores',
-      metals: 'metals',
-      jewelry: 'jewelry'
-    };
-
-    const invCategory = categoryMap[activeTab];
-    const invItems = inventory[invCategory] || [];
-
-    // Handle jewelry items differently (they're not in ITEMS_DATA)
-    if (activeTab === 'jewelry') {
-      return invItems.map((item, idx) => ({
-        id: item.id || `jewelry-${idx}`,
-        name: item.name,
-        quantity: 1,
-        quality: item.quality,
-        value: item.value || 0,
-        type: item.type,
-        gems: item.gems || [],
-        metal: item.metal,
-        setting: item.setting,
-        Icon: FaRing
-      }));
-    }
-
-    return invItems.map(invItem => {
-      // Minerals use 'id', gems use 'gemId', ores use 'id', metals use 'id'
-      const itemId = invItem.gemId || invItem.id;
-      const itemData = ITEMS_DATA.find(item => item.id === itemId);
-      let Icon = FaGem;
-      if (activeTab === 'minerals') Icon = FaMountain;
-      else if (activeTab === 'ores') Icon = FaLayerGroup;
-      else if (activeTab === 'metals') Icon = FaCubes;
-      return {
-        id: itemId,
-        gemId: invItem.gemId || null,
-        name: itemData?.name || itemId,
-        quantity: invItem.quantity,
-        quality: invItem.quality,
-        value: itemData?.value || 0,
-        hardness: itemData?.hardness || 0,
-        rarity: itemData?.rarity || 'Unknown',
-        category: itemData?.category || 'Unknown',
-        Icon
-      };
-    });
-  }, [activeTab, inventory, playerLevel]);
+  };
+  
+  const items = useMemo(() => getItemsForTab(), [activeTab, inventory, playerLevel]);
   
   const filteredItems = useMemo(() => {
     let result = [...items];
