@@ -210,7 +210,7 @@ export default function ActiveProcessing() {
     if (!selectedItem) return [];
     
     // If it's an ore, show refine option
-    if (selectedItem.type === 'ore') {
+    if (selectedItem.category === 'Ore') {
       return PROCESS_TYPES.filter(type => type.id === 'refine');
     }
     
@@ -462,14 +462,49 @@ function ProcessingSpinner({ item, type }) {
 }
 
 function ResultDisplay({ result, onDone }) {
+  // Handle refine results (different structure)
+  if (result.type === 'refine') {
+    return (
+      <div className="flex flex-col items-center gap-6 text-center">
+        <div className="relative">
+          <FaFire className="text-6xl text-orange-500 animate-pulse" />
+        </div>
+        
+        <div className="bg-slate-800 rounded-xl p-6 w-full">
+          <div className="text-white text-xl font-bold mb-4">Refining Complete!</div>
+          
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="text-center">
+              <div className="text-gray-400 text-sm">Ore</div>
+              <div className="text-amber-400 font-medium">{result.oreName}</div>
+            </div>
+            <FaArrowLeft className="text-gray-500" />
+            <div className="text-center">
+              <div className="text-gray-400 text-sm">Produced</div>
+              <div className="text-cyan-400 font-medium">{result.metalName}</div>
+            </div>
+          </div>
+        </div>
+        
+        <button
+          onClick={onDone}
+          className="px-8 py-3 bg-amber-500 text-slate-900 font-bold rounded-lg hover:bg-amber-400 transition-colors"
+        >
+          Done
+        </button>
+      </div>
+    );
+  }
+
+  // Regular processing result
   const qualityColor = result.isMasterwork 
     ? 'text-yellow-400' 
     : result.quality >= 70 
       ? 'text-green-400' 
       : 'text-gray-400';
   
-  const ItemIcon = result.item.Icon;
-  const TypeIcon = result.type.Icon;
+  const ItemIcon = result.item?.Icon || GemIcon;
+  const TypeIcon = result.type?.Icon || FaCog;
 
   return (
     <div className="flex flex-col items-center gap-6 text-center">

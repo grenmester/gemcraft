@@ -786,3 +786,60 @@ items:
       refineOutput: platinum_ingot
       baseProcessTime: 15
       processDifficulty: 4
+
+  # Metal items (from refining ore)
+  - id: copper
+    name: Copper Ingot
+    category: Metal
+    hardness: 2.5
+    value: 5
+    rarity: Common
+    realWorldLocations:
+      - Chile
+      - USA
+    processing:
+      canClean: false
+      canCut: false
+      canFacet: false
+
+  - id: silver
+    name: Silver Ingot
+    category: Metal
+    hardness: 2.5
+    value: 25
+    rarity: Uncommon
+    realWorldLocations:
+      - Peru
+      - Mexico
+    processing:
+      canClean: false
+      canCut: false
+      canFacet: false
+
+  - id: gold
+    name: Gold Ingot
+    category: Metal
+    hardness: 2.5
+    value: 100
+    rarity: Rare
+    realWorldLocations:
+      - South Africa
+      - Australia
+    processing:
+      canClean: false
+      canCut: false
+      canFacet: false
+
+  - id: platinum
+    name: Platinum Ingot
+    category: Metal
+    hardness: 4
+    value: 400
+    rarity: Epic
+    realWorldLocations:
+      - South Africa
+      - Russia
+    processing:
+      canClean: false
+      canCut: false
+      canFacet: false

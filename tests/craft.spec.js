@@ -21,13 +21,13 @@ test.describe('Craft Phase', () => {
   test('craft shows jewelry type tabs', async ({ page }) => {
     await page.getByRole('button', { name: 'Craft', exact: true }).click();
     
-    // Check for jewelry type tabs
-    await expect(page.locator('button:has-text("ring")')).toBeVisible();
-    await expect(page.locator('button:has-text("pendant")')).toBeVisible();
-    await expect(page.locator('button:has-text("earrings")')).toBeVisible();
-    await expect(page.locator('button:has-text("bracelet")')).toBeVisible();
-    await expect(page.locator('button:has-text("necklace")')).toBeVisible();
-    await expect(page.locator('button:has-text("crown")')).toBeVisible();
+    // Check for jewelry type tabs - use exact matching
+    await expect(page.getByRole('button', { name: 'ring', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'pendant', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'earrings', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'bracelet', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'necklace', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'crown', exact: true })).toBeVisible();
   });
 
   test('craft shows recipes for ring type', async ({ page }) => {
@@ -49,7 +49,8 @@ test.describe('Craft Phase', () => {
     await expect(page.locator('h2:has-text("Craft")')).toBeVisible();
     
     await page.getByRole('button', { name: 'Menu' }).click();
-    await expect(page.locator('h1')).toBeVisible();
+    // Main menu heading
+    await expect(page.getByRole('heading', { name: 'Gemstone Collector' })).toBeVisible();
   });
 
   test('can select a recipe and see details', async ({ page }) => {
@@ -80,11 +81,56 @@ test.describe('Craft Phase', () => {
     await page.getByRole('button', { name: 'Craft', exact: true }).click();
     
     // Click pendant tab
-    await page.getByRole('button', { name: 'pendant' }).click();
+    await page.getByRole('button', { name: 'pendant', exact: true }).click();
     await expect(page.locator('text=Silver Amethyst Pendant')).toBeVisible();
     
     // Click ring tab back
-    await page.getByRole('button', { name: 'ring' }).click();
+    await page.getByRole('button', { name: 'ring', exact: true }).click();
     await expect(page.locator('text=Simple Copper Ring')).toBeVisible();
+  });
+
+  test('no console errors when viewing craft screen', async ({ page }) => {
+    const errors = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+
+    await page.getByRole('button', { name: 'Craft', exact: true }).click();
+    await page.waitForTimeout(500);
+
+    const criticalErrors = errors.filter(e => !e.includes('Warning'));
+    expect(criticalErrors).toHaveLength(0);
+  });
+
+  test('no console errors when selecting recipe', async ({ page }) => {
+    const errors = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+
+    await page.getByRole('button', { name: 'Craft', exact: true }).click();
+    await page.getByRole('button', { name: 'Simple Copper Ring' }).click();
+    await page.waitForTimeout(500);
+
+    const criticalErrors = errors.filter(e => !e.includes('Warning'));
+    expect(criticalErrors).toHaveLength(0);
+  });
+
+  test('no console errors when viewing recipe with no materials', async ({ page }) => {
+    const errors = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+
+    await page.getByRole('button', { name: 'Craft', exact: true }).click();
+    await page.getByRole('button', { name: 'Simple Copper Ring' }).click();
+    await page.waitForTimeout(500);
+
+    // Recipe detail should show without crashing
+    await expect(page.locator('text=Gems Required')).toBeVisible();
+    await expect(page.locator('text=Metal Required')).toBeVisible();
+
+    const criticalErrors = errors.filter(e => !e.includes('Warning'));
+    expect(criticalErrors).toHaveLength(0);
   });
 });

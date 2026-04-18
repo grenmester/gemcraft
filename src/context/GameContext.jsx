@@ -8,6 +8,7 @@ import { PROCESS_EQUIPMENT } from '../data/processEquipment.js';
 import { LOCATION_TIERS } from '../loaders/locations.js';
 import { removeItemFromInventory, addItemToInventory } from './inventoryHelpers.js';
 import { SUBAREA_LOOT } from '../data/subareas.js';
+import { getRecipeById, JEWELRY_TYPES, SETTINGS } from '../data/recipes.js';
 
 export { GAME_PHASES };
 
@@ -72,6 +73,7 @@ export const REFINING = 'REFINING';
 // Craft actions
 export const CRAFT_ITEM = 'CRAFT_ITEM';
 export const CRAFT_ITEM_SUCCESS = 'CRAFT_ITEM_SUCCESS';
+export const SELL_ITEMS = 'SELL_ITEMS';
 
 const INITIAL_QUEUE_SLOTS = 2;
 const PROCESS_TICK_INTERVAL = 1000; // Check queue every second
@@ -889,8 +891,15 @@ case UNLOCK_ZONE: {
       const oreData = itemsById[itemId];
       if (!oreData) return state;
       
-      // Determine metal output
-      const metalId = oreData.processing?.refineOutput || oreData.id.replace('_ore', '');
+      // Determine metal output - use base name (copper, silver, etc.) not ingot ID
+      // This matches what recipes expect (e.g., 'copper' not 'copper_ingot')
+      const oreToMetal = {
+        copper_ore: 'copper',
+        silver_ore: 'silver',
+        gold_ore: 'gold',
+        platinum_ore: 'platinum'
+      };
+      const metalId = oreToMetal[itemId] || oreData.id.replace('_ore', '');
       
       // Calculate quality based on ore type
       const QUALITY_RANGES = {
@@ -1300,8 +1309,6 @@ case UNLOCK_ZONE: {
     case CRAFT_ITEM: {
       const { recipeId, selectedGems, selectedMetal, selectedSetting } = action.payload;
       
-      // Import recipe data here to avoid circular deps
-      const { getRecipeById, JEWELRY_TYPES, SETTINGS } = require('../../data/recipes');
       const recipe = getRecipeById(recipeId);
       if (!recipe) return state;
       
@@ -1371,6 +1378,23 @@ case UNLOCK_ZONE: {
             gems,
             metals,
             jewelry
+          }
+        }
+      };
+    }
+
+    case SELL_ITEMS: {
+      const { category, items: updatedItems, coins } = action.payload;
+      const inv = state.player.inventory || {};
+      
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          coins: state.player.coins + coins,
+          inventory: {
+            ...inv,
+            [category]: updatedItems
           }
         }
       };
