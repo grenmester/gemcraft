@@ -41,8 +41,8 @@ export default function Sell() {
     const jewelry = inventory.jewelry || [];
 
     switch (activeTab) {
-      case 'gems':
-        return processedMaterials
+      case 'gems': {
+        const processed = processedMaterials
           .filter(m => m.category === 'Gem')
           .map(item => {
             const itemData = ITEMS_DATA.find(i => i.id === item.id);
@@ -56,6 +56,22 @@ export default function Sell() {
               sellPrice: getSellPrice(itemData, 'processed_gem', item.quality)
             };
           });
+        const raw = rawMaterials
+          .filter(m => m.category === 'Gem')
+          .map(item => {
+            const itemData = ITEMS_DATA.find(i => i.id === item.id);
+            return {
+              id: item.id,
+              name: itemData?.name || item.id,
+              quantity: item.quantity,
+              quality: null,
+              value: itemData?.value || 0,
+              category: 'raw_gem',
+              sellPrice: getSellPrice(itemData, 'raw_gem', null)
+            };
+          });
+        return [...processed, ...raw];
+      }
       case 'minerals':
         return rawMaterials
           .filter(m => m.category === 'Mineral')

@@ -43,23 +43,30 @@ const playerLevel = Math.floor((state.player.shiftPoints || 0) / 100);
     const jewelry = inventory.jewelry || [];
     
     switch (activeTab) {
-      case 'gems':
-        // Processed gems (has quality)
-        return processedMaterials
-          .filter(m => m.category === 'Gem')
-          .map(item => {
-            const itemData = ITEMS_DATA.find(i => i.id === item.id);
-            return {
-              id: item.id,
-              name: itemData?.name || item.id,
-              quantity: 1,
-              quality: item.quality,
-              value: item.value || itemData?.value || 0,
-              rarity: itemData?.rarity || 'Unknown',
-              category: 'Gem',
-              Icon: FaGem
-            };
-          });
+      case 'gems': {
+        // Include both processed and raw gems
+        const processed = processedMaterials.filter(m => m.category === 'Gem').map(item => ({
+          id: item.id,
+          name: ITEMS_DATA.find(i => i.id === item.id)?.name || item.id,
+          quantity: 1,
+          quality: item.quality,
+          value: item.value || ITEMS_DATA.find(i => i.id === item.id)?.value || 0,
+          rarity: ITEMS_DATA.find(i => i.id === item.id)?.rarity || 'Unknown',
+          category: 'Gem',
+          Icon: FaGem
+        }));
+        const raw = rawMaterials.filter(m => m.category === 'Gem').map(item => ({
+          id: item.id,
+          name: ITEMS_DATA.find(i => i.id === item.id)?.name || item.id,
+          quantity: item.quantity,
+          quality: null,
+          value: ITEMS_DATA.find(i => i.id === item.id)?.value || 0,
+          rarity: ITEMS_DATA.find(i => i.id === item.id)?.rarity || 'Unknown',
+          category: 'Gem',
+          Icon: FaGem
+        }));
+        return [...processed, ...raw];
+      }
       case 'minerals':
         // Raw minerals
         return rawMaterials

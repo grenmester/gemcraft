@@ -98,6 +98,17 @@ export function useProcess() {
         type: 'mineral',
         stackId: `${m.id}-mineral-${idx}`
       })),
+    // Raw gems (no quality) - from mining
+    ...rawMaterials
+      .filter(m => m.category === 'Gem')
+      .map((m, idx) => ({ 
+        id: m.id, 
+        gemId: m.id, 
+        quantity: m.quantity, 
+        quality: null, 
+        type: 'gem',
+        stackId: `${m.id}-raw-${idx}`
+      })),
     // Raw ores (no quality)
     ...rawMaterials
       .filter(m => m.category === 'Ore')
