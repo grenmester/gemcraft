@@ -1,741 +1,647 @@
 # Gemstone Collector — Game Design Document (GDD)
 
-> **Version:** 4.0  
-> **Last Updated:** 2026-03-30  
-> **Status:** Active Specification
+> **Version:** 5.0
+> **Last Updated:** 2026-07-18
+> **Status:** Active Specification — implementation-ready
 >
-> **Related Documentation:**
->
-> - [Worker System Detail](./docs/plans/2026-03-30-phase-1-workers-design.md) — Full worker mechanics specification
-> - [Data Schema Reference](./src/schemas/) — Zod schemas for all data types
-> - [Implementation Plans](./docs/plans/) — Phase-by-phase build roadmap
+> This document is the **authoritative, self-contained** description of the game: what it is and how every essential system works. A designer or engineer should be able to implement the game from this doc alone. Design rationale and the brainstorming lineage live separately in `docs/superpowers/specs/2026-07-18-gemstone-collector-redesign-design.md`; that context is not required to build from this GDD. v5.0 is a ground-up reconception and supersedes the v4.0 worker/idle design.
 
 ---
 
 ## Table of Contents
 
-1. [Game Overview](#1-game-overview)
-2. [Game Phases](#2-game-phases)
-3. [Worker System](#3-worker-system)
-4. [Currency & Economy](#4-currency--economy)
-5. [Progression Systems](#5-progression-systems)
-6. [Data Reference](#6-data-reference)
-7. [UI/UX Specification](#7-uiux-specification)
-8. [Technical Notes](#8-technical-notes)
+1. [Overview](#1-overview)
+2. [Design Pillars](#2-design-pillars)
+3. [Core Loop & The Journey of a Stone](#3-core-loop--the-journey-of-a-stone)
+4. [Cross-Cutting UX Principles](#4-cross-cutting-ux-principles)
+5. [System: Explore](#5-system-explore)
+6. [System: Identify](#6-system-identify)
+7. [System: Cut](#7-system-cut)
+8. [System: Catalog & Progression](#8-system-catalog--progression)
+9. [System: Economy](#9-system-economy)
+10. [The Synergy Web](#10-the-synergy-web)
+11. [Idle / Active Tradeoffs](#11-idle--active-tradeoffs)
+12. [Data Model & Schemas](#12-data-model--schemas)
+13. [Runtime State & Core Formulas](#13-runtime-state--core-formulas)
+14. [UI / UX Specification](#14-ui--ux-specification)
+15. [Progression Pacing & Power Curve](#15-progression-pacing--power-curve)
+16. [Tunable Constants](#16-tunable-constants)
+17. [Technical Notes](#17-technical-notes)
+18. [Build Order / MVP Slice](#18-build-order--mvp-slice)
+19. [Glossary](#19-glossary)
 
 ---
 
-## 1. Game Overview
+## 1. Overview
 
-### 1.1 Core Philosophy
+| Field | Value |
+| --- | --- |
+| **Title** | Gemstone Collector |
+| **Genre** | Cozy collection / craft game (active-led, light idle) |
+| **Platform** | Web (React + Vite), responsive, desktop-first, mobile-friendly |
+| **Audience** | General casual players who enjoy cozy collection & idle games; education is a bonus, not the hook |
+| **Session length** | 5 minutes to hours (flexible) |
+| **Monetization** | None (passion project) |
+| **Multiplayer** | No (single-player; "competitions" are NPC-judged) |
 
-**Gemstone Collector** is a casual idle/active hybrid game where players build a gem empire through discovery, collection, and strategic value-addition. The game emphasizes the journey from raw material to crafted treasure.
+**Elevator pitch.** Travel the world as a rockhound and amateur gemologist-lapidary: read the land to find deposits, dig or pan for rough, puzzle out *what each mystery stone is*, cut the best ones, and build the definitive collection.
 
-**Core Pillars:**
+**Core fantasy.** Every rough stone is a mystery holding potential. The thrill of discovery meets the satisfaction of figuring it out and revealing its beauty.
 
-1. **Discovery-Driven** — Finding materials creates anticipation and excitement
-2. **Earned Idle** — Rewards collected through active play, accumulated passively
-3. **Layered Depth** — Simple at first, increasingly complex strategic decisions
+**Key differentiators.**
+- **Realism *is* the mechanic.** Core actions are real gemological processes (density panning, hardness/SG/UV testing, cleavage-aware cutting, 4C-style grading). Players passively learn real gemology by playing well.
+- **Knowledge is progression.** You advance because *you* learned to prospect, identify, and cut — not because a stat number rose.
+- **Two collection axes.** Breadth (a full Gemdex) and quality (best-in-species trophies), the latter creating a fishing-game "cast again for a bigger one" itch.
 
-### 1.2 Genre & Platform
-
-- **Type:** Idle/Active Hybrid Collection Game
-- **Platform:** Web (React/Vite), responsive (desktop-first, mobile-friendly)
-- **Session Length:** 5 minutes to hours (flexible)
-- **Monetization:** None — passion project for learning and fun
-- **Multiplayer:** No (single-player only)
-
-### 1.3 Core Game Loop
-
-```
-┌────────────────────────────────────────────────────────────────────────────┐
-│                              CORE GAME LOOP                                │
-├────────────────────────────────────────────────────────────────────────────┤
-│                                                                            │
-│  ┌─────────────┐     ┌──────────────┐     ┌─────────────┐                  │
-│  │  DISCOVER   │────►│  PROCESS     │────►│   CRAFT     │                  │
-│  │             │     │              │     │             │                  │
-│  │  - Workers  │     │  - Cleaning  │     │  - Jewelry  │                  │
-│  │  - Areas    │     │  - Cutting   │     │  - Metals   │                  │
-│  │  - Mining   │     │  - Faceting  │     │  - Assembly │                  │
-│  └─────────────┘     └──────────────┘     └─────────────┘                  │
-│         │                                      │                           │
-│         │                                      ▼                           │
-│         │                              ┌─────────────┐                     │
-│         │                              │ MARKETPLACE │                     │
-│         │                              │             │                     │
-│         │                              │  - Quick    │                     │
-│         │                              │    Sell     │                     │
-│         │                              │  - List     │                     │
-│         │                              │  - History  │                     │
-│         │                              └─────────────┘                     │
-│         │                                      │                           │
-│         │                                      ▼                           │
-│         │                              ┌─────────────┐                     │
-│         │                              │   UPGRADES  │                     │
-│         │                              │             │                     │
-│         └─────────────────────────────►│  - Workers  │                     │
-│                                        │  - Areas    │                     │
-│                                        │  - Process  │                     │
-│                                        └─────────────┘                     │
-│                                                                            │
-└────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 1.4 Item Flow
-
-```
-DISCOVER (Mine Raw Materials)
-        │
-        ▼
-┌───────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Raw Materials    │────►│    PROCESS      │────►│  Processed Gems │
-│                   │     │                 │     │                 │
-│  - rough_quartz   │     │  - Cleaning     │     │  - clear_quartz │
-│  - rough_ruby     │     │  - Cutting      │     │  - ruby         │
-│  - raw_malachite  │     │  - Faceting     │     │  - malachite    │
-└───────────────────┘     └─────────────────┘     └─────────────────┘
-                                                           │
-                                                           ▼
-                                                  ┌─────────────────┐
-                                                  │     CRAFT       │
-                                                  │                 │
-                                                  │  - Gold Ring    │
-                                                  │  - Platinum     │
-                                                  │    Necklace     │
-                                                  └─────────────────┘
-                                                           │
-                                                           ▼
-                                                  ┌─────────────────┐
-                                                  │   SELL/CASH     │
-                                                  │                 │
-                                                  │  $10 → $100+    │
-                                                  └─────────────────┘
-```
+**Reference games.** Rockhound/gem collection fantasy; IdleOn (cross-system synergy buffs); fishing games (specimen stats/traits & competitions); cozy craft/collection games.
 
 ---
 
-## 2. Game Phases
+## 2. Design Pillars
 
-### 2.1 Discover (Mining)
-
-**Purpose:** Find and collect raw materials through workers and manual extraction.
-
-**Key Concepts:**
-
-- **Areas:** Each mine location can have ONE worker assigned
-- **Idle Generation:** Assigned workers produce materials automatically (1-minute tick)
-- **Manual Extraction:** Player can manually mine for immediate rewards
-- **Raw Materials:** Distinct items from processed gems (e.g., `rough_quartz` vs `clear_quartz`)
-
-**Area Progression:** Unlocked through upgrades purchased with Cash.
-
-**Sub-Modes:**
-
-| Mode | Description | Trigger |
-|------|-------------|---------|
-| **Idle** | Worker auto-generates materials | Worker assigned to area |
-| **Active** | Manual mining for immediate rewards | Player clicks "Mine" button |
-
-### 2.2 Process (Refining)
-
-**Purpose:** Transform raw materials into refined gems/minerals.
-
-**Processing Stages:**
-
-| Stage | Description | Available To | Value Increase |
-|-------|-------------|--------------|-----------------|
-| **Cleaning** | Removes matrix/impurities, reveals base gem | All raw materials | +30-40% |
-| **Cutting** | Shapes into workable forms | Gems only | +50-75% |
-| **Faceting** | Adds brilliance/polish | Premium gems only | +80-125% |
-
-**Processing Restrictions:**
-
-- **Cleaning:** All raw materials can be cleaned
-- **Cutting:** Most gems; some minerals (those with crystalline structure)
-- **Faceting:** Only premium gems — **OPAL, TURQUOISE excluded** (too soft, Mohs < 6)
-
-**Quality System:**
-
-- Range: 40-110%
-- Higher quality = higher sell value
-- Idle processing: Queue-based, capped at 85% quality
-- Active processing: Skill-based, can achieve masterwork (100%+)
-
-### 2.3 Craft (Jewelry Creation)
-
-**Purpose:** Combine processed gems with metals to create valuable jewelry.
-
-**Jewelry Types:**
-
-| Type | Gem Slots | Metal Required | Base Multiplier |
-|------|-----------|----------------|-----------------|
-| Ring | 1 | Any metal | 2.5x |
-| Pendant | 1 | Gold/Platinum | 3.0x |
-| Earrings | 2 (paired) | Any metal | 2.8x |
-| Bracelet | 3 | Any metal | 3.5x |
-| Necklace | 4 (1 centerpiece + 3 accent) | Platinum only | 5.0x |
-| Crown | 6 (1 centerpiece + 5 accent) | Platinum only | 8.0x |
-
-### 2.4 Marketplace (Selling)
-
-**Purpose:** Convert items to Cash.
-
-**Access:** Menu item (not separate phase)
-
-**Mechanics:**
-
-- **Quick-sell:** Instant sale at base market rates
-- **List items:** Set custom prices, wait for buyers
-- **Price history:** View market trends
-
-**Profit Margins:**
-
-| Item Type | Margin |
-|-----------|--------|
-| Raw materials | Lowest (encourages processing) |
-| Processed gems/minerals | Medium |
-| Crafted jewelry | Highest |
-
-**Marketplace fees:** Apply to player-to-player sales.
-
-### 2.5 Gemdex (Collection)
-
-**Purpose:** Track discovered items, workers, and upgrades.
-
-**Four Tabs:**
-
-1. **Raw Materials** — All unprocessed items discovered
-2. **Processed** — Refined gems and minerals
-3. **Workers** — All owned workers, XP, assignments
-4. **Upgrades** — Purchased upgrades, current bonuses
-
-**Features:**
-
-- Search function
-- Progress tracking (X/Y discovered, percentage)
-- Each entry shows: name, stack size, location found, processing options, market price
-
-### 2.6 Workers Tab
-
-**Purpose:** Manage worker hiring, assignment, and progression.
-
-**Features:**
-
-- View all owned workers
-- Hire new workers from shop
-- Assign/unassign workers to areas
-- View worker stats and level progress
+| Pillar | Meaning | Anti-pattern it kills |
+| --- | --- | --- |
+| **Exploration & Collection first** | The map and the Gemdex are the spine; progress = new places + a fuller case | Grinding one screen for currency |
+| **Knowledge is the real progression** | You get further because you learned to prospect, identify, cut | Black-box `efficiency`/`luck` stats; RNG quality |
+| **Realism *is* the mechanic** | Every core action is a real gemological process | Real facts as decorative flavor text |
+| **Cozy, low-punishment** | Casual pace, satisfying feedback; mistakes teach, they don't gate | Energy walls, harsh fail states |
 
 ---
 
-## 3. Worker System
+## 3. Core Loop & The Journey of a Stone
 
-> **Detailed Specification:** See [Worker System Design](./docs/plans/2026-03-30-phase-1-workers-design.md)
+```
+        ┌──────────── META: fill the Gemdex, win shows, unlock the world ────────────┐
+        │                                                                             │
+  EXPLORE ─► FIELD-COLLECT ─► IDENTIFY ─► CUT (optional) ─► CATALOG ─► (SELL) ─────────┘
+  pick a real   dig / pan /    deduce what   real-cut       Gemdex +     fund next
+  locality      crack geode    the rough is  techniques,    trophies +   trip & gear
+                (method matters)(test minigames)stats/traits  gem shows    (thin economy)
+```
 
-### 3.1 Overview
+- **Moment-to-moment (seconds–minutes):** run an expedition minigame → get rough → identify a stone via test minigames → optionally cut it → file it / sell it.
+- **Session (minutes–hours):** clear the Identify/Cut queues, chase a better specimen, prep the bench, enter a gem show.
+- **Meta (across sessions):** raise Reputation and masteries, complete family/regional sets, unlock new localities, win shows, complete the Gemdex.
 
-Workers are the primary source of idle material generation. Each worker:
+**The three directions blended (priority B > A > C):**
+- **B — spine:** the world map, method-matched expeditions, regional & family collections, cozy travel.
+- **A — heart:** Identify and Cut are the optional skill core that makes finds *mean* something.
+- **C — thin layer:** a market that funds exploration and gear; a pure collector can largely ignore it.
 
-- Can be assigned to ONE mine area
-- Generates materials automatically over time
-- Earns XP and levels up
-- Has unique stats affecting generation
+**Worked example — one stone end-to-end.** You pan a Montana creek (Explore) and pull a glassy, colorless waterworn stone. Candidates at this placer: quartz, topaz, sapphire, zircon (Identify). Streak is useless (all white), so you heft it in water — surprisingly dense — which eliminates quartz; a scratch test past hardness 8 eliminates topaz; the board resolves to **sapphire**. You commit → a **NEW** Gemdex entry pops with real facts. It rolled a good color grade and decent carat weight, so you take it to Cut: you own **Round Brilliant Lv6**, apply it, and the success roll lands — a bright cut sapphire with strong stats. It beats your previous best sapphire (trophy case updates), and you enter it in the season's gem show. That show's rubric wants bigger color, so you head back to a richer sapphire locality — loop restarts.
 
-### 3.2 Worker Types
+---
 
-| ID                    | Name                | Cost   | Max Level | Efficiency | Luck | Speed | Description                        |
-| --------------------- | ------------------- | ------ | --------- | ---------- | ---- | ----- | ---------------------------------- |
-| `novice_miner`        | Novice Miner        | 100    | 10        | 30         | 20   | 50    | Beginner learning the ropes        |
-| `seasoned_prospector` | Seasoned Prospector | 500    | 25        | 50         | 40   | 40    | Years of reliable experience       |
-| `crystal_specialist`  | Crystal Specialist  | 2,000  | 50        | 75         | 30   | 25    | Expert in extracting precious gems |
-| `fortune_seeker`      | Fortune Seeker      | 3,500  | 50        | 40         | 80   | 45    | Lucky by nature, finds rare gems   |
-| `master_gemologist`   | Master Gemologist   | 10,000 | 100       | 90         | 70   | 60    | Pinnacle of mining expertise       |
+## 4. Cross-Cutting UX Principles
 
-### 3.3 Worker Instance Properties
+These are binding across every system; they are what keep the game fun rather than instructive-but-tedious.
 
-Each worker instance in player state has:
+1. **Visual, never numeric.** The player never does arithmetic or reads a value against a table. The game does all comparison internally and shows it as movement, glow, elimination, and live preview. Raw numbers hide behind an optional **"expert readout"** toggle (off by default).
+2. **Fun lives in *doing*; thinking is a reward multiplier.** Engagement = playing short, tactile minigames. Cleverness (efficient test choice, optimal cuts) earns *better rewards & efficiency* but is never a gate — a checked-out player still progresses.
+3. **Casual surface, opt-in depth.** Common tasks are one-tap; deep loops are reserved for rare/valuable/new content and are skippable.
+4. **Idle routes tedium; active earns trophies + skill.** Idle helpers auto-clear the boring bulk and escalate interesting cases to the player. Only active play grows the player's own mastery; idle caps always trail the player's ability.
+5. **Content treadmill beats trivialization.** As masteries climb, harder look-alikes / cuts / rarer species appear that demand that skill, so growth always has a target.
+6. **Unified core verb.** Identify and Cut share one loop: *play a themed minigame → raise a mastery/level → that mastery governs your outcomes.*
+
+---
+
+## 5. System: Explore
+
+**Purpose:** find and collect rough. **Teaching payload:** deposit geology — why gems occur where they do and are dug how they are.
+
+### 5.1 World map
+
+A stylized globe of real-world-inspired **locality nodes**, grouped into regions. The player starts at one beginner locality (a local creek). Each locality exposes a **field-guide entry** that fills in as the player learns it: deposit type, host rock, indicator minerals, find pool.
+
+### 5.2 Deposit types → method → finds (the backbone)
+
+| Deposit type | Collection method (minigame) | Signature finds (real) | Example localities |
+| --- | --- | --- | --- |
+| Alluvial / placer | **Panning** (density) | sapphire, garnet, gold, topaz | Montana, Sri Lanka |
+| Pegmatite | **Hard-rock / pocket** | tourmaline, beryl/aquamarine, topaz | Minas Gerais, Pala, Maine |
+| Hydrothermal vug | **Geode cracking** | amethyst, agate, emerald (veins) | Brazil/Uruguay, Colombia |
+| Metamorphic | **Hard-rock** | ruby, sapphire, jade, lapis | Mogok, Afghanistan |
+| Volcanic / arid | **Surface collecting** | peridot, opal, turquoise | Arizona, Coober Pedy |
+
+### 5.3 Expedition minigames (method-matched)
+
+- **Panning** — swirl to wash away light sand; dense gems/gold sink and remain (real gravity concentration).
+- **Hard-rock / pocket** — follow indicator signs to a crystal pocket, then split carefully; rushing fractures crystals (lowers carat/clarity of the rough).
+- **Geode cracking** — a dull nodule splits to reveal a crystal-lined cavity (satisfying reveal, variable contents).
+
+**Output:** a handful of **unidentified rough** items plus waste matrix. Each rough is created with base stats rolled from the locality's ranges (carat weight, clarity, color grade — see §12.4). A hidden true species is assigned by the find pool's weighted abundance.
+
+### 5.4 Prospecting ("read the land")
+
+Before digging, the player may read clues — surface float, indicator minerals in the pan, host rock — to pick a better spot (raising odds of rarer/better rough). Casual players get gentle hints; knowledge-seekers are rewarded for knowing real tells (e.g., pyrope garnet + chrome diopside → diamond indicators). Optional; never a wall.
+
+### 5.5 Gear (spans all stages; introduced here)
+
+| Gear | Enables |
+| --- | --- |
+| Gold pan, sieve/classifier | Panning; idle sieve |
+| Rock hammer | Hard-rock sites |
+| Geode cracker | Geode sites |
+| Loupe, UV light, hardness picks, scale | Identify tests (see §6) |
+| Cutting tools | Cut techniques (see §7) |
+
+Gear gates methods and tests and is a primary map-unlock lever (§8.4).
+
+### 5.6 Idle-lite
+
+The player may leave a **sieve or tumbler running** at a locality, trickling out a small amount of rough while away (offline, capped ~8h). The single cozy "welcome back" reward — no empire to manage.
+
+---
+
+## 6. System: Identify
+
+Rough comes out of the ground **unidentified**. Figuring out what it is *is* the game — a deduction puzzle (Mastermind/Wordle) played with a real gemologist's toolkit. **This is a signature mechanic.**
+
+### 6.1 Setup
+
+Each rough has a hidden true species with a full property profile (§12.1). The screen shows a **candidate list**, seeded and constrained by two realistic factors:
+- **Free observations** shown for free: crystal **habit**, **color**, **transparency**, **luster**.
+- **Locality** — candidates are limited to the species that occur in that locality's find pool (~6–12), never thousands of minerals.
+
+### 6.2 Tests as minigames + the precision model (the core)
+
+Each test needs its matching real tool (gear) and costs a little session time / a consumable, so the player can't brute-force every test on every stone. **A test's mastery decides how *precise* the reading is, not whether it passes.**
+
+```
+readingBand width = BASE_ERROR[test] / (masteryFactor × instrumentFactor × labPrepFactor × familiarityFactor)
+```
+
+- **masteryFactor** — the player's high score for that test's minigame sets the precision *tier*.
+- **Live play** places the reading within that tier (play well → sharp end; fumble → fuzzy end), so live tests stay engaging while a casual player still gets the tier baseline.
+- **instrumentFactor / labPrepFactor / familiarityFactor** — permanent instrument tier, temporary Lab-Prep buffs, and completed Family Familiarity shift the whole band sharper (the synergy web, §10).
+
+A reading **eliminates a candidate when that candidate's true value for the tested property falls *outside* the reading band.** Wide band → few eliminated; narrow band → many. Precision = discriminating power. The "set of tests a species needs" is therefore emergent — it is whatever resolves that stone's specific look-alike group — not a handed-out recipe.
+
+| Test | Minigame | Real property | Tool |
+| --- | --- | --- | --- |
+| Scratch / hardness | Lock-pick tension drag (bite vs. skate) | Mohs hardness | hardness picks / glass |
+| Heft / SG | Balance-scale / water-line precision | Specific gravity | scale + water |
+| Streak | Stroke porcelain at right pressure; read color | Streak | streak plate |
+| UV fluorescence | Dark-room lamp sweep; capture glow at peak | Fluorescence | UV flashlight |
+| Loupe | Rack-focus hidden-object; spot & tag features | 10× inspection | loupe |
+| Spectral (late) | Line-up match onto the fingerprint | Spectroscopy | refractometer/spectroscope |
+
+### 6.3 Presentation — no math, ever
+
+The Identify screen is a **detective board** of candidate cards. As readings arrive, the game compares internally and the board reacts: eliminated candidates **flip / gray / slide off**, and a **"SUSPECTS: N"** counter ticks down. Each reading resolves onto a **visual gauge** (a dial with candidate pins; the reading is a glowing arc — pins outside fade, pins inside stay lit). The player reads *position and glow*, never digits.
+
+### 6.4 Fast lane & cozy fail
+
+- **Common / already-known species → one-tap recognition flick** (no puzzle). The bulk of identification is intentionally low-effort.
+- **Mystery / rare / new species → the full puzzle**, with an optional highlighted **"suggested next test"** so a checked-out player never gets stuck.
+- **Wrong ID is not an instant loss.** It costs the "clean identification" bonus and the player may re-test. The *real* consequence is deferred to Cut: cutting on a wrong species uses wrong cleavage/ideal-cut data → the stone windows or shatters. A soft per-session **accuracy rating** feeds Reputation.
+
+### 6.5 Payoff
+
+A correct ID writes the species' real profile into the **field notebook / Gemdex** (Mohs, SG, habit, luster, fluorescence, cleavage + a real fact), advances **Family Familiarity**, grants Reputation, and makes the specimen eligible to Cut (safely, since its true properties are now known), Sell, or keep.
+
+---
+
+## 7. System: Cut
+
+Cutting is the **optional depth lane** — a pure collector can sell or display rough and never touch it. It is where Identify pays off, where the biggest "wow" moments live, and it replaces any RNG `quality%`. **Model: pick a leveled technique, roll against your skill.** The fun is leveling techniques via minigames, not executing a per-stone physics procedure.
+
+### 7.1 Cut techniques
+
+Realism lives in *which cuts suit which materials*. A **cut style is a global technique** the player levels once; each **material adds a difficulty modifier** (e.g., corundum is hard; a cleavable topaz cut "boxed" is riskier). This bounds grind while keeping material challenge real.
+
+| Technique | Difficulty | Best for (real) | Value ceiling |
+| --- | --- | --- | --- |
+| Cabochon | easy | opaque/included/**phenomenal** stones (opal, star sapphire, moonstone) | low–med; reveals phenomena |
+| Round Brilliant | medium | most transparent gems, diamonds | high |
+| Step / Emerald cut | med–hard | emeralds & brittle stones; shows color/clarity | high |
+| Princess / "boxed" | hard | high yield; sharp corners risky | very high |
+| Fancy / fantasy cuts | hardest | endgame trophies | highest |
+
+### 7.2 Unlock → level → apply
+
+- **Unlock** a technique by playing its minigame once, well. Each minigame is themed to the cut's real challenge (Round = radial symmetry; Step = parallel-line precision; Cabochon = doming/shape-match) so learning sneaks in.
+- **Level** it by replaying (practice mode raises the personal best). Level drives success: **Lv1 ≈ 50% → Lv10 ≈ 90%** (see §13 for the curve).
+- **Apply:** cutting a stone = pick an unlocked technique appropriate to the material → success roll = f(technique level, material difficulty, equipment, buffs).
+
+### 7.3 Cozy outcomes
+
+A **fail** usually means a **lower-quality cut** (mediocre stats, lost weight) — still a sellable stone — not a vaporized gem. **Catastrophic loss (shatter) is reserved for the hardest cuts on cleavable stones** (opt-in gambles). Probability shapes the *quality distribution* (fishing-style: you always land something, size varies). If the stone was **misidentified**, Cut presents wrong danger planes / ideal cut → the stone windows or shatters; the loupe offers one last chance to notice.
+
+### 7.4 Specimen stats & traits (the fishing hook)
+
+Every specimen carries stats that accrue across phases, like a fish's weight/length:
+- **Rolled at discovery (rough):** **carat weight** (the "size" stat), **clarity**, **color grade** (hue/tone/saturation; prized variants like pigeon-blood ruby, cornflower sapphire).
+- **Set when cut:** **cut quality %**, **carat retained** (yield), **symmetry / polish / brilliance**.
+- **Trait flags (not universal):** **phenomena** (asterism/star, cat's-eye, color-change, play-of-color — *revealed only by the correct cut*, e.g. a cabochon on a star sapphire), **origin prestige** (Kashmir, Burma), **untreated/natural**.
+
+Stats roll into a **specimen score** and **market value** (§13). This creates the **two collection axes**: breadth (Gemdex) and quality (trophies).
+
+---
+
+## 8. System: Catalog & Progression
+
+The collection spine (B heart). Runs on two axes plus a knowledge-based progression currency.
+
+### 8.1 Gemdex (breadth)
+
+One self-filling **textbook entry** per species, lit on first correct ID (big **NEW** pop): real property profile, facts/lore, source localities, suitable cuts, possible phenomena. Undiscovered species show as **locked silhouettes with a teasing hint** ("forms in pegmatite pockets…"). Tracks X/Y discovered overall, per-region, and per-**family**.
+
+### 8.2 Families → Familiarity
+
+Entries group into real **mineral families** (quartz, beryl, corundum, garnet, feldspar). Completing a family grants **Family Familiarity** — a permanent buff that sharpens both identifying and cutting that family (a synergy-web input; §10). Real taxonomy becomes a mechanical reward.
+
+### 8.3 Trophy case (depth)
+
+The game tracks the player's **best specimen per species** by score. Finest pieces sit in a **cozy display case** the player arranges (cosmetic, prestige, casual-friendly). Beating a personal best is its own small reward and drives locality re-visits.
+
+### 8.4 Reputation & nonlinear map gates
+
+**Reputation** is the progression meter, fed by knowledge & collecting: correct IDs (bonus for hard look-alikes), quality cuts, first discoveries, completing family & regional sets, winning gem shows. Reputation tiers unlock gear/technique tiers and raise ceilings.
+
+Each locality defines its **own** unlock gate, drawn from a menu — sometimes a single requirement, sometimes a combo — so the map is a **branching graph, not a linear ladder**, and playstyle decides what opens first:
+
+```
+Creek ─┬─ Gravel Bar ...... gear only (gold pan)             ← gear-buyer path
+       ├─ Old Quarry ...... gear only (rock hammer)          ← opens hard-rock early
+       ├─ Amethyst Vug .... complete the Creek's set         ← collector path
+       ├─ Ruby Marble ..... Reputation tier 3                ← identifier path
+       └─ Kimberlite Pipe . Rep 5 + indicator gear + a set   ← flagship combo gate
+```
+
+Localities ramp by deposit type as a difficulty curve, teaching geology:
+`Alluvial (pan) → Pegmatite (hard-rock) → Geodes → Metamorphic → Kimberlite / Opal fields`.
+
+**Cash can only speed a gate, never replace one** (§9).
+
+### 8.5 Gem Shows (endgame loop)
+
+Periodic **shows** judge specimens against NPC rivals / rotating rubrics — Biggest Carat, Finest Color, Best Star Sapphire, Best Cut, Best-in-Show. Rewards: Reputation, cash, **exclusive techniques/gear/cosmetics**, sometimes access to rare rough/localities. A target trophy sends the player back through Explore → Identify → Cut, closing the meta loop.
+
+---
+
+## 9. System: Economy
+
+**Two currencies, cleanly split:** Reputation/Knowledge = the **gate**; Cash = the **grease**. The player cannot buy their way to the endgame; cash smooths every grind. A pure collector can quick-sell surplus and ignore the rest.
+
+- **Sources:** selling surplus (rough, cut stones, mineral specimens, offcut dust); gem-show prize money; light passive income as idle helpers clear & auto-sell commons.
+- **Sinks (all accelerants):** instruments & cutting gear (raise ceilings/caps) · consumables (streak plates, distilled water, grit, dop wax — keep tests/idle/cutting running) · hiring/leveling idle helpers · travel (speed a map unlock) · **certification** (a lab cert adds value + trophy credibility + show prestige) · buying rough / missing species at market (fill a Gemdex gap or feed cutting practice — opt-in).
+- **The market teaches:** prices derive from the *real* value drivers in specimen stats — rarity, 4Cs, phenomena, origin, natural/untreated premium, certification. One genuine decision surfaces: **sell rough now for safe cash, or invest cutting time for more value at some risk?** A light, occasional demand shimmer ("emeralds are hot this show season") makes timing mildly strategic — deliberately shallow, never a trading sim.
+
+---
+
+## 10. The Synergy Web
+
+Every system feeds at least one other, pulling players through the whole game for a synergistic payoff; every link is thematically real, so the synergy teaches too. Centerpiece: the **Lab Prep ritual** (analog of IdleOn's "cook a dish → better fishing").
+
+```
+   EXPLORE ─────────► consumables (streak plates, distilled water,
+     │                UV charges, reference specimens)
+     │                        │
+     ▼                        ▼
+   CUT ──► offcuts &   ┌─► LAB PREP ──► stacking TEMP buffs to the
+           calibration │   (clean plate,  next IDENTIFY session
+           stones ─────┘   charge lamp,          │
+                           calibrate scale)       ▼
+   CATALOG ─► complete a family ─► permanent   IDENTIFY (sharper, fewer tests)
+              Family Familiarity ───────────►     │
+                                                   ▼
+   ECONOMY ─► buy instruments ─► permanent    correct IDs raise Reputation →
+              (digital scale,     ceilings    unlock deeper localities (EXPLORE),
+               dual-wave UV)                   certified prices (ECONOMY),
+                                               safe cutting of known species (CUT)
+```
+
+- **Two buff flavors:** **permanent** (instruments, family familiarity, technique levels) so the player always feels stronger; **temporary** (Lab Prep) so there's a fun pre-session ritual and moment-to-moment optimization.
+- **Consumables** are the connective tissue: produced by Explore/Cut (or bought), consumed by tests and idle helpers — a sink that keeps the player circulating through systems.
+
+---
+
+## 11. Idle / Active Tradeoffs
+
+Each active phase has a light idle counterpart with a "safe but limited" character. General rule: **idle clears the boring bulk and escalates interesting cases to the player; only active grows the player's own mastery; idle caps trail the player's ability.**
+
+| Phase | Idle counterpart | Behavior |
+| --- | --- | --- |
+| Explore | Sieve / tumbler | Trickles out a little rough while away |
+| Identify | **Lab Assistant** (apprentice) | Auto-IDs the queue offline at a **capped precision**; clears easy commons; flags hard look-alikes **"needs your eye"**; **never wrong-IDs** (only "certain" or "uncertain"); consumes consumables; hired/leveled with cash |
+| Cut | **Lapidary Apprentice** | Auto-cuts offline at a **capped level** (safe cabochons/standard cuts, no masterwork); refuses risky/valuable rough, flags it **"worth your hand"**; consumes grit/wax; hired/leveled with cash |
+
+Guardrails: idle helpers **cannot raise the player's own mastery**; their caps **always trail** the player's ability; offline progress is capped (`OFFLINE_CAP_HOURS`, default 8).
+
+---
+
+## 12. Data Model & Schemas
+
+All game data lives in human-editable YAML validated by Zod at load time (see §17). Schemas below are the essential shapes; representative examples are given — the full data set is enumerated in `src/data/`.
+
+### 12.1 Species (`items.yaml`)
+
+```yaml
+- id: sapphire
+  name: Sapphire
+  category: Gem              # Gem | Mineral
+  family: corundum           # groups for Gemdex + Family Familiarity
+  rarity: Rare               # Common | Uncommon | Rare | Epic | Legendary
+  # --- diagnostic properties (drive Identify) ---
+  hardness: 9.0              # Mohs (point or [min,max])
+  specificGravity: 4.00
+  habit: [prismatic, tabular]
+  luster: vitreous           # vitreous | adamantine | metallic | greasy | pearly | silky | dull
+  transparency: transparent  # transparent | translucent | opaque
+  colors: [blue, colorless, yellow, pink]
+  streak: white
+  fluorescence: { longwave: red, shortwave: none }   # per species; null if inert
+  refractiveIndex: 1.76
+  cleavage: none             # none | poor | good | perfect (+ direction notes)
+  fracture: conchoidal
+  # --- value / craft ---
+  baseValue: 800
+  suitableCuts: [cabochon, round_brilliant, step, princess]
+  cutDifficulty: 3           # material modifier (1-5), higher = harder to cut
+  phenomena:                 # trait flags revealed by a specific cut; omit if none
+    - { type: asterism, revealedBy: cabochon }
+  occursAt: [montana_placer, mogok_marble, sri_lanka_placer]
+  realWorldLocations: [Kashmir, Myanmar, Sri Lanka, Montana]
+  funFact: "The 'Black Prince's Ruby' in the Crown Jewels is actually a red spinel."
+```
+
+### 12.2 Locality (`localities.yaml`)
+
+```yaml
+- id: montana_placer
+  name: Montana Creek
+  region: north_america
+  depositType: alluvial       # alluvial | pegmatite | hydrothermal | metamorphic | volcanic
+  method: panning             # panning | hardrock | geode | surface
+  hostRock: gravel
+  indicatorMinerals: [garnet, magnetite]
+  color: "#3b6ea5"
+  findPool:                   # weighted; each entry defines base-stat ranges for rolled rough
+    - { species: quartz,   weight: 50, caratRange: [0.5, 4], clarityRange: [40, 90], colorRange: [30, 70] }
+    - { species: garnet,   weight: 25, caratRange: [0.3, 2], clarityRange: [50, 95], colorRange: [50, 90] }
+    - { species: sapphire, weight: 20, caratRange: [0.2, 1.5], clarityRange: [45, 95], colorRange: [40, 95] }
+    - { species: topaz,    weight: 5,  caratRange: [0.5, 3], clarityRange: [55, 98], colorRange: [30, 80] }
+  unlockGate:                 # heterogeneous; see §8.4. `anyOf`/`allOf` of conditions.
+    allOf:
+      - { type: gear, id: gold_pan }
+```
+
+Gate condition types: `gear` (id), `reputation` (tier), `setComplete` (localityId | familyId), `cash` (amount, optional accelerator). A locality unlocks when its `allOf`/`anyOf` tree is satisfied.
+
+### 12.3 Cut technique (`cutTechniques.yaml`)
+
+```yaml
+- id: round_brilliant
+  name: Round Brilliant
+  difficulty: 2               # 1 (easy) .. 5 (hardest)
+  suitableFor: { transparency: [transparent], phenomena: [] }
+  unlockMinigame: radial_symmetry
+  successCurve: { base: 0.50, perLevel: 0.044, maxLevel: 10 }   # Lv1≈0.50 → Lv10≈0.90
+  yieldRange: [0.55, 0.75]    # fraction of carat retained on success
+  cutQualityRange: [60, 100]  # % set on success, scaled by level & live play
+  catastrophicOnFail: false   # true only for hard cuts on cleavable stones
+  revealsPhenomena: []        # e.g. [asterism] for cabochon
+```
+
+### 12.4 Specimen instance (runtime)
 
 ```typescript
-interface WorkerInstance {
-  id: string; // Unique instance ID (e.g., "worker-1700000000000-abc123")
-  workerTypeId: string; // Reference to worker type (e.g., "novice_miner")
-  level: number; // Current level (1 to workerType.maxLevel)
-  xp: number; // Current XP (resets to 0 on level up)
-  assignedArea: string | null; // Location tier (e.g., "TIER_1") or null if unassigned
-  assignedAt: number | null; // Timestamp when assigned
+interface Specimen {
+  instanceId: string;
+  stage: "rough" | "identified" | "cut";
+  // identity
+  trueSpeciesId: string;             // hidden until identified
+  identifiedAs: string | null;       // player's committed ID (may be wrong)
+  candidateIds: string[];            // remaining candidates while identifying
+  // stats (0-100 unless noted)
+  caratWeight: number;               // "size" stat, rolled at discovery
+  clarity: number;
+  colorGrade: number;
+  cutQuality: number | null;         // set on cut
+  caratRetained: number | null;      // carats after cut
+  symmetry: number | null;
+  // traits
+  phenomena: string[];               // e.g. ["asterism"]
+  origin: string;                    // locality id → prestige lookup
+  untreated: boolean;
+  certified: boolean;
+  // derived (see §13)
+  score: number;
+  marketValue: number;
 }
 ```
 
-### 3.4 Worker Stats
+### 12.5 Gear, instruments, consumables, idle helpers
 
-Each worker type has base stats (0-100 scale):
-
-| Stat           | Effect                                            |
-| -------------- | ------------------------------------------------- |
-| **Efficiency** | Affects material yield per tick                   |
-| **Luck**       | Increases chance of rare drops                    |
-| **Speed**      | Affects tick interval (not currently implemented) |
-
-### 3.5 Leveling System
-
-**XP to Next Level:**
-
-```
-XP_required = baseXpToLevel * (1.1 ^ (level - 1))
-
-Examples (baseXpToLevel = 100):
-- Level 1→2: 100 XP
-- Level 2→3: 110 XP
-- Level 3→4: 121 XP
-- Level 10: ~235 XP
-```
-
-**Level Up Bonuses:**
-
-- Worker level increases by 1
-- XP resets to 0
-- Efficiency bonus = baseEfficiency _(1 + level_ 0.05)
-
-### 3.6 Generation Mechanics
-
-**Tick Interval:** 1 minute (60 seconds)
-
-**Per Tick Calculation:**
-
-```
-1. Get area loot table for assigned area
-2. Roll for base yield from loot table
-3. Apply efficiency multiplier: (workerEfficiency + levelBonus) / 100
-4. Apply luck multiplier: 1 + (workerLuck / 200)
-5. Calculate final yield: floor(baseYield * efficiencyMult * luckMult)
-6. Calculate XP earned: floor(baseXpPerAction * efficiencyMult)
-7. Award materials to inventory
-8. Award XP to worker
-9. Check for level up
-```
-
-**Rare Drop Bonus:**
-
-- If random roll > 0.95 (5% chance): Upgrade rarity one tier
-
-### 3.7 Offline Progress
-
-Workers continue generating while the player is away.
-
-**On App Load:**
-
-1. Calculate elapsed time since last session
-2. Cap offline ticks at 8 hours (480 ticks at 1 min each)
-3. Process accumulated ticks
-4. Apply all materials and XP
-5. Check for level ups
-
-### 3.8 Assignment Rules
-
-- One worker per area maximum
-- Workers can be reassigned freely (no cooldown)
-- Unassigning stops generation for that area
-- Starter worker given at game start, auto-assigned to TIER_1
+- `gear.yaml` — id, name, cost, enables (method/test ids), unlock notes.
+- `instruments.yaml` — id, testId, tier, `precisionMultiplier` (permanent Identify ceiling), cost.
+- `consumables.yaml` — id, usedBy (test/helper), sources.
+- Idle helpers are player-state records (§13), leveled with cash: `{ level, precisionCap | cutLevelCap, throughputPerHour }`.
 
 ---
 
-## 4. Currency & Economy
+## 13. Runtime State & Core Formulas
 
-### 4.1 Currency Types
-
-| Currency            | Source                                       | Use                                                  |
-| ------------------- | -------------------------------------------- | ---------------------------------------------------- |
-| **Cash (Coins)**    | Selling items in marketplace                 | Purchasing upgrades, hiring workers, unlocking areas |
-| **XP (Experience)** | Worker generation, manual mining, processing | Leveling up workers                                  |
-
-### 4.2 Player State
+### 13.1 Player state
 
 ```typescript
 interface PlayerState {
-  coins: number; // Cash balance
-  level: number; // Player level (not currently used for progression)
-  xp: number; // Player XP (not currently implemented)
-  gems: Array<{ gemId: string; quality: number }>; // Inventory: gems
-  minerals: Array<{ id: string; quantity: number }>; // Inventory: minerals
-  equipment: string[]; // Owned discovery equipment IDs
-  processEquipment: string[]; // Owned processing equipment IDs
-  gemdex: string[]; // Discovered gem IDs
-  workers: WorkerInstance[]; // Owned workers
-  lastOnlineTimestamp: number; // For offline progress
-  totalWorkerXp: number; // Lifetime worker XP (stats tracking)
+  cash: number;
+  reputation: number;                      // progression meter → tiers
+  // masteries
+  testMastery: Record<string, number>;     // testId → high score (0-100)
+  cutTechniqueLevel: Record<string, number>; // techniqueId → level (0 = locked)
+  instruments: Record<string, number>;     // testId → owned instrument tier
+  familyFamiliarity: Record<string, number>; // family → completion 0-1
+  // collection
+  gemdex: string[];                        // discovered species ids
+  bestSpecimens: Record<string, Specimen>; // speciesId → trophy
+  displayCase: Array<{ instanceId: string; slot: number }>;
+  // world & gear
+  unlockedLocalities: string[];
+  gear: string[];
+  unlockedTechniques: string[];
+  // idle
+  labAssistant: { level: number } | null;
+  lapidaryApprentice: { level: number } | null;
+  identifyQueue: string[];                 // instanceIds
+  cutQueue: string[];
+  activePrep: Array<{ buffId: string; expiresAfterSessions: number }>;
+  consumables: Record<string, number>;
+  sieveRunning: { localityId: string } | null;
+  // bookkeeping
+  lastOnlineTimestamp: number;
+  reputationTier: number;
 }
 ```
 
-### 4.3 Value Progression
-
-| Stage               | Quality Range | Value Multiplier |
-| ------------------- | ------------- | ---------------- |
-| Raw (from Discover) | 60-100%       | 1.0x             |
-| Cleaned             | 50-115%       | 1.3-1.5x         |
-| Cut                 | 40-115%       | 1.5-2.0x         |
-| Faceted             | 40-110%       | 2.0-3.0x         |
-
-**Example Chain:**
+### 13.2 Identify precision (per test)
 
 ```
-rough_quartz (raw):        $10 base
-  → clear_quartz (cleaned): $14 (+40%)
-    → cut_quartz (cut):     $25 (+80%)
-      → faceted_quartz:     $35 (+250%)
-        → Gold Ring:        $87 (highest)
-          → Marketplace:    $100+ (premium pricing)
+mastery      = clamp(testMastery[test] / 100, 0.1, 1)          // 0.1..1
+instrument   = instruments[test].precisionMultiplier           // e.g. 1.0, 1.5, 2.5
+labPrep      = product of active prep buffs for this test      // e.g. 1.0..1.5
+familiarity  = 1 + FAMILIARITY_BONUS × familyFamiliarity[fam]  // e.g. 1..1.3
+livePlay     = f(minigame performance) in [0.6, 1.0]           // agency within tier
+
+bandWidth    = BASE_ERROR[test] / (mastery × instrument × labPrep × familiarity × livePlay)
+reading      = trueValue ± noise(bandWidth)                    // center jitters, shrinks with precision
 ```
+
+A candidate `c` survives a reading iff `|reading.center − c.trueValue| ≤ bandWidth`. Identification resolves when exactly one candidate remains (positive ID) or the player commits early at partial confidence (risk).
+
+### 13.3 Cut success & stats
+
+```
+base       = successCurve.base + successCurve.perLevel × (level − 1)
+difficulty = 1 − (species.cutDifficulty − 1) × CUT_DIFFICULTY_STEP     // harder → lower
+equipment  = cuttingGearMultiplier                                    // ≥ 1
+buff       = active cut prep buffs                                    // ≥ 1
+pSuccess   = clamp(base × difficulty × equipment × buff, 0.05, 0.98)
+
+on success: cutQuality = lerp(range, level & livePlay);  caratRetained = caratWeight × yield
+on fail:    lower cutQuality, lower yield; if technique.catastrophicOnFail & cleavage≥good → shatter (lost)
+misidentified: use WRONG species' cleavage/ideal → high shatter/window chance
+```
+
+### 13.4 Specimen score & market value
+
+```
+score = w_carat·norm(caratRetained ?? caratWeight)
+      + w_color·colorGrade + w_clarity·clarity + w_cut·(cutQuality ?? 0)
+      + traitBonus(phenomena, origin, untreated)
+
+marketValue = species.baseValue
+            × rarityMultiplier(species.rarity)
+            × (0.5 + score/100)                 // grade scales value
+            × (certified ? CERT_PREMIUM : 1)
+            × demandMultiplier(species.family)  // light, occasional shimmer
+```
+
+Uncut rough sells at `ROUGH_DISCOUNT` of the cut value (drives the sell-rough-vs-cut decision). Fine uncut *mineral specimens* (great crystal habit) can be worth keeping/selling as-is.
+
+### 13.5 Idle resolution (on load / tick)
+
+For each queued item up to `throughputPerHour × min(elapsed, OFFLINE_CAP_HOURS)`: the Lab Assistant attempts ID at `precisionCap` — resolves easy commons, else flags "needs your eye"; the Lapidary Apprentice cuts at `min(techniqueLevel, cutLevelCap)`, refusing risky/valuable rough. Both consume consumables; neither grants the player mastery.
 
 ---
 
-## 5. Progression Systems
+## 14. UI / UX Specification
 
-### 5.1 Discovery Equipment
+### 14.1 Navigation
 
-Purchased with Cash, unlocks new mine areas.
-
-| Equipment ID       | Name             | Cost   | Unlock Level | Drop Rate Bonus | Extra Items | Unlocks                                |
-| ------------------ | ---------------- | ------ | ------------ | --------------- | ----------- | -------------------------------------- |
-| `NONE`             | None             | 0      | 0            | 0%              | 0           | TIER_1                                 |
-| `BASIC_PICKAXE`    | Basic Pickaxe    | 100    | 2            | +10%            | 0           | TIER_1_B, TIER_1_C                     |
-| `IRON_PICKAXE`     | Iron Pickaxe     | 500    | 5            | +20%            | 0           | TIER_2_A, TIER_2_B                     |
-| `STEEL_DRILL`      | Steel Drill      | 2,000  | 10           | +30%            | 1           | TIER_2_C, TIER_3_A                     |
-| `DIAMOND_DRILL`    | Diamond Drill    | 5,000  | 20           | +40%            | 1           | TIER_3_B, TIER_3_C                     |
-| `HEAVY_MACHINERY`  | Heavy Machinery  | 15,000 | 35           | +50%            | 2           | TIER_4_A, TIER_4_B                     |
-| `ELITE_OPERATIONS` | Elite Operations | 50,000 | 50           | +60%            | 2           | TIER_4_C, TIER_5_A, TIER_5_B, TIER_5_C |
-
-### 5.2 Mine Locations (Areas)
-
-15 location tiers, organized by unlock level.
-
-| Tier | Location ID | Name              | Unlock Level | Unlock Equipment | Unlock Materials                          |
-| ---- | ----------- | ----------------- | ------------ | ---------------- | ----------------------------------------- |
-| 1    | TIER_1      | River Panning     | 0            | NONE             | —                                         |
-| 1    | TIER_1_B    | Ozark Hills       | 2            | BASIC_PICKAXE    | —                                         |
-| 1    | TIER_1_C    | Bavarian Fields   | 3            | BASIC_PICKAXE    | —                                         |
-| 2    | TIER_2_A    | Ural Shores       | 5            | IRON_PICKAXE     | —                                         |
-| 2    | TIER_2_B    | Bahia Mines       | 7            | IRON_PICKAXE     | clear_quartz: 10                          |
-| 2    | TIER_2_C    | Montana Streambed | 10           | STEEL_DRILL      | —                                         |
-| 3    | TIER_3_A    | Minas Gerais      | 15           | STEEL_DRILL      | clear_quartz: 20, obsidian: 10            |
-| 3    | TIER_3_B    | Mogok Valley      | 20           | DIAMOND_DRILL    | —                                         |
-| 3    | TIER_3_C    | Sri Lanka Fields  | 25           | DIAMOND_DRILL    | lapis_lazuli: 5                           |
-| 4    | TIER_4_A    | Muzo Highlands    | 30           | HEAVY_MACHINERY  | —                                         |
-| 4    | TIER_4_B    | Kashmir Heights   | 35           | HEAVY_MACHINERY  | malachite: 10, azurite: 5                 |
-| 4    | TIER_4_C    | Argyle Caverns    | 40           | ELITE_OPERATIONS | —                                         |
-| 5    | TIER_5_A    | Golconda Depths   | 50           | ELITE_OPERATIONS | hematite: 20, pyrite: 10                  |
-| 5    | TIER_5_B    | Androy Dunes      | 60           | ELITE_OPERATIONS | labradorite: 5, celestite: 5              |
-| 5    | TIER_5_C    | Mogok Hidden      | 75           | ELITE_OPERATIONS | lapis_lazuli: 3, malachite: 3, azurite: 3 |
-
-### 5.3 Process Equipment
-
-Twelve equipment items across three categories (cleaning, cutting, faceting), each providing speed and quality bonuses.
-
-> **Full list:** See `src/data/processEquipment.js`
-
-### 5.4 Processing Queue
-
-- Base: 2 slots
-- Additional slots unlock at player levels 10, 25, 50
-- Idle processing continues while offline
-
-### 5.5 Upgrades
-
-Purchased with Cash, providing permanent bonuses.
-
-**Categories:**
-
-| Category | Description |
-|----------|-------------|
-| **Processing** | Faster cleaning/cutting/faceting, quality bonuses |
-| **Discovery** | Better drop rates, hidden vein detection |
-| **Storage** | Increased inventory capacity |
-| **Marketplace** | Lower fees, price history |
-
-**Upgrade Properties:**
-
-```yaml
-- id: upgrade_id
-  name: Display Name
-  description: Effect description
-  category: processing|discovery|storage|marketplace
-  tier: 1-3
-  cost:
-    coins: number
-    materials: { item_id: quantity }
-  effect:
-    type: string
-    value: number | boolean
-  maxLevel: number (optional)
 ```
+┌───────────────────────────┐
+│      GEMSTONE COLLECTOR    │
+├───────────────────────────┤
+│  🗺  Explore  (world map)  │
+│  🔬 Identify (the bench)   │
+│  💎 Cut       (lapidary)   │
+│  📖 Gemdex    (collection) │
+│  🏆 Shows     (competitions)│
+│  🛒 Market    (economy)    │
+│  ⚙  Bench/Prep + Gear      │
+├───────────────────────────┤
+│  💰 Cash    ⭐ Reputation   │
+└───────────────────────────┘
+```
+
+### 14.2 Key screens
+
+- **Explore** — world map with locality nodes (locked/unlocked, gate hints); locality view = field-guide entry + expedition minigame + prospecting hints; idle sieve toggle.
+- **Identify (the bench)** — detective board (candidate cards + SUSPECTS counter), visual test gauges, test tool tray, free-observation panel, suggested-test hint, commit button, expert-readout toggle; queue + Lab Assistant panel.
+- **Cut (lapidary)** — technique picker (with suitability + success preview), unlock/level minigames, apply/roll with animated result, phenomena reveal moment; queue + Apprentice panel.
+- **Gemdex** — breadth grid (families, locked silhouettes, NEW badges, %), per-entry textbook page; **Trophy/Display case** view.
+- **Shows** — active rubrics, entry slots, NPC rivals, rewards.
+- **Market** — sell (rough vs. cut), buy (gear/instruments/consumables/rough/species), certification, demand ticker.
+- **Bench/Prep** — Lab Prep ritual (spend consumables → temp buffs), gear & instrument shop, hire/level idle helpers.
+
+### 14.3 Visual style
+
+- **Theme:** cozy, tactile; dark slate with gold accents (carried from prior identity).
+- **Palette:** background `#1a1a2e`, accent `#ffd700`, text `#e0e0e0`.
+- **Rarity colors:** Common `#a0a0a0`, Uncommon `#4CAF50`, Rare `#2196F3`, Epic `#9C27B0`, Legendary `#FF9800`.
+- **Feel:** satisfying audio on tests/cuts, particle sparkle on reveals, big NEW/phenomena moments. Card-based item displays; 2D with pseudo-3D stone rotation where it sells the fantasy.
+- **Responsive:** mobile < 640px, tablet 640–1024px, desktop > 1024px; 44px min touch targets.
 
 ---
 
-## 6. Data Reference
+## 15. Progression Pacing & Power Curve
 
-### 6.1 Items (40 Total)
+- **Early (first session):** the beginner creek; panning; identify colorless/obvious commons via 2–3 tests; first NEW entries; basic gear (pan, loupe, hardness picks, scale). Cutting optional and safe (cabochon/round).
+- **Mid:** multiple deposit types (hard-rock, geodes) via gear/reputation; harder look-alikes demand better instruments & higher test mastery; more cut techniques; Family Familiarity kicks in; Lab Assistant/Apprentice offload commons; first gem shows.
+- **Late:** metamorphic/kimberlite/opal trophy tiers; nastiest look-alikes need advanced tools (refractometer); hardest cuts & fantasy cuts; chasing best-in-species and Best-in-Show; completing the Gemdex and every family/regional set.
 
-**Gems (24):**
-
-| Rarity | Count | Examples |
-|--------|-------|-----------|
-| Legendary | 6 | Diamond, Blue Diamond, Alexandrite, Taaffeite, Musgravite, Red Beryl |
-| Epic | 6 | Ruby, Sapphire, Emerald, Tanzanite, Paraíba Tourmaline, Jadeite |
-| Rare | 5 | Spinel, Tsavorite, Black Opal, Imperial Topaz, Natural Pearl |
-| Uncommon | 6 | Aquamarine, Tourmaline, Peridot, Opal, Citrine, Turquoise |
-| Common | 2 | Amethyst, Clear Quartz |
-
-**Minerals (16):**
-
-| Rarity | Count | Examples |
-|--------|-------|-----------|
-| Uncommon | 7 | Malachite, Azurite, Lapis Lazuli, Rose Quartz, Labradorite, Celestite, Quartz Geode |
-| Common | 9 | Clear Quartz, Obsidian, Moonstone, Calcite, Fluorite, Hematite, Pyrite, Gypsum, Mica |
-
-### 6.2 Item Schema
-
-```yaml
-items:
-  - id: string # unique identifier (e.g., "ruby", "clear_quartz")
-    name: string # display name (e.g., "Ruby")
-    category: Gem|Mineral # item category
-    hardness: number # Mohs scale (1-10)
-    value: number # base coin value
-    rarity: Common|Uncommon|Rare|Epic|Legendary
-    realWorldLocations: # for flavor/flair
-      - string
-    processing:
-      canClean: boolean
-      canCut: boolean
-      canFacet: boolean
-      baseProcessTime: number # seconds
-      processDifficulty: number # 1-5
-```
-
-### 6.3 Location Schema
-
-```yaml
-TIER_X:
-  name: string # display name
-  color: string # hex color for UI (#RRGGBB)
-  unlockLevel: number # player level required
-  unlockEquipment: string # equipment ID required
-  unlockMaterials: # materials required (null if none)
-    item_id: quantity
-```
-
-### 6.4 Worker Schema
-
-```yaml
-workers:
-  - id: string # unique type identifier
-    name: string # display name
-    description: string # flavor text
-    maxLevel: number # maximum level for this type
-    baseXpPerAction: number # XP earned per tick
-    xpToLevel: number # base XP to reach level 2
-    stats:
-      efficiency: number # 0-100
-      luck: number # 0-100
-      speed: number # 0-100
-    cost:
-      coins: number # purchase cost
-```
-
-### 6.5 Equipment Schema
-
-```yaml
-equipment_id:
-  id: string
-  name: string
-  cost: number
-  unlockLevel: number
-  effect:
-    dropRateBonus: number # 0-1 (percentage)
-    extraItems: number # additional items per discovery
-  unlocks: # array of location IDs this equipment unlocks
-    - string
-  description: string
-  craftRecipe: # null if purchase-only
-    materials:
-      item_id: quantity
-    coins: number
-```
+The player is always pulled by (a) the next locality, (b) the next NEW, (c) a better trophy, (d) a show rubric, (e) raising a mastery to crack a look-alike or land a hard cut.
 
 ---
 
-## 7. UI/UX Specification
+## 16. Tunable Constants
 
-### 7.1 Navigation Menu
+> All require playtesting; treat as starting points.
 
-```
-┌─────────────────────────┐
-│   GEMSTONE COLLECTOR   │  ← Header
-├─────────────────────────┤
-│  ▶ Discover (Mining)    │  ← Worker management, area selection
-│  ▶ Process             │  ← Refine raw materials
-│  ▶ Craft               │  ← Create jewelry
-│  ▶ Marketplace         │  ← Buy/Sell
-│  ▶ Gemdex              │  ← Collection encyclopedia
-│  ▶ Workers             │  ← Worker management (NEW)
-│  ▶ Upgrades            │  ← Shop for upgrades
-├─────────────────────────┤
-│  💰 CASH    ⭐ XP       │  ← Footer stats
-└─────────────────────────┘
-```
-
-### 7.2 Component Architecture
-
-```
-src/
-├── features/
-│   ├── discover/          # Location selection, rewards
-│   ├── inventory/        # Inventory, Gemdex
-│   ├── process/          # Processing UI, queue
-│   ├── craft/            # Jewelry creation (placeholder)
-│   ├── sell/             # Marketplace (placeholder)
-│   ├── workers/          # Worker management (NEW)
-│   └── upgrades/         # Upgrade shop
-├── shared/
-│   ├── components/       # Menu, DebugPanel, ItemIcons
-│   ├── hooks/           # useGame, usePlayer
-│   └── utils/            # zoneUnlock, queueProcessing
-├── context/
-│   └── GameContext.jsx  # Main state management
-├── schemas/              # Zod validation schemas
-├── loaders/              # YAML data loaders with validation
-└── data/                 # YAML data files
-```
-
-### 7.3 Responsive Breakpoints
-
-- **Mobile:** < 640px
-- **Tablet:** 640px - 1024px
-- **Desktop:** > 1024px
-
-### 7.4 Visual Style
-
-- **Theme:** Dark slate with gold accents
-- **Primary Colors:**
-  - Background: `#1a1a2e` (dark slate)
-  - Accent: `#ffd700` (gold)
-  - Text: `#e0e0e0` (light gray)
-- **Rarity Colors:**
-  - Common: `#a0a0a0` (gray)
-  - Uncommon: `#4CAF50` (green)
-  - Rare: `#2196F3` (blue)
-  - Epic: `#9C27B0` (purple)
-  - Legendary: `#FF9800` (orange)
+| Constant | Default | Notes |
+| --- | --- | --- |
+| `BASE_ERROR[test]` | per-test | Width of a novice reading; sets discriminating difficulty |
+| `FAMILIARITY_BONUS` | 0.3 | Max sharpening from a completed family |
+| `livePlay` range | 0.6–1.0 | Agency within a mastery tier |
+| `cut successCurve.base / perLevel` | 0.50 / 0.044 | Lv1≈50% → Lv10≈90% |
+| `CUT_DIFFICULTY_STEP` | 0.08 | Penalty per material difficulty point |
+| `ROUGH_DISCOUNT` | 0.35 | Rough value vs. cut value |
+| `CERT_PREMIUM` | 1.25 | Certification market bump |
+| `OFFLINE_CAP_HOURS` | 8 | Idle progress cap |
+| idle `precisionCap` / `cutLevelCap` | trails player | Always below the player's current ability |
+| Reputation tier costs | curve | Gate map/gear/technique tiers |
 
 ---
 
-## 8. Technical Notes
+## 17. Technical Notes
 
-### 8.1 Technology Stack
-
-- **Frontend:** React 18 + Vite
-- **Styling:** Tailwind CSS v4
-- **State Management:** React Context + useReducer
-- **Data Validation:** Zod
-- **Data Format:** YAML (human-editable)
-- **Testing:** Vitest + React Testing Library
-- **E2E Testing:** Playwright
-
-### 8.2 Data Pipeline
-
-```
-src/data/*.yaml (human-editable)
-        │
-        ▼
-src/loaders/*.js (import.meta.glob + js-yaml)
-        │
-        ▼
-src/schemas/*.js (Zod validation at load time)
-        │
-        ▼
-Runtime data (items, workers, upgrades, etc.)
-```
-
-### 8.3 Schema Validation
-
-All YAML data files are validated against Zod schemas at module load time. Invalid data throws descriptive errors:
-
-```javascript
-// Example error output
-❌ Invalid items.yaml: {
-  items: {
-    0: {
-      hardness: {
-        _errors: ["Number must be <= 10"]
-      }
-    }
-  }
-}
-```
-
-### 8.4 Persistence
-
-- **Storage:** localStorage
-- **Save Trigger:** Automatic on state change (debounced)
-- **Offline Progress:** Calculated on load based on `lastOnlineTimestamp`
-
-### 8.5 Build & Test Commands
-
-```bash
-npm run dev      # Start development server
-npm run build    # Production build
-npm run test     # Run tests (watch mode)
-npm run test:run # Run tests once
-```
+- **Stack:** React 18 + Vite, Tailwind CSS v4, state via React Context + `useReducer`, Zod validation, YAML data (`js-yaml` + `import.meta.glob`), Vitest + React Testing Library, Playwright E2E.
+- **Data pipeline:** `src/data/*.yaml` → `src/loaders/*.js` → `src/schemas/*.js` (Zod validation at load) → runtime data. Invalid YAML throws descriptive errors at load.
+- **Persistence:** localStorage; debounced autosave on state change; offline progress computed on load from `lastOnlineTimestamp`.
+- **State discipline:** reducer is immutable (spread/new objects; never mutate `state`).
+- **Feature structure:** `src/features/{explore,identify,cut,gemdex,shows,market,bench}` + `shared/` + `context/GameContext.jsx` + `schemas/` + `loaders/` + `data/`.
 
 ---
 
-## Appendix A: Glossary
+## 18. Build Order / MVP Slice
 
-| Term             | Definition                                        |
-| ---------------- | ------------------------------------------------- |
-| **Area**         | A mine location where workers can be assigned     |
-| **Cleaning**     | First stage of processing, removes matrix         |
-| **Cutting**      | Second stage of processing, shapes the gem        |
-| **Faceting**     | Final stage of processing, adds brilliance        |
-| **Gemdex**       | Collection/encyclopedia tracking discovered items |
-| **Loot Table**   | Probability distribution for item drops           |
-| **Player Level** | Overall player progression (not currently used)   |
-| **Quality**      | Percentage affecting item value (40-110%)         |
-| **Raw Material** | Item before processing (e.g., rough_quartz)       |
-| **Processed**    | Item after processing (e.g., clear_quartz)        |
-| **Tick**         | Time interval for worker generation (1 minute)    |
-| **Worker**       | Assignable entity that generates materials        |
+This design spans several systems; build it as sub-projects (each: spec → plan → implementation).
+
+1. **Data & schema foundation** — species property profiles, families, localities/deposit types + find pools + gates, cut techniques; Zod schemas + loaders. (No UI.)
+2. **Explore MVP** — world map, panning minigame, prospecting hints, rough-with-base-stats output, gear gating.
+3. **Identify MVP** — candidate board + visual gauges, scratch/heft/UV tests, precision model, fast-lane, cozy fail, notebook/Gemdex writes.
+4. **Catalog MVP** — Gemdex + families + familiarity, Reputation, nonlinear map gates, trophy tracking.
+5. **Cut MVP** — cabochon + round brilliant, unlock/level minigames, apply-and-roll, specimen stats, first phenomenon (star sapphire).
+6. **Synergy web + idle helpers** — Lab Prep, consumables, Lab Assistant, Lapidary Apprentice, offline progress.
+7. **Economy + Gem Shows** — market, certification, show loop.
+
+**Recommended first playable:** Sub-project 1, then a thin vertical slice of **Explore(pan) → Identify → Gemdex** to validate the core fun before widening.
 
 ---
 
-## Appendix B: File Inventory
+## 19. Glossary
 
-### Data Files
-
-- `src/data/items.yaml` — 40 items (gems + minerals)
-- `src/data/workers.yaml` — 5 worker types
-- `src/data/upgrades.yaml` — 10 upgrades
-- `src/data/locations.yaml` — 15 location tiers
-- `src/data/equipment.yaml` — 7 discovery equipment
-- `src/data/processEquipment.yaml` — 12 processing equipment
-
-### Schema Files
-
-- `src/schemas/items.js`
-- `src/schemas/workers.js`
-- `src/schemas/upgrades.js`
-- `src/schemas/locations.js`
-- `src/schemas/equipment.js`
-
-### Loader Files
-
-- `src/loaders/items.js`
-- `src/loaders/workers.js`
-- `src/loaders/upgrades.js`
-- `src/loaders/locations.js`
-- `src/loaders/equipment.js`
+| Term | Definition |
+| --- | --- |
+| **Rough** | An unprocessed, possibly unidentified specimen from Explore |
+| **Deposit type** | Geological class of a locality (alluvial, pegmatite, etc.) that sets its method & find pool |
+| **Find pool** | Weighted set of species (with base-stat ranges) a locality can yield |
+| **Candidate board** | The Identify UI showing remaining possible species |
+| **Reading / band** | A test result and its precision-driven uncertainty range |
+| **Precision** | How narrow a reading is; a function of mastery, instruments, prep, familiarity |
+| **Mastery** | The player's high score in a test/cut minigame; sets outcome ceilings |
+| **Technique** | A cut style the player unlocks and levels |
+| **Specimen score** | Aggregate quality of a specimen from its stats/traits |
+| **Phenomenon** | An optical effect (star, cat's-eye, play-of-color) revealed by the correct cut |
+| **Family Familiarity** | Permanent buff from completing a mineral family's Gemdex set |
+| **Reputation** | Knowledge-based progression meter; gates map/gear/techniques |
+| **Lab Prep** | Pre-session ritual converting consumables into temporary Identify buffs |
+| **Lab Assistant / Lapidary Apprentice** | Idle helpers that auto-ID / auto-cut commons at capped skill |
+| **Gem Show** | NPC-judged competition on specimen stats; endgame reward loop |
 
 ---
 
-_This document is the authoritative source for game mechanics. All implementation should follow this specification. For detailed worker system mechanics, see the linked Worker System Design document._
+_This GDD is the authoritative source for game mechanics; implementation should follow it. Balance values are starting points to be validated in playtesting._
