@@ -1,6 +1,7 @@
 const lerp = ([lo, hi], t) => lo + (hi - lo) * t;
 const round2 = (n) => Math.round(n * 100) / 100;
-const defaultId = () => `spec-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+let idCounter = 0;
+const defaultId = () => `spec-${Date.now()}-${(++idCounter).toString(36)}`;
 
 export function createRough({ trueSpeciesId, caratWeight, clarity, colorGrade, origin }, idFactory = defaultId) {
   return {
