@@ -1,0 +1,72 @@
+# Localities (§5, §8.4). First region: North America.
+# Gates are heterogeneous to demonstrate the nonlinear map:
+#   hidden_creek  → always unlocked (empty gate)
+#   gravel_bar    → gear only (sieve)                    [gear-buyer path]
+#   amethyst_vug  → complete the Creek's set             [collector path]
+#   old_quarry    → reputation tier 2 OR a rock hammer   [identifier / gear path]
+localities:
+  - id: hidden_creek
+    name: Hidden Creek
+    region: north_america
+    depositType: alluvial
+    method: panning
+    hostRock: gravel
+    indicatorMinerals: [garnet, magnetite]
+    color: '#3b6ea5'
+    unlockGate: {}
+    findPool:
+      - { species: quartz,           weight: 50, caratRange: [0.5, 4.0], clarityRange: [40, 90], colorRange: [30, 70] }
+      - { species: almandine_garnet, weight: 25, caratRange: [0.3, 2.0], clarityRange: [50, 95], colorRange: [50, 90] }
+      - { species: sapphire,         weight: 20, caratRange: [0.2, 1.5], clarityRange: [45, 95], colorRange: [40, 95] }
+      - { species: topaz,            weight: 5,  caratRange: [0.5, 3.0], clarityRange: [55, 98], colorRange: [30, 80] }
+
+  - id: gravel_bar
+    name: Gravel Bar
+    region: north_america
+    depositType: alluvial
+    method: panning
+    hostRock: gravel
+    indicatorMinerals: [garnet, magnetite]
+    color: '#5a8fbf'
+    unlockGate:
+      allOf:
+        - { type: gear, id: sieve }
+    findPool:
+      - { species: quartz,           weight: 40, caratRange: [0.5, 5.0], clarityRange: [40, 90], colorRange: [30, 70] }
+      - { species: almandine_garnet, weight: 25, caratRange: [0.3, 2.5], clarityRange: [50, 95], colorRange: [50, 92] }
+      - { species: sapphire,         weight: 30, caratRange: [0.3, 2.0], clarityRange: [50, 98], colorRange: [45, 98] }
+      - { species: topaz,            weight: 5,  caratRange: [0.5, 3.5], clarityRange: [55, 98], colorRange: [30, 80] }
+
+  - id: amethyst_vug
+    name: Amethyst Vug
+    region: north_america
+    depositType: hydrothermal
+    method: geode
+    hostRock: basalt
+    indicatorMinerals: [agate, calcite]
+    color: '#7a4fa0'
+    unlockGate:
+      allOf:
+        - { type: setComplete, setType: locality, id: hidden_creek }
+    findPool:
+      - { species: agate,    weight: 40, caratRange: [1.0, 8.0], clarityRange: [30, 80], colorRange: [40, 90] }
+      - { species: amethyst, weight: 30, caratRange: [0.5, 4.0], clarityRange: [45, 95], colorRange: [50, 98] }
+      - { species: quartz,   weight: 20, caratRange: [0.5, 5.0], clarityRange: [40, 90], colorRange: [30, 70] }
+      - { species: fluorite, weight: 10, caratRange: [0.5, 3.0], clarityRange: [40, 90], colorRange: [45, 95] }
+
+  - id: old_quarry
+    name: Old Quarry
+    region: north_america
+    depositType: metamorphic
+    method: hardrock
+    hostRock: marble
+    indicatorMinerals: [spinel, mica]
+    color: '#8a7d6b'
+    unlockGate:
+      anyOf:
+        - { type: reputation, tier: 2 }
+        - { type: gear, id: rock_hammer }
+    findPool:
+      - { species: almandine_garnet, weight: 45, caratRange: [0.5, 3.0], clarityRange: [50, 95], colorRange: [50, 92] }
+      - { species: sapphire,         weight: 35, caratRange: [0.4, 2.5], clarityRange: [55, 98], colorRange: [50, 98] }
+      - { species: topaz,            weight: 20, caratRange: [0.5, 4.0], clarityRange: [60, 99], colorRange: [35, 85] }

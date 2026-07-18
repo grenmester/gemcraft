@@ -1,0 +1,187 @@
+# Species (v5.0 model, §12.1). Real diagnostic properties drive Identify (§6);
+# suitableCuts / cutDifficulty / phenomena drive Cut (§7).
+#
+# Seeded look-alike puzzles in this first region:
+#   - Colorless: quartz (7 / 2.65) vs topaz (8 / 3.53) vs sapphire (9 / 4.00)
+#     → separated by hardness + specific gravity.
+#   - Purple:   amethyst (7 / 2.65, inert, no cleavage)
+#               vs fluorite (4 / 3.18, fluorescent, perfect cleavage)
+#     → separated by hardness / SG / UV / cleavage.
+species:
+  - id: quartz
+    name: Clear Quartz
+    category: Mineral
+    family: quartz
+    rarity: Common
+    hardness: 7
+    specificGravity: 2.65
+    habit: [prismatic]
+    luster: vitreous
+    transparency: transparent
+    colors: [colorless, white]
+    streak: white
+    fluorescence: null
+    refractiveIndex: [1.544, 1.553]
+    cleavage: none
+    fracture: conchoidal
+    baseValue: 5
+    suitableCuts: [cabochon, round_brilliant, step]
+    cutDifficulty: 1
+    realWorldLocations: [Worldwide, Brazil, Arkansas]
+    funFact: "Quartz is the most abundant mineral in Earth's continental crust."
+
+  - id: amethyst
+    name: Amethyst
+    category: Gem
+    family: quartz
+    rarity: Uncommon
+    hardness: 7
+    specificGravity: 2.65
+    habit: [prismatic, druzy]
+    luster: vitreous
+    transparency: transparent
+    colors: [purple, violet]
+    streak: white
+    fluorescence: null
+    refractiveIndex: [1.544, 1.553]
+    cleavage: none
+    fracture: conchoidal
+    baseValue: 20
+    suitableCuts: [cabochon, round_brilliant, step]
+    cutDifficulty: 1
+    realWorldLocations: [Brazil, Uruguay, Zambia]
+    funFact: "Amethyst is purple quartz colored by iron impurities and natural irradiation."
+
+  - id: citrine
+    name: Citrine
+    category: Gem
+    family: quartz
+    rarity: Uncommon
+    hardness: 7
+    specificGravity: 2.65
+    habit: [prismatic]
+    luster: vitreous
+    transparency: transparent
+    colors: [yellow, orange, amber]
+    streak: white
+    fluorescence: null
+    refractiveIndex: [1.544, 1.553]
+    cleavage: none
+    fracture: conchoidal
+    baseValue: 25
+    suitableCuts: [cabochon, round_brilliant, step]
+    cutDifficulty: 1
+    realWorldLocations: [Brazil, Bolivia, Madagascar]
+    funFact: "Most commercial citrine is heat-treated amethyst."
+
+  - id: agate
+    name: Agate
+    category: Mineral
+    family: quartz
+    rarity: Common
+    hardness: 7
+    specificGravity: 2.60
+    habit: [botryoidal, massive]
+    luster: waxy
+    transparency: translucent
+    colors: [banded, gray, brown, blue, red]
+    streak: white
+    fluorescence: null
+    refractiveIndex: [1.530, 1.540]
+    cleavage: none
+    fracture: conchoidal
+    baseValue: 10
+    suitableCuts: [cabochon]
+    cutDifficulty: 1
+    realWorldLocations: [Brazil, Uruguay, Montana]
+    funFact: "Agate is a banded variety of microcrystalline quartz (chalcedony)."
+
+  - id: almandine_garnet
+    name: Almandine Garnet
+    category: Gem
+    family: garnet
+    rarity: Uncommon
+    hardness: [7, 7.5]
+    specificGravity: 4.05
+    habit: [dodecahedral]
+    luster: vitreous
+    transparency: transparent
+    colors: [red, brownish-red, purple-red]
+    streak: white
+    fluorescence: null
+    refractiveIndex: 1.79
+    cleavage: none
+    fracture: conchoidal
+    baseValue: 40
+    suitableCuts: [cabochon, round_brilliant, step]
+    cutDifficulty: 3
+    realWorldLocations: [India, Sri Lanka, Montana]
+    funFact: "Garnets often crystallize as near-perfect 12-sided dodecahedra."
+
+  - id: topaz
+    name: Topaz
+    category: Gem
+    family: topaz
+    rarity: Rare
+    hardness: 8
+    specificGravity: 3.53
+    habit: [prismatic]
+    luster: vitreous
+    transparency: transparent
+    colors: [colorless, blue, yellow, pink, sherry]
+    streak: white
+    fluorescence: { longwave: cream, shortwave: none }
+    refractiveIndex: [1.610, 1.638]
+    cleavage: perfect
+    fracture: uneven
+    baseValue: 150
+    suitableCuts: [round_brilliant, step, princess]
+    cutDifficulty: 3
+    realWorldLocations: [Brazil, Pakistan, Utah]
+    funFact: "Topaz has perfect basal cleavage, so cutters must orient carefully to avoid splitting it."
+
+  - id: sapphire
+    name: Sapphire
+    category: Gem
+    family: corundum
+    rarity: Epic
+    hardness: 9
+    specificGravity: 4.00
+    habit: [prismatic, tabular]
+    luster: vitreous
+    transparency: transparent
+    colors: [blue, colorless, yellow, pink]
+    streak: white
+    fluorescence: { longwave: red, shortwave: none }
+    refractiveIndex: [1.762, 1.770]
+    cleavage: none
+    fracture: conchoidal
+    baseValue: 700
+    suitableCuts: [cabochon, round_brilliant, step, princess]
+    cutDifficulty: 4
+    phenomena:
+      - { type: asterism, revealedBy: cabochon }
+    realWorldLocations: [Kashmir, Myanmar, Sri Lanka, Montana]
+    funFact: "Sapphire and ruby are the same mineral, corundum; only the color differs."
+
+  - id: fluorite
+    name: Fluorite
+    category: Mineral
+    family: fluorite
+    rarity: Uncommon
+    hardness: 4
+    specificGravity: 3.18
+    habit: [cubic, octahedral]
+    luster: vitreous
+    transparency: transparent
+    colors: [purple, green, blue, colorless, yellow]
+    streak: white
+    fluorescence: { longwave: blue, shortwave: violet }
+    refractiveIndex: 1.434
+    cleavage: perfect
+    fracture: conchoidal
+    baseValue: 15
+    suitableCuts: [cabochon, step]
+    cutDifficulty: 4
+    realWorldLocations: [England, China, Illinois]
+    funFact: "The word 'fluorescence' was coined after fluorite, which often glows under UV light."

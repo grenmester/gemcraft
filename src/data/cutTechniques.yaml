@@ -1,0 +1,64 @@
+# Cut techniques (§7). Difficulty 1 (easy) .. 5 (hardest).
+# successCurve: base + perLevel*(level-1); default curve Lv1≈0.50 → Lv10≈0.90.
+techniques:
+  - id: cabochon
+    name: Cabochon
+    difficulty: 1
+    suitableFor:
+      transparency: [translucent, opaque]
+    unlockMinigame: doming
+    successCurve: { base: 0.65, perLevel: 0.035, maxLevel: 10 }
+    yieldRange: [0.70, 0.90]
+    cutQualityRange: [50, 100]
+    catastrophicOnFail: false
+    # A cabochon is the only cut that reveals asterism / chatoyancy / play-of-color.
+    revealsPhenomena: [asterism, chatoyancy, play_of_color, adularescence, labradorescence]
+
+  - id: round_brilliant
+    name: Round Brilliant
+    difficulty: 2
+    suitableFor:
+      transparency: [transparent]
+    unlockMinigame: radial_symmetry
+    successCurve: { base: 0.50, perLevel: 0.044, maxLevel: 10 }
+    yieldRange: [0.55, 0.75]
+    cutQualityRange: [60, 100]
+    catastrophicOnFail: false
+    revealsPhenomena: []
+
+  - id: step
+    name: Step / Emerald Cut
+    difficulty: 3
+    suitableFor:
+      transparency: [transparent, translucent]
+    unlockMinigame: parallel_lines
+    successCurve: { base: 0.45, perLevel: 0.044, maxLevel: 10 }
+    yieldRange: [0.60, 0.80]
+    cutQualityRange: [60, 100]
+    catastrophicOnFail: false
+    revealsPhenomena: []
+
+  - id: princess
+    name: Princess / Boxed Cut
+    difficulty: 4
+    suitableFor:
+      transparency: [transparent]
+    unlockMinigame: radial_symmetry
+    successCurve: { base: 0.40, perLevel: 0.050, maxLevel: 10 }
+    yieldRange: [0.65, 0.85]
+    cutQualityRange: [65, 105]
+    # Sharp corners on cleavable stones can shatter — the opt-in gamble (§7.3).
+    catastrophicOnFail: true
+    revealsPhenomena: []
+
+  - id: fancy
+    name: Fancy / Fantasy Cut
+    difficulty: 5
+    suitableFor:
+      transparency: [transparent]
+    unlockMinigame: freeform_facet
+    successCurve: { base: 0.35, perLevel: 0.055, maxLevel: 10 }
+    yieldRange: [0.50, 0.80]
+    cutQualityRange: [70, 110]
+    catastrophicOnFail: true
+    revealsPhenomena: []
