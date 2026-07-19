@@ -11,6 +11,7 @@ import RewardsSelector from './features/discover/components/RewardsSelector';
 import RewardsSummary from './features/discover/components/RewardsSummary';
 import Gemdex from './features/inventory/components/Gemdex';
 import Inventory from './features/inventory/components/Inventory';
+import Rockhound from './features/rockhound/components/Rockhound';
 import DebugPanel from './shared/components/DebugPanel';
 
 function GameContent() {
@@ -61,6 +62,9 @@ function GameContent() {
       break;
     case 'inventory':
       phaseContent = <Inventory />;
+      break;
+    case 'rockhound':
+      phaseContent = <Rockhound />;
       break;
     default:
       phaseContent = <Menu />;

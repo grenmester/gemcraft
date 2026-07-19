@@ -1,5 +1,5 @@
 import { useGame, GAME_PHASES, SET_PHASE } from '../../context/GameContext';
-import { FaSearch, FaCog, FaGem, FaDollarSign, FaBook, FaBriefcase } from 'react-icons/fa';
+import { FaSearch, FaCog, FaGem, FaDollarSign, FaBook, FaBriefcase, FaMountain } from 'react-icons/fa';
 
 const menuButtons = [
   { label: 'Discover', phase: GAME_PHASES.DISCOVER, Icon: FaSearch },
@@ -7,7 +7,8 @@ const menuButtons = [
   { label: 'Craft', phase: GAME_PHASES.CRAFT, Icon: FaGem },
   { label: 'Sell', phase: GAME_PHASES.SELL, Icon: FaDollarSign },
   { label: 'Gemdex', phase: 'gemdex', Icon: FaBook },
-  { label: 'Inventory', phase: 'inventory', Icon: FaBriefcase }
+  { label: 'Inventory', phase: 'inventory', Icon: FaBriefcase },
+  { label: 'Rockhound', phase: 'rockhound', Icon: FaMountain }
 ];
 
 export default function Menu() {
