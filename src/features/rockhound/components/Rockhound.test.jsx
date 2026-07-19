@@ -27,4 +27,15 @@ describe('Rockhound shell', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
     screen.getByText(/no rough/i);
   });
+
+  it('clears NEW badges once the Gemdex tab is viewed', () => {
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      rough: [], identified: [],
+      gemdex: ['sapphire'], newlyDiscovered: ['sapphire'],
+      reputation: 0, testMastery: { scratch: 0, heft: 0, uv: 0 }
+    }));
+    render(<Rockhound />);
+    fireEvent.click(screen.getByRole('button', { name: /Gemdex/i }));
+    expect(screen.queryByText('NEW')).toBeNull();
+  });
 });

@@ -1,6 +1,6 @@
 // src/features/rockhound/components/Rockhound.jsx
-import { useState } from 'react';
-import { RockhoundProvider, useRockhound, ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY } from '../RockhoundContext.jsx';
+import { useState, useEffect } from 'react';
+import { RockhoundProvider, useRockhound, ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW } from '../RockhoundContext.jsx';
 import { localitiesById } from '../../../loaders/localities.js';
 import { speciesById, species } from '../../../loaders/species.js';
 import Explore from './Explore.jsx';
@@ -15,6 +15,12 @@ function RockhoundInner() {
   const [tab, setTab] = useState('Explore');
 
   const activeRough = state.rough[0] ?? null;
+
+  useEffect(() => {
+    if (tab === 'Gemdex' && state.newlyDiscovered.length > 0) {
+      dispatch({ type: CLEAR_NEW });
+    }
+  }, [tab, state.newlyDiscovered.length, dispatch]);
 
   return (
     <div className="flex flex-col gap-4">

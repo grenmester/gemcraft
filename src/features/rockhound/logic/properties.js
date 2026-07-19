@@ -1,5 +1,5 @@
 export function numericProperty(species, prop) {
-  const v = prop === 'hardness' ? species.hardness : species.specificGravity;
+  const v = species[prop];
   return Array.isArray(v) ? (v[0] + v[1]) / 2 : v;
 }
 
