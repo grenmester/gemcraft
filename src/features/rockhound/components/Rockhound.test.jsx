@@ -11,7 +11,7 @@ describe('Rockhound shell', () => {
     screen.getByRole('button', { name: /Explore/i });
     screen.getByRole('button', { name: /Identify/i });
     screen.getByRole('button', { name: /Gemdex/i });
-    screen.getByText('Hidden Creek');
+    expect(screen.getAllByText('Hidden Creek').length).toBeGreaterThan(0);
   });
 
   it('panning then switching to Identify shows a rough to work on', () => {
@@ -37,5 +37,18 @@ describe('Rockhound shell', () => {
     render(<Rockhound />);
     fireEvent.click(screen.getByRole('button', { name: /Gemdex/i }));
     expect(screen.queryByText('NEW')).toBeNull();
+  });
+
+  it('shows the locality map with a locked, hinted neighbor in Explore', () => {
+    render(<Rockhound />);
+    // starter is unlocked and selected; a gear-gated neighbor is locked with a hint
+    screen.getByRole('button', { name: /Hidden Creek/i });
+    screen.getByText(/Needs the sieve/i);
+  });
+
+  it('shows the progression panel (reputation) on the Gemdex tab', () => {
+    render(<Rockhound />);
+    fireEvent.click(screen.getByRole('button', { name: /Gemdex/i }));
+    screen.getByText(/Reputation/i);
   });
 });

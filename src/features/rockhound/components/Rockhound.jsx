@@ -1,20 +1,39 @@
 // src/features/rockhound/components/Rockhound.jsx
 import { useState, useEffect } from 'react';
 import { RockhoundProvider, useRockhound, ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW } from '../RockhoundContext.jsx';
-import { localitiesById } from '../../../loaders/localities.js';
+import { localities, localitiesById } from '../../../loaders/localities.js';
 import { speciesById, species } from '../../../loaders/species.js';
+import { completedLocalityIds, completedFamilies, isLocalityUnlocked } from '../logic/progression.js';
 import Explore from './Explore.jsx';
 import Identify from './Identify.jsx';
 import GemdexV5 from './GemdexV5.jsx';
+import LocalityMap from './LocalityMap.jsx';
+import ProgressionPanel from './ProgressionPanel.jsx';
 
 const TABS = ['Explore', 'Identify', 'Gemdex'];
-const STARTER_LOCALITY = localitiesById.hidden_creek;
+
+function familyProgressFor(gemdex) {
+  const set = new Set(gemdex);
+  const families = [...new Set(species.map((s) => s.family))];
+  return families.map((family) => {
+    const members = species.filter((s) => s.family === family);
+    const discovered = members.filter((s) => set.has(s.id)).length;
+    return { family, discovered, total: members.length, complete: discovered === members.length };
+  });
+}
 
 function RockhoundInner() {
   const { state, dispatch } = useRockhound();
   const [tab, setTab] = useState('Explore');
+  const [selectedLocalityId, setSelectedLocalityId] = useState('hidden_creek');
 
   const activeRough = state.rough[0] ?? null;
+
+  const completedLocalities = completedLocalityIds(localities, state.gemdex);
+  const completedFams = completedFamilies(species, state.gemdex);
+  const ctx = { reputation: state.reputation, gear: state.gear, completedLocalities, completedFamilies: completedFams };
+  const unlockedIds = localities.filter((l) => isLocalityUnlocked(l, ctx)).map((l) => l.id);
+  const selectedLocality = localitiesById[selectedLocalityId] ?? localitiesById.hidden_creek;
 
   useEffect(() => {
     if (tab === 'Gemdex' && state.newlyDiscovered.length > 0) {
@@ -38,11 +57,19 @@ function RockhoundInner() {
       </nav>
 
       {tab === 'Explore' && (
-        <Explore
-          locality={STARTER_LOCALITY}
-          roughCount={state.rough.length}
-          onCollect={(specimen) => dispatch({ type: ADD_ROUGH, payload: specimen })}
-        />
+        <div className="flex flex-col gap-4">
+          <LocalityMap
+            localities={localities}
+            unlockedIds={unlockedIds}
+            selectedId={selectedLocalityId}
+            onSelect={setSelectedLocalityId}
+          />
+          <Explore
+            locality={selectedLocality}
+            roughCount={state.rough.length}
+            onCollect={(specimen) => dispatch({ type: ADD_ROUGH, payload: specimen })}
+          />
+        </div>
       )}
 
       {tab === 'Identify' && (
@@ -50,9 +77,10 @@ function RockhoundInner() {
           <Identify
             key={activeRough.instanceId}
             specimen={activeRough}
-            locality={localitiesById[activeRough.origin] ?? STARTER_LOCALITY}
+            locality={localitiesById[activeRough.origin] ?? localitiesById.hidden_creek}
             speciesById={speciesById}
             testMastery={state.testMastery}
+            completedFamilies={completedFams}
             onRunTest={(testId, score) => dispatch({ type: RECORD_TEST_SCORE, payload: { testId, score } })}
             onCommit={(instanceId, guessId) => dispatch({ type: COMMIT_IDENTIFY, payload: { instanceId, guessId } })}
           />
@@ -62,7 +90,10 @@ function RockhoundInner() {
       )}
 
       {tab === 'Gemdex' && (
-        <GemdexV5 species={species} gemdex={state.gemdex} newlyDiscovered={state.newlyDiscovered} />
+        <div className="flex flex-col gap-4">
+          <ProgressionPanel reputation={state.reputation} gear={state.gear} familyProgress={familyProgressFor(state.gemdex)} />
+          <GemdexV5 species={species} gemdex={state.gemdex} newlyDiscovered={state.newlyDiscovered} />
+        </div>
       )}
     </div>
   );
