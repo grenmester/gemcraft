@@ -78,6 +78,12 @@ describe('foundation: cross-references are intact', () => {
     const starters = localities.filter((l) => collectGateConditions(l.unlockGate).length === 0);
     expect(starters.length).toBeGreaterThan(0);
   });
+
+  it('every species is obtainable from at least one locality find pool', () => {
+    const pooled = new Set(localities.flatMap((l) => l.findPool.map((e) => e.species)));
+    const missing = species.filter((s) => !pooled.has(s.id)).map((s) => s.id);
+    expect(missing).toEqual([]);
+  });
 });
 
 describe('foundation: cut success curve (§13.3)', () => {

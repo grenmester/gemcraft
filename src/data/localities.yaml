@@ -53,6 +53,7 @@ localities:
       - { species: amethyst, weight: 30, caratRange: [0.5, 4.0], clarityRange: [45, 95], colorRange: [50, 98] }
       - { species: quartz,   weight: 20, caratRange: [0.5, 5.0], clarityRange: [40, 90], colorRange: [30, 70] }
       - { species: fluorite, weight: 10, caratRange: [0.5, 3.0], clarityRange: [40, 90], colorRange: [45, 95] }
+      - { species: citrine, weight: 15, caratRange: [0.5, 4.0], clarityRange: [45, 95], colorRange: [50, 95] }
 
   - id: old_quarry
     name: Old Quarry

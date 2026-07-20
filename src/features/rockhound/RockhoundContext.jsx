@@ -83,7 +83,10 @@ export function rockhoundReducer(state, action) {
 function loadInitialState() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return { ...initialRockhoundState, ...JSON.parse(saved) };
+    if (saved) {
+      const merged = { ...initialRockhoundState, ...JSON.parse(saved) };
+      return { ...merged, gear: withEarnedGear(merged.gemdex, merged.reputation, merged.gear) };
+    }
   } catch (e) {
     console.error('Failed to load rockhound save:', e);
   }
