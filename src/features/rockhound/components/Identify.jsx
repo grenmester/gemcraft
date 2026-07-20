@@ -2,14 +2,16 @@ import { useState } from 'react';
 import { TEST_DEFS, runTest, eliminate } from '../logic/tests.js';
 import { livePlayFromRng } from '../logic/precision.js';
 import { seedCandidates } from '../logic/candidates.js';
+import { familiarityFactor } from '../logic/progression.js';
 
-export default function Identify({ specimen, locality, speciesById, testMastery, onRunTest, onCommit, rng = Math.random }) {
+export default function Identify({ specimen, locality, speciesById, testMastery, completedFamilies = [], onRunTest, onCommit, rng = Math.random }) {
   const [candidates, setCandidates] = useState(() => seedCandidates(locality));
   const trueSpecies = speciesById[specimen.trueSpeciesId];
 
   const handleTest = (testId) => {
     const livePlay = livePlayFromRng(rng);
-    const reading = runTest(testId, trueSpecies, { mastery: testMastery[testId] ?? 0, livePlay });
+    const familiarity = familiarityFactor(trueSpecies.family, completedFamilies);
+    const reading = runTest(testId, trueSpecies, { mastery: testMastery[testId] ?? 0, livePlay, familiarity });
     setCandidates((prev) => eliminate(prev, speciesById, reading));
     onRunTest(testId, Math.round(livePlay * 100));
   };

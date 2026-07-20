@@ -7,7 +7,7 @@ export const TEST_DEFS = {
   uv: { id: 'uv', name: 'UV Light', kind: 'categorical', property: 'fluorescence', gear: 'uv_light' }
 };
 
-export function runTest(testId, trueSpecies, { mastery, livePlay }) {
+export function runTest(testId, trueSpecies, { mastery, livePlay, familiarity = 1 }) {
   const def = TEST_DEFS[testId];
   if (def.kind === 'numeric') {
     return {
@@ -15,7 +15,7 @@ export function runTest(testId, trueSpecies, { mastery, livePlay }) {
       kind: 'numeric',
       property: def.property,
       center: numericProperty(trueSpecies, def.property),
-      band: bandWidth({ property: def.property, mastery, livePlay })
+      band: bandWidth({ property: def.property, mastery, livePlay, familiarity })
     };
   }
   return { testId, kind: 'categorical', property: def.property, key: fluorescenceKey(trueSpecies) };

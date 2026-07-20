@@ -54,4 +54,14 @@ describe('Identify', () => {
     fireEvent.click(screen.getByRole('button', { name: /This is it/i }));
     expect(props.onCommit).toHaveBeenCalledWith('r1', 'sapphire');
   });
+
+  it('passes familiarity through so a completed family sharpens the read', () => {
+    // mastery 30, rng 0.5 → livePlay 0.8. Without familiarity the hardness band spans the
+    // whole 4-species pool; the corundum familiarity boost (×1.3) narrows it to 2 suspects
+    // (topaz + sapphire) without eliminating sapphire (corundum) itself.
+    renderSapphire({ testMastery: { scratch: 30, heft: 30, uv: 30 }, completedFamilies: ['corundum'], rng: () => 0.5 });
+    fireEvent.click(screen.getByRole('button', { name: /Scratch Test/i }));
+    screen.getByText(/SUSPECTS: 2/);
+    screen.getByText('Sapphire');
+  });
 });
