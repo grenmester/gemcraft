@@ -5,6 +5,8 @@ import {
   ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW
 } from './RockhoundContext.jsx';
 import { createRough } from './logic/rollRough.js';
+import { species } from '../../loaders/species.js';
+import { localitiesById } from '../../loaders/localities.js';
 
 const sapphireRough = createRough(
   { trueSpeciesId: 'sapphire', caratWeight: 1, clarity: 80, colorGrade: 80, origin: 'hidden_creek' },
@@ -57,5 +59,23 @@ describe('rockhoundReducer', () => {
     s = rockhoundReducer(s, { type: COMMIT_IDENTIFY, payload: { instanceId: 'r1', guessId: 'sapphire' } });
     s = rockhoundReducer(s, { type: CLEAR_NEW });
     expect(s.newlyDiscovered).toEqual([]);
+  });
+
+  it('starts with no gear', () => {
+    expect(initialRockhoundState.gear).toEqual([]);
+  });
+
+  it('grants rock_hammer once the hidden_creek set is complete', () => {
+    // discover every hidden_creek species via correct commits
+    const creekSpecies = localitiesById.hidden_creek.findPool.map((e) => e.species);
+    let s = initialRockhoundState;
+    creekSpecies.forEach((speciesId, i) => {
+      const rough = { instanceId: `r${i}`, stage: 'rough', trueSpeciesId: speciesId, identifiedAs: null, caratWeight: 1, clarity: 50, colorGrade: 50, origin: 'hidden_creek' };
+      s = rockhoundReducer(s, { type: ADD_ROUGH, payload: rough });
+      s = rockhoundReducer(s, { type: COMMIT_IDENTIFY, payload: { instanceId: `r${i}`, guessId: speciesId } });
+    });
+    expect(s.gemdex.sort()).toEqual([...creekSpecies].sort());
+    expect(s.gear).toContain('rock_hammer'); // creek set complete
+    expect(s.gear).toContain('sieve');       // creek rep total (70) >= tier-1 threshold (50)
   });
 });

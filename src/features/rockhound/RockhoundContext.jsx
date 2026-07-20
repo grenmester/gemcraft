@@ -1,7 +1,9 @@
 // src/features/rockhound/RockhoundContext.jsx
 import { createContext, useContext, useReducer, useEffect } from 'react';
-import { speciesById } from '../../loaders/species.js';
+import { species, speciesById } from '../../loaders/species.js';
+import { localities } from '../../loaders/localities.js';
 import { identifyReward, commitIdentification } from './logic/identifyResult.js';
+import { completedLocalityIds, completedFamilies, earnedGear } from './logic/progression.js';
 
 export const ADD_ROUGH = 'ADD_ROUGH';
 export const RECORD_TEST_SCORE = 'RECORD_TEST_SCORE';
@@ -16,8 +18,21 @@ export const initialRockhoundState = {
   gemdex: [],
   newlyDiscovered: [],
   reputation: 0,
+  gear: [],
   testMastery: { scratch: 0, heft: 0, uv: 0 }
 };
+
+// Union in any gear whose milestone is now satisfied by reputation + gemdex.
+function withEarnedGear(gemdex, reputation, currentGear) {
+  const ctx = {
+    reputation,
+    gear: currentGear,
+    completedLocalities: completedLocalityIds(localities, gemdex),
+    completedFamilies: completedFamilies(species, gemdex)
+  };
+  const merged = [...new Set([...currentGear, ...earnedGear(ctx)])];
+  return merged.length === currentGear.length ? currentGear : merged;
+}
 
 export function rockhoundReducer(state, action) {
   switch (action.type) {
@@ -44,13 +59,16 @@ export function rockhoundReducer(state, action) {
 
       const speciesId = updated.trueSpeciesId;
       const isNew = !state.gemdex.includes(speciesId);
+      const newGemdex = isNew ? [...state.gemdex, speciesId] : state.gemdex;
+      const newReputation = state.reputation + identifyReward(speciesById[speciesId]);
       return {
         ...state,
         rough: state.rough.filter((r) => r.instanceId !== instanceId),
         identified: [...state.identified, updated],
-        gemdex: isNew ? [...state.gemdex, speciesId] : state.gemdex,
+        gemdex: newGemdex,
         newlyDiscovered: isNew ? [...state.newlyDiscovered, speciesId] : state.newlyDiscovered,
-        reputation: state.reputation + identifyReward(speciesById[speciesId])
+        reputation: newReputation,
+        gear: withEarnedGear(newGemdex, newReputation, state.gear)
       };
     }
 
