@@ -148,4 +148,13 @@ describe('rockhoundReducer', () => {
     expect(s.bestSpecimens.topaz).toBeUndefined();
     expect(s.lastCutResult.outcome).toBe('shattered');
   });
+
+  it('a losing (non-shatter) cut still consumes the specimen and can set a first trophy', () => {
+    // round_brilliant is NOT catastrophicOnFail; rng 0.999 forces a plain fail on sapphire
+    let s = rockhoundReducer(withIdentified, { type: UNLOCK_TECHNIQUE, payload: { techniqueId: 'round_brilliant' } });
+    s = rockhoundReducer(s, { type: APPLY_CUT, payload: { instanceId: 'g1', techniqueId: 'round_brilliant', rng: () => 0.999 } });
+    expect(s.identified).toHaveLength(0);
+    expect(s.lastCutResult.outcome).toBe('fail');
+    expect(s.bestSpecimens.sapphire).toBeTruthy();
+  });
 });

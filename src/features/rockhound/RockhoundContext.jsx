@@ -143,7 +143,7 @@ function loadInitialState() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const merged = { ...initialRockhoundState, ...JSON.parse(saved) };
-      return { ...merged, gear: withEarnedGear(merged.gemdex, merged.reputation, merged.gear) };
+      return { ...merged, gear: withEarnedGear(merged.gemdex, merged.reputation, merged.gear), lastCutResult: null };
     }
   } catch (e) {
     console.error('Failed to load rockhound save:', e);
