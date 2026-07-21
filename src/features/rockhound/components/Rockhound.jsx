@@ -1,16 +1,18 @@
 // src/features/rockhound/components/Rockhound.jsx
 import { useState, useEffect } from 'react';
-import { RockhoundProvider, useRockhound, ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW } from '../RockhoundContext.jsx';
+import { RockhoundProvider, useRockhound, ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT } from '../RockhoundContext.jsx';
 import { localities, localitiesById } from '../../../loaders/localities.js';
 import { speciesById, species } from '../../../loaders/species.js';
+import { cutTechniques } from '../../../loaders/cutTechniques.js';
 import { completedLocalityIds, completedFamilies, isLocalityUnlocked } from '../logic/progression.js';
 import Explore from './Explore.jsx';
 import Identify from './Identify.jsx';
+import Cut from './Cut.jsx';
 import GemdexV5 from './GemdexV5.jsx';
 import LocalityMap from './LocalityMap.jsx';
 import ProgressionPanel from './ProgressionPanel.jsx';
 
-const TABS = ['Explore', 'Identify', 'Gemdex'];
+const TABS = ['Explore', 'Identify', 'Cut', 'Gemdex'];
 
 function familyProgressFor(gemdex) {
   const set = new Set(gemdex);
@@ -26,6 +28,7 @@ function RockhoundInner() {
   const { state, dispatch } = useRockhound();
   const [tab, setTab] = useState('Explore');
   const [selectedLocalityId, setSelectedLocalityId] = useState('hidden_creek');
+  const [selectedCutId, setSelectedCutId] = useState(null);
 
   const activeRough = state.rough[0] ?? null;
 
@@ -89,9 +92,39 @@ function RockhoundInner() {
         )
       )}
 
+      {tab === 'Cut' && (
+        <Cut
+          identified={state.identified}
+          techniques={cutTechniques}
+          cutTechniqueLevel={state.cutTechniqueLevel}
+          speciesById={speciesById}
+          selectedId={selectedCutId ?? state.identified[0]?.instanceId ?? null}
+          onSelectSpecimen={setSelectedCutId}
+          lastCutResult={state.lastCutResult}
+          onUnlock={(techniqueId) => dispatch({ type: UNLOCK_TECHNIQUE, payload: { techniqueId } })}
+          onLevel={(techniqueId) => dispatch({ type: LEVEL_TECHNIQUE, payload: { techniqueId } })}
+          onApply={(instanceId, techniqueId) => dispatch({ type: APPLY_CUT, payload: { instanceId, techniqueId } })}
+        />
+      )}
+
       {tab === 'Gemdex' && (
         <div className="flex flex-col gap-4">
           <ProgressionPanel reputation={state.reputation} gear={state.gear} familyProgress={familyProgressFor(state.gemdex)} />
+          <section className="rounded-lg border border-slate-700 bg-slate-800 p-4">
+            <h3 className="font-bold text-yellow-400 mb-2">Trophy case</h3>
+            {Object.keys(state.bestSpecimens).length === 0 ? (
+              <p className="text-slate-500 text-sm">No cut stones yet — cut an identified specimen to earn a trophy.</p>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {Object.entries(state.bestSpecimens).map(([speciesId, best]) => (
+                  <li key={speciesId} className="flex items-center justify-between text-sm">
+                    <span className="text-slate-100">{speciesById[speciesId].name} <span className="text-slate-400">({best.cut})</span>{best.phenomena?.length ? ' ✨' : ''}</span>
+                    <span className="font-mono text-slate-400">score {best.score}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
           <GemdexV5 species={species} gemdex={state.gemdex} newlyDiscovered={state.newlyDiscovered} />
         </div>
       )}

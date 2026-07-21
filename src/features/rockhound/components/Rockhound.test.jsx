@@ -51,4 +51,16 @@ describe('Rockhound shell', () => {
     fireEvent.click(screen.getByRole('button', { name: /Gemdex/i }));
     screen.getByText(/Reputation/i);
   });
+
+  it('shows a Cut tab with an empty state before anything is identified', () => {
+    render(<Rockhound />);
+    fireEvent.click(screen.getByRole('button', { name: /^Cut$/i }));
+    screen.getByText(/nothing to cut/i);
+  });
+
+  it('shows the trophy case heading on the Gemdex tab', () => {
+    render(<Rockhound />);
+    fireEvent.click(screen.getByRole('button', { name: /Gemdex/i }));
+    screen.getByText(/Trophy case/i);
+  });
 });
