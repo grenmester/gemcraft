@@ -120,4 +120,32 @@ describe('rockhoundReducer', () => {
     expect(s.identified).toHaveLength(1); // unchanged
     expect(s.bestSpecimens.sapphire).toBeUndefined();
   });
+
+  it('APPLY_CUT is a no-op for a missing specimen', () => {
+    const unlocked = rockhoundReducer(withIdentified, { type: UNLOCK_TECHNIQUE, payload: { techniqueId: 'cabochon' } });
+    const after = rockhoundReducer(unlocked, { type: APPLY_CUT, payload: { instanceId: 'nope', techniqueId: 'cabochon', rng: () => 0 } });
+    expect(after).toBe(unlocked); // unchanged reference
+  });
+
+  it('APPLY_CUT is a no-op when the technique cannot be applied to the species', () => {
+    // agate.suitableCuts is [cabochon] only → round_brilliant is not applicable
+    const agateRough = { instanceId: 'a1', stage: 'identified', trueSpeciesId: 'agate', identifiedAs: 'agate', caratWeight: 2, clarity: 60, colorGrade: 60, origin: 'amethyst_vug' };
+    let s = { ...initialRockhoundState, identified: [agateRough] };
+    s = rockhoundReducer(s, { type: UNLOCK_TECHNIQUE, payload: { techniqueId: 'round_brilliant' } });
+    const before = s;
+    s = rockhoundReducer(s, { type: APPLY_CUT, payload: { instanceId: 'a1', techniqueId: 'round_brilliant', rng: () => 0 } });
+    expect(s).toBe(before);
+    expect(s.identified).toHaveLength(1);
+  });
+
+  it('a shattered cut consumes the specimen but writes no trophy', () => {
+    // topaz.cleavage 'perfect' + princess.catastrophicOnFail; rng 0.95 → fail (>p) and >0.9 → shatter
+    const topazRough = { instanceId: 't1', stage: 'identified', trueSpeciesId: 'topaz', identifiedAs: 'topaz', caratWeight: 2, clarity: 80, colorGrade: 80, origin: 'hidden_creek' };
+    let s = { ...initialRockhoundState, identified: [topazRough] };
+    s = rockhoundReducer(s, { type: UNLOCK_TECHNIQUE, payload: { techniqueId: 'princess' } });
+    s = rockhoundReducer(s, { type: APPLY_CUT, payload: { instanceId: 't1', techniqueId: 'princess', rng: () => 0.95 } });
+    expect(s.identified).toHaveLength(0);
+    expect(s.bestSpecimens.topaz).toBeUndefined();
+    expect(s.lastCutResult.outcome).toBe('shattered');
+  });
 });
