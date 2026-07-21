@@ -35,7 +35,7 @@ export default function Cut({
           <p className="text-sm text-slate-300">
             Last cut: <strong className="capitalize">{lastCutResult.outcome}</strong>
             {lastCutResult.cutQuality != null && ` · quality ${lastCutResult.cutQuality}`}
-            {lastCutResult.phenomena.length > 0 && ` · ✨ ${lastCutResult.phenomena.join(', ')}`}
+            {lastCutResult.phenomena?.length > 0 && ` · ✨ ${lastCutResult.phenomena.join(', ')}`}
           </p>
         )}
         <ul className="flex flex-col gap-2">

@@ -48,4 +48,16 @@ describe('Cut', () => {
     setup({ lastCutResult: { instanceId: 'g1', outcome: 'success', speciesId: 'sapphire', cutQuality: 92, phenomena: ['asterism'] } });
     screen.getByText(/asterism/i);
   });
+
+  it('pre-selects the first identified specimen when none is chosen, enabling Apply', () => {
+    const p = setup({ selectedId: null, cutTechniqueLevel: { cabochon: 3 } });
+    fireEvent.click(screen.getByRole('button', { name: /Apply/i }));
+    expect(p.onApply).toHaveBeenCalledWith('g1', 'cabochon');
+  });
+
+  it('Learn unlocks the specific technique clicked (first is cabochon)', () => {
+    const p = setup();
+    fireEvent.click(screen.getAllByRole('button', { name: /Learn/i })[0]);
+    expect(p.onUnlock).toHaveBeenCalledWith('cabochon');
+  });
 });
