@@ -2,11 +2,13 @@
 import { describe, it, expect } from 'vitest';
 import {
   rockhoundReducer, initialRockhoundState,
-  ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW
+  ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW,
+  UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT
 } from './RockhoundContext.jsx';
 import { createRough } from './logic/rollRough.js';
 import { species } from '../../loaders/species.js';
 import { localitiesById } from '../../loaders/localities.js';
+import { cutTechniquesById } from '../../loaders/cutTechniques.js';
 
 const sapphireRough = createRough(
   { trueSpeciesId: 'sapphire', caratWeight: 1, clarity: 80, colorGrade: 80, origin: 'hidden_creek' },
@@ -77,5 +79,45 @@ describe('rockhoundReducer', () => {
     expect(s.gemdex.sort()).toEqual([...creekSpecies].sort());
     expect(s.gear).toContain('rock_hammer'); // creek set complete
     expect(s.gear).toContain('sieve');       // creek rep total (70) >= tier-1 threshold (50)
+  });
+
+  const identifiedSapphire = {
+    instanceId: 'g1', stage: 'identified', trueSpeciesId: 'sapphire', identifiedAs: 'sapphire',
+    caratWeight: 2, clarity: 80, colorGrade: 80, origin: 'hidden_creek'
+  };
+  const withIdentified = { ...initialRockhoundState, identified: [identifiedSapphire] };
+
+  it('starts with empty cut state', () => {
+    expect(initialRockhoundState.cutTechniqueLevel).toEqual({});
+    expect(initialRockhoundState.bestSpecimens).toEqual({});
+  });
+
+  it('unlocks then levels a technique (capped at maxLevel)', () => {
+    let s = rockhoundReducer(initialRockhoundState, { type: UNLOCK_TECHNIQUE, payload: { techniqueId: 'cabochon' } });
+    expect(s.cutTechniqueLevel.cabochon).toBe(1);
+    const max = cutTechniquesById.cabochon.successCurve.maxLevel;
+    for (let i = 0; i < max + 3; i++) s = rockhoundReducer(s, { type: LEVEL_TECHNIQUE, payload: { techniqueId: 'cabochon' } });
+    expect(s.cutTechniqueLevel.cabochon).toBe(max);
+  });
+
+  it('will not level a technique that was never unlocked', () => {
+    const s = rockhoundReducer(initialRockhoundState, { type: LEVEL_TECHNIQUE, payload: { techniqueId: 'cabochon' } });
+    expect(s.cutTechniqueLevel.cabochon ?? 0).toBe(0);
+  });
+
+  it('applying a winning cabochon cut trophies a starred sapphire and consumes the specimen', () => {
+    let s = rockhoundReducer(withIdentified, { type: UNLOCK_TECHNIQUE, payload: { techniqueId: 'cabochon' } });
+    for (let i = 0; i < 9; i++) s = rockhoundReducer(s, { type: LEVEL_TECHNIQUE, payload: { techniqueId: 'cabochon' } }); // level ~10
+    s = rockhoundReducer(s, { type: APPLY_CUT, payload: { instanceId: 'g1', techniqueId: 'cabochon', rng: () => 0 } });
+    expect(s.identified).toHaveLength(0);
+    expect(s.bestSpecimens.sapphire).toBeTruthy();
+    expect(s.bestSpecimens.sapphire.phenomena).toContain('asterism');
+    expect(s.lastCutResult.outcome).toBe('success');
+  });
+
+  it('does not apply an un-unlocked technique', () => {
+    const s = rockhoundReducer(withIdentified, { type: APPLY_CUT, payload: { instanceId: 'g1', techniqueId: 'cabochon', rng: () => 0 } });
+    expect(s.identified).toHaveLength(1); // unchanged
+    expect(s.bestSpecimens.sapphire).toBeUndefined();
   });
 });

@@ -4,11 +4,16 @@ import { species, speciesById } from '../../loaders/species.js';
 import { localities } from '../../loaders/localities.js';
 import { identifyReward, commitIdentification } from './logic/identifyResult.js';
 import { completedLocalityIds, completedFamilies, earnedGear } from './logic/progression.js';
+import { cutTechniquesById } from '../../loaders/cutTechniques.js';
+import { applyCut, canApply, specimenScore } from './logic/cut.js';
 
 export const ADD_ROUGH = 'ADD_ROUGH';
 export const RECORD_TEST_SCORE = 'RECORD_TEST_SCORE';
 export const COMMIT_IDENTIFY = 'COMMIT_IDENTIFY';
 export const CLEAR_NEW = 'CLEAR_NEW';
+export const UNLOCK_TECHNIQUE = 'UNLOCK_TECHNIQUE';
+export const LEVEL_TECHNIQUE = 'LEVEL_TECHNIQUE';
+export const APPLY_CUT = 'APPLY_CUT';
 
 const STORAGE_KEY = 'rockhound_save_v1';
 
@@ -19,7 +24,10 @@ export const initialRockhoundState = {
   newlyDiscovered: [],
   reputation: 0,
   gear: [],
-  testMastery: { scratch: 0, heft: 0, uv: 0 }
+  testMastery: { scratch: 0, heft: 0, uv: 0 },
+  cutTechniqueLevel: {},
+  bestSpecimens: {},
+  lastCutResult: null
 };
 
 // Union in any gear whose milestone is now satisfied by reputation + gemdex.
@@ -74,6 +82,56 @@ export function rockhoundReducer(state, action) {
 
     case CLEAR_NEW:
       return { ...state, newlyDiscovered: [] };
+
+    case UNLOCK_TECHNIQUE: {
+      const { techniqueId } = action.payload;
+      if ((state.cutTechniqueLevel[techniqueId] ?? 0) >= 1) return state;
+      return { ...state, cutTechniqueLevel: { ...state.cutTechniqueLevel, [techniqueId]: 1 } };
+    }
+
+    case LEVEL_TECHNIQUE: {
+      const { techniqueId } = action.payload;
+      const current = state.cutTechniqueLevel[techniqueId] ?? 0;
+      if (current < 1) return state; // must be unlocked first
+      const max = cutTechniquesById[techniqueId]?.successCurve.maxLevel ?? current;
+      const next = Math.min(current + 1, max);
+      if (next === current) return state;
+      return { ...state, cutTechniqueLevel: { ...state.cutTechniqueLevel, [techniqueId]: next } };
+    }
+
+    case APPLY_CUT: {
+      const { instanceId, techniqueId, rng } = action.payload;
+      const specimen = state.identified.find((s) => s.instanceId === instanceId);
+      const technique = cutTechniquesById[techniqueId];
+      const level = state.cutTechniqueLevel[techniqueId] ?? 0;
+      if (!specimen || !technique || level < 1) return state;
+      const species = speciesById[specimen.trueSpeciesId];
+      if (!canApply(species, technique)) return state;
+
+      const result = applyCut(specimen, species, technique, level, rng ?? Math.random);
+      const identified = state.identified.filter((s) => s.instanceId !== instanceId);
+
+      let bestSpecimens = state.bestSpecimens;
+      if (result.specimen) {
+        const score = specimenScore(result.specimen, species);
+        const prev = state.bestSpecimens[species.id];
+        if (!prev || score > prev.score) {
+          bestSpecimens = { ...state.bestSpecimens, [species.id]: { ...result.specimen, score } };
+        }
+      }
+      return {
+        ...state,
+        identified,
+        bestSpecimens,
+        lastCutResult: {
+          instanceId,
+          outcome: result.outcome,
+          speciesId: species.id,
+          cutQuality: result.specimen?.cutQuality ?? null,
+          phenomena: result.specimen?.phenomena ?? []
+        }
+      };
+    }
 
     default:
       return state;
