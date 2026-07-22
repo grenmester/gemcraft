@@ -3,12 +3,14 @@ import { describe, it, expect } from 'vitest';
 import {
   rockhoundReducer, initialRockhoundState,
   ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW,
-  UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT
+  UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT,
+  SELL_IDENTIFIED, SELL_STONE, BUY_GEAR
 } from './RockhoundContext.jsx';
 import { createRough } from './logic/rollRough.js';
-import { species } from '../../loaders/species.js';
+import { species, speciesById } from '../../loaders/species.js';
 import { localitiesById } from '../../loaders/localities.js';
 import { cutTechniquesById } from '../../loaders/cutTechniques.js';
+import { stoneValue, identifiedValue, gearPrice } from './logic/market.js';
 
 const sapphireRough = createRough(
   { trueSpeciesId: 'sapphire', caratWeight: 1, clarity: 80, colorGrade: 80, origin: 'hidden_creek' },
@@ -156,5 +158,46 @@ describe('rockhoundReducer', () => {
     expect(s.identified).toHaveLength(0);
     expect(s.lastCutResult.outcome).toBe('fail');
     expect(s.bestSpecimens.sapphire).toBeTruthy();
+  });
+
+  it('starts with zero cash and no stones', () => {
+    expect(initialRockhoundState.cash).toBe(0);
+    expect(initialRockhoundState.stones).toEqual([]);
+  });
+
+  it('a successful cut adds a sellable stone to inventory', () => {
+    let s = { ...initialRockhoundState, identified: [identifiedSapphire] };
+    s = rockhoundReducer(s, { type: UNLOCK_TECHNIQUE, payload: { techniqueId: 'cabochon' } });
+    for (let i = 0; i < 9; i++) s = rockhoundReducer(s, { type: LEVEL_TECHNIQUE, payload: { techniqueId: 'cabochon' } });
+    s = rockhoundReducer(s, { type: APPLY_CUT, payload: { instanceId: 'g1', techniqueId: 'cabochon', rng: () => 0 } });
+    expect(s.stones).toHaveLength(1);
+    expect(s.stones[0].trueSpeciesId).toBe('sapphire');
+  });
+
+  it('sells an identified specimen for its identified value', () => {
+    const s0 = { ...initialRockhoundState, identified: [identifiedSapphire] };
+    const s1 = rockhoundReducer(s0, { type: SELL_IDENTIFIED, payload: { instanceId: 'g1' } });
+    expect(s1.identified).toHaveLength(0);
+    expect(s1.cash).toBe(identifiedValue(identifiedSapphire, speciesById.sapphire));
+  });
+
+  it('sells a cut stone for its stone value', () => {
+    const stone = { instanceId: 'st1', trueSpeciesId: 'sapphire', cut: 'cabochon', cutQuality: 90, phenomena: ['asterism'], caratWeight: 2, caratRetained: 1.6, clarity: 80, colorGrade: 80, score: 88 };
+    const s0 = { ...initialRockhoundState, stones: [stone] };
+    const s1 = rockhoundReducer(s0, { type: SELL_STONE, payload: { instanceId: 'st1' } });
+    expect(s1.stones).toHaveLength(0);
+    expect(s1.cash).toBe(stoneValue(stone, speciesById.sapphire));
+  });
+
+  it('buys gear when affordable and not owned, and no-ops otherwise', () => {
+    const rich = { ...initialRockhoundState, cash: 500 };
+    const bought = rockhoundReducer(rich, { type: BUY_GEAR, payload: { gearId: 'sieve' } });
+    expect(bought.gear).toContain('sieve');
+    expect(bought.cash).toBe(500 - gearPrice('sieve'));
+    // already owned → no-op
+    expect(rockhoundReducer(bought, { type: BUY_GEAR, payload: { gearId: 'sieve' } })).toBe(bought);
+    // too poor → no-op
+    const poor = { ...initialRockhoundState, cash: 10 };
+    expect(rockhoundReducer(poor, { type: BUY_GEAR, payload: { gearId: 'rock_hammer' } })).toBe(poor);
   });
 });

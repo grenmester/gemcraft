@@ -6,6 +6,7 @@ import { identifyReward, commitIdentification } from './logic/identifyResult.js'
 import { completedLocalityIds, completedFamilies, earnedGear } from './logic/progression.js';
 import { cutTechniquesById } from '../../loaders/cutTechniques.js';
 import { applyCut, canApply, specimenScore } from './logic/cut.js';
+import { identifiedValue, stoneValue, gearPrice } from './logic/market.js';
 
 export const ADD_ROUGH = 'ADD_ROUGH';
 export const RECORD_TEST_SCORE = 'RECORD_TEST_SCORE';
@@ -14,6 +15,9 @@ export const CLEAR_NEW = 'CLEAR_NEW';
 export const UNLOCK_TECHNIQUE = 'UNLOCK_TECHNIQUE';
 export const LEVEL_TECHNIQUE = 'LEVEL_TECHNIQUE';
 export const APPLY_CUT = 'APPLY_CUT';
+export const SELL_IDENTIFIED = 'SELL_IDENTIFIED';
+export const SELL_STONE = 'SELL_STONE';
+export const BUY_GEAR = 'BUY_GEAR';
 
 const STORAGE_KEY = 'rockhound_save_v1';
 
@@ -27,7 +31,9 @@ export const initialRockhoundState = {
   testMastery: { scratch: 0, heft: 0, uv: 0 },
   cutTechniqueLevel: {},
   bestSpecimens: {},
-  lastCutResult: null
+  lastCutResult: null,
+  cash: 0,
+  stones: []
 };
 
 // Union in any gear whose milestone is now satisfied by reputation + gemdex.
@@ -112,16 +118,20 @@ export function rockhoundReducer(state, action) {
       const identified = state.identified.filter((s) => s.instanceId !== instanceId);
 
       let bestSpecimens = state.bestSpecimens;
+      let stones = state.stones;
       if (result.specimen) {
         const score = specimenScore(result.specimen, species);
+        const cutStone = { ...result.specimen, score };
+        stones = [...state.stones, cutStone];
         const prev = state.bestSpecimens[species.id];
         if (!prev || score > prev.score) {
-          bestSpecimens = { ...state.bestSpecimens, [species.id]: { ...result.specimen, score } };
+          bestSpecimens = { ...state.bestSpecimens, [species.id]: cutStone };
         }
       }
       return {
         ...state,
         identified,
+        stones,
         bestSpecimens,
         lastCutResult: {
           instanceId,
@@ -131,6 +141,37 @@ export function rockhoundReducer(state, action) {
           phenomena: result.specimen?.phenomena ?? []
         }
       };
+    }
+
+    case SELL_IDENTIFIED: {
+      const { instanceId } = action.payload;
+      const specimen = state.identified.find((s) => s.instanceId === instanceId);
+      if (!specimen) return state;
+      const species = speciesById[specimen.trueSpeciesId];
+      return {
+        ...state,
+        identified: state.identified.filter((s) => s.instanceId !== instanceId),
+        cash: state.cash + identifiedValue(specimen, species)
+      };
+    }
+
+    case SELL_STONE: {
+      const { instanceId } = action.payload;
+      const stone = state.stones.find((s) => s.instanceId === instanceId);
+      if (!stone) return state;
+      const species = speciesById[stone.trueSpeciesId];
+      return {
+        ...state,
+        stones: state.stones.filter((s) => s.instanceId !== instanceId),
+        cash: state.cash + stoneValue(stone, species)
+      };
+    }
+
+    case BUY_GEAR: {
+      const { gearId } = action.payload;
+      const price = gearPrice(gearId);
+      if (price == null || state.gear.includes(gearId) || state.cash < price) return state;
+      return { ...state, cash: state.cash - price, gear: [...state.gear, gearId] };
     }
 
     default:
