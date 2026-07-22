@@ -1,6 +1,6 @@
 // src/features/rockhound/components/Rockhound.jsx
 import { useState, useEffect } from 'react';
-import { RockhoundProvider, useRockhound, ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT } from '../RockhoundContext.jsx';
+import { RockhoundProvider, useRockhound, ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR } from '../RockhoundContext.jsx';
 import { localities, localitiesById } from '../../../loaders/localities.js';
 import { speciesById, species } from '../../../loaders/species.js';
 import { cutTechniques } from '../../../loaders/cutTechniques.js';
@@ -8,11 +8,12 @@ import { completedLocalityIds, completedFamilies, isLocalityUnlocked } from '../
 import Explore from './Explore.jsx';
 import Identify from './Identify.jsx';
 import Cut from './Cut.jsx';
+import Market from './Market.jsx';
 import GemdexV5 from './GemdexV5.jsx';
 import LocalityMap from './LocalityMap.jsx';
 import ProgressionPanel from './ProgressionPanel.jsx';
 
-const TABS = ['Explore', 'Identify', 'Cut', 'Gemdex'];
+const TABS = ['Explore', 'Identify', 'Cut', 'Market', 'Gemdex'];
 
 function familyProgressFor(gemdex) {
   const set = new Set(gemdex);
@@ -46,6 +47,7 @@ function RockhoundInner() {
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex justify-end text-lg font-bold text-yellow-400">💰 {state.cash}</div>
       <nav className="flex gap-2 border-b border-slate-700 pb-2">
         {TABS.map((t) => (
           <button
@@ -104,6 +106,19 @@ function RockhoundInner() {
           onUnlock={(techniqueId) => dispatch({ type: UNLOCK_TECHNIQUE, payload: { techniqueId } })}
           onLevel={(techniqueId) => dispatch({ type: LEVEL_TECHNIQUE, payload: { techniqueId } })}
           onApply={(instanceId, techniqueId) => dispatch({ type: APPLY_CUT, payload: { instanceId, techniqueId } })}
+        />
+      )}
+
+      {tab === 'Market' && (
+        <Market
+          cash={state.cash}
+          identified={state.identified}
+          stones={state.stones}
+          speciesById={speciesById}
+          ownedGear={state.gear}
+          onSellIdentified={(instanceId) => dispatch({ type: SELL_IDENTIFIED, payload: { instanceId } })}
+          onSellStone={(instanceId) => dispatch({ type: SELL_STONE, payload: { instanceId } })}
+          onBuyGear={(gearId) => dispatch({ type: BUY_GEAR, payload: { gearId } })}
         />
       )}
 

@@ -63,4 +63,15 @@ describe('Rockhound shell', () => {
     fireEvent.click(screen.getByRole('button', { name: /Gemdex/i }));
     screen.getByText(/Trophy case/i);
   });
+
+  it('shows a Market tab with an empty sell state before anything is sellable', () => {
+    render(<Rockhound />);
+    fireEvent.click(screen.getByRole('button', { name: /^Market$/i }));
+    screen.getByText(/nothing to sell/i);
+  });
+
+  it('shows a cash readout in the shell', () => {
+    render(<Rockhound />);
+    screen.getByText(/💰/);
+  });
 });
