@@ -1,10 +1,15 @@
-# Localities (§5, §8.4). First region: North America.
-# Gates are heterogeneous to demonstrate the nonlinear map:
-#   hidden_creek  → always unlocked (empty gate)
-#   gravel_bar    → gear only (sieve)                    [gear-buyer path]
-#   amethyst_vug  → complete the Creek's set             [collector path]
-#   old_quarry    → reputation tier 2 OR a rock hammer   [identifier / gear path]
+# Localities (§5, §8.4). Deposit types & difficulty ramp derived from
+# docs/research/gem-reference.md (§4). Every species in species.yaml must
+# appear in at least one find pool (enforced by foundation.test.js).
+#
+# Gates reuse the existing system (empty = always; gear; reputation tier;
+# setComplete) — no new gear needed. Reputation tiers: 1=50, 2=120, 3=250, 4=450.
+# Difficulty ramp:
+#   creek/gravel (pan) → basalt mesa (surface) → amethyst vug (geode)
+#   → old quarry / pala pegmatite → mogok marble / muzo vein / opal flats
+#   → kimberlite pipe (capstone)
 localities:
+  # ---------- Tier 0-1: alluvial / surface (easy) ----------
   - id: hidden_creek
     name: Hidden Creek
     region: north_america
@@ -37,9 +42,26 @@ localities:
       - { species: sapphire,         weight: 30, caratRange: [0.3, 2.0], clarityRange: [50, 98], colorRange: [45, 98] }
       - { species: topaz,            weight: 5,  caratRange: [0.5, 3.5], clarityRange: [55, 98], colorRange: [30, 80] }
 
+  - id: basalt_mesa
+    name: Basalt Mesa
+    region: southwest
+    depositType: volcanic
+    method: surface
+    hostRock: basalt
+    indicatorMinerals: [olivine, obsidian]
+    color: '#6b7c4a'
+    unlockGate:
+      allOf:
+        - { type: reputation, tier: 1 }
+    findPool:
+      - { species: obsidian, weight: 45, caratRange: [1.0, 10.0], clarityRange: [20, 60], colorRange: [20, 60] }
+      - { species: peridot,  weight: 35, caratRange: [0.3, 2.5],  clarityRange: [50, 95], colorRange: [50, 90] }
+      - { species: agate,    weight: 20, caratRange: [1.0, 8.0],  clarityRange: [30, 80], colorRange: [40, 90] }
+
+  # ---------- Tier 2: hydrothermal vug / pegmatite ----------
   - id: amethyst_vug
     name: Amethyst Vug
-    region: north_america
+    region: south_america
     depositType: hydrothermal
     method: geode
     hostRock: basalt
@@ -52,12 +74,31 @@ localities:
       - { species: agate,    weight: 40, caratRange: [1.0, 8.0], clarityRange: [30, 80], colorRange: [40, 90] }
       - { species: amethyst, weight: 30, caratRange: [0.5, 4.0], clarityRange: [45, 95], colorRange: [50, 98] }
       - { species: quartz,   weight: 20, caratRange: [0.5, 5.0], clarityRange: [40, 90], colorRange: [30, 70] }
+      - { species: citrine,  weight: 15, caratRange: [0.5, 4.0], clarityRange: [45, 95], colorRange: [50, 95] }
       - { species: fluorite, weight: 10, caratRange: [0.5, 3.0], clarityRange: [40, 90], colorRange: [45, 95] }
-      - { species: citrine, weight: 15, caratRange: [0.5, 4.0], clarityRange: [45, 95], colorRange: [50, 95] }
 
+  - id: pala_pegmatite
+    name: Pala Pegmatite
+    region: california
+    depositType: pegmatite
+    method: hardrock
+    hostRock: pegmatite
+    indicatorMinerals: [tourmaline, mica, lepidolite]
+    color: '#c96f9c'
+    unlockGate:
+      anyOf:
+        - { type: reputation, tier: 2 }
+        - { type: gear, id: rock_hammer }
+    findPool:
+      - { species: tourmaline, weight: 30, caratRange: [0.4, 3.0], clarityRange: [50, 96], colorRange: [50, 96] }
+      - { species: aquamarine, weight: 25, caratRange: [0.5, 4.0], clarityRange: [60, 98], colorRange: [45, 90] }
+      - { species: topaz,      weight: 25, caratRange: [0.5, 4.0], clarityRange: [60, 99], colorRange: [35, 85] }
+      - { species: moonstone,  weight: 20, caratRange: [1.0, 5.0], clarityRange: [30, 70], colorRange: [40, 85] }
+
+  # ---------- Tier 2-3: metamorphic hard-rock ----------
   - id: old_quarry
     name: Old Quarry
-    region: north_america
+    region: europe
     depositType: metamorphic
     method: hardrock
     hostRock: marble
@@ -68,6 +109,76 @@ localities:
         - { type: reputation, tier: 2 }
         - { type: gear, id: rock_hammer }
     findPool:
-      - { species: almandine_garnet, weight: 45, caratRange: [0.5, 3.0], clarityRange: [50, 95], colorRange: [50, 92] }
-      - { species: sapphire,         weight: 35, caratRange: [0.4, 2.5], clarityRange: [55, 98], colorRange: [50, 98] }
-      - { species: topaz,            weight: 20, caratRange: [0.5, 4.0], clarityRange: [60, 99], colorRange: [35, 85] }
+      - { species: almandine_garnet, weight: 40, caratRange: [0.5, 3.0], clarityRange: [50, 95], colorRange: [50, 92] }
+      - { species: sapphire,         weight: 30, caratRange: [0.4, 2.5], clarityRange: [55, 98], colorRange: [50, 98] }
+      - { species: topaz,            weight: 15, caratRange: [0.5, 4.0], clarityRange: [60, 99], colorRange: [35, 85] }
+      - { species: spinel,           weight: 15, caratRange: [0.3, 2.0], clarityRange: [55, 97], colorRange: [55, 95] }
+
+  # ---------- Tier 3: high-value hard-rock & veins ----------
+  - id: mogok_marble
+    name: Mogok Marble
+    region: myanmar
+    depositType: metamorphic
+    method: hardrock
+    hostRock: marble
+    indicatorMinerals: [spinel, ruby, calcite]
+    color: '#b23a48'
+    unlockGate:
+      allOf:
+        - { type: reputation, tier: 3 }
+    findPool:
+      - { species: spinel,    weight: 30, caratRange: [0.3, 2.0], clarityRange: [55, 97], colorRange: [55, 95] }
+      - { species: sapphire,  weight: 28, caratRange: [0.4, 2.5], clarityRange: [55, 98], colorRange: [55, 98] }
+      - { species: ruby,      weight: 24, caratRange: [0.3, 2.0], clarityRange: [50, 96], colorRange: [55, 98] }
+      - { species: tanzanite, weight: 18, caratRange: [0.5, 3.0], clarityRange: [55, 97], colorRange: [55, 96] }
+
+  - id: muzo_vein
+    name: Muzo Vein
+    region: colombia
+    depositType: hydrothermal
+    method: hardrock
+    hostRock: shale
+    indicatorMinerals: [calcite, pyrite]
+    color: '#2f8f5b'
+    unlockGate:
+      allOf:
+        - { type: reputation, tier: 3 }
+    findPool:
+      - { species: emerald,    weight: 30, caratRange: [0.3, 2.5], clarityRange: [35, 85], colorRange: [55, 98] }
+      - { species: tsavorite,  weight: 25, caratRange: [0.3, 2.0], clarityRange: [55, 96], colorRange: [55, 96] }
+      - { species: aquamarine, weight: 25, caratRange: [0.5, 4.0], clarityRange: [60, 98], colorRange: [45, 90] }
+      - { species: tourmaline, weight: 20, caratRange: [0.4, 3.0], clarityRange: [50, 96], colorRange: [50, 96] }
+
+  - id: opal_flats
+    name: Opal Flats
+    region: australia
+    depositType: volcanic
+    method: surface
+    hostRock: sandstone
+    indicatorMinerals: [agate, common_opal]
+    color: '#d98f5a'
+    unlockGate:
+      allOf:
+        - { type: reputation, tier: 3 }
+    findPool:
+      - { species: agate,    weight: 40, caratRange: [1.0, 8.0],  clarityRange: [30, 80], colorRange: [40, 90] }
+      - { species: opal,     weight: 30, caratRange: [0.5, 5.0],  clarityRange: [40, 90], colorRange: [55, 98] }
+      - { species: obsidian, weight: 30, caratRange: [1.0, 10.0], clarityRange: [20, 60], colorRange: [20, 60] }
+
+  # ---------- Tier 4: kimberlite capstone ----------
+  - id: kimberlite_pipe
+    name: Kimberlite Pipe
+    region: south_africa
+    depositType: volcanic
+    method: hardrock
+    hostRock: kimberlite
+    indicatorMinerals: [pyrope_garnet, chrome_diopside, ilmenite]
+    color: '#3a3f4a'
+    unlockGate:
+      allOf:
+        - { type: reputation, tier: 4 }
+        - { type: setComplete, setType: locality, id: mogok_marble }
+    findPool:
+      - { species: almandine_garnet, weight: 40, caratRange: [0.3, 2.0], clarityRange: [50, 90], colorRange: [50, 90] }
+      - { species: diamond,          weight: 35, caratRange: [0.2, 1.5], clarityRange: [55, 99], colorRange: [40, 95] }
+      - { species: alexandrite,      weight: 25, caratRange: [0.2, 1.5], clarityRange: [55, 97], colorRange: [55, 96] }

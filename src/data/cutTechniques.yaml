@@ -24,7 +24,8 @@ techniques:
     yieldRange: [0.55, 0.75]
     cutQualityRange: [60, 100]
     catastrophicOnFail: false
-    revealsPhenomena: []
+    # color-change (alexandrite) shows in any faceted cut
+    revealsPhenomena: [color_change]
 
   - id: step
     name: Step / Emerald Cut

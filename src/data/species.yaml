@@ -1,13 +1,15 @@
 # Species (v5.0 model, §12.1). Real diagnostic properties drive Identify (§6);
 # suitableCuts / cutDifficulty / phenomena drive Cut (§7).
+# Roster derived from docs/research/gem-reference.md (§8 first-iteration set).
 #
-# Seeded look-alike puzzles in this first region:
-#   - Colorless: quartz (7 / 2.65) vs topaz (8 / 3.53) vs sapphire (9 / 4.00)
-#     → separated by hardness + specific gravity.
-#   - Purple:   amethyst (7 / 2.65, inert, no cleavage)
-#               vs fluorite (4 / 3.18, fluorescent, perfect cleavage)
-#     → separated by hardness / SG / UV / cleavage.
+# Seeded look-alike puzzles across this roster:
+#   - Colorless: quartz (7 / 2.65) vs topaz (8 / 3.53) vs sapphire (9 / 4.00) vs diamond (10 / 3.52, RI 2.42)
+#   - Red:       ruby (corundum, 9 / 4.00, fluoresces) vs spinel (8 / 3.60, octahedral) vs almandine (7 / 4.05, no fluor)
+#   - Purple:    amethyst (7 / 2.65, inert, no cleavage) vs fluorite (4 / 3.18, fluorescent, perfect cleavage)
+#   - Green:     emerald (beryl 2.72) vs tsavorite (garnet 3.61) vs peridot (3.34, strong doubling)
+#   - Blue:      sapphire (9) vs tanzanite (6.5, pleochroic) vs aquamarine (beryl 2.70)
 species:
+  # ---- Quartz family (a completable set) ----
   - id: quartz
     name: Clear Quartz
     category: Mineral
@@ -96,6 +98,7 @@ species:
     realWorldLocations: [Brazil, Uruguay, Montana]
     funFact: "Agate is a banded variety of microcrystalline quartz (chalcedony)."
 
+  # ---- Garnet group ----
   - id: almandine_garnet
     name: Almandine Garnet
     category: Gem
@@ -118,28 +121,29 @@ species:
     realWorldLocations: [India, Sri Lanka, Montana]
     funFact: "Garnets often crystallize as near-perfect 12-sided dodecahedra."
 
-  - id: topaz
-    name: Topaz
+  - id: tsavorite
+    name: Tsavorite Garnet
     category: Gem
-    family: topaz
+    family: garnet
     rarity: Rare
-    hardness: 8
-    specificGravity: 3.53
-    habit: [prismatic]
+    hardness: [7, 7.5]
+    specificGravity: 3.61
+    habit: [dodecahedral]
     luster: vitreous
     transparency: transparent
-    colors: [colorless, blue, yellow, pink, sherry]
+    colors: [green, vivid-green]
     streak: white
-    fluorescence: { longwave: cream, shortwave: none }
-    refractiveIndex: [1.610, 1.638]
-    cleavage: perfect
-    fracture: uneven
-    baseValue: 150
-    suitableCuts: [round_brilliant, step, princess]
+    fluorescence: null
+    refractiveIndex: [1.73, 1.75]
+    cleavage: none
+    fracture: conchoidal
+    baseValue: 400
+    suitableCuts: [round_brilliant, step, cabochon]
     cutDifficulty: 3
-    realWorldLocations: [Brazil, Pakistan, Utah]
-    funFact: "Topaz has perfect basal cleavage, so cutters must orient carefully to avoid splitting it."
+    realWorldLocations: [Kenya, Tanzania]
+    funFact: "Tsavorite is a vivid-green grossular garnet — rarer to mine than emerald, but usually far cleaner."
 
+  # ---- Corundum (ruby & sapphire are the same mineral) ----
   - id: sapphire
     name: Sapphire
     category: Gem
@@ -164,6 +168,289 @@ species:
     realWorldLocations: [Kashmir, Myanmar, Sri Lanka, Montana]
     funFact: "Sapphire and ruby are the same mineral, corundum; only the color differs."
 
+  - id: ruby
+    name: Ruby
+    category: Gem
+    family: corundum
+    rarity: Epic
+    hardness: 9
+    specificGravity: 4.00
+    habit: [prismatic, tabular]
+    luster: vitreous
+    transparency: transparent
+    colors: [red, pinkish-red]
+    streak: white
+    fluorescence: { longwave: red, shortwave: none }
+    refractiveIndex: [1.762, 1.770]
+    cleavage: none
+    fracture: conchoidal
+    baseValue: 900
+    suitableCuts: [cabochon, round_brilliant, step, princess]
+    cutDifficulty: 4
+    phenomena:
+      - { type: asterism, revealedBy: cabochon }
+    realWorldLocations: [Myanmar, Mozambique, Thailand]
+    funFact: "Chromium turns corundum into ruby. 'Pigeon-blood' Burmese rubies are the most prized red gems on Earth."
+
+  # ---- Beryl (aquamarine & emerald are the same mineral) ----
+  - id: aquamarine
+    name: Aquamarine
+    category: Gem
+    family: beryl
+    rarity: Rare
+    hardness: [7.5, 8]
+    specificGravity: 2.70
+    habit: [prismatic]
+    luster: vitreous
+    transparency: transparent
+    colors: [blue, blue-green, cyan]
+    streak: white
+    fluorescence: null
+    refractiveIndex: [1.57, 1.58]
+    cleavage: poor
+    fracture: conchoidal
+    baseValue: 200
+    suitableCuts: [round_brilliant, step, princess]
+    cutDifficulty: 3
+    realWorldLocations: [Brazil, Pakistan, Madagascar]
+    funFact: "Aquamarine and emerald are the same mineral (beryl); iron gives aquamarine its sea-blue color."
+
+  - id: emerald
+    name: Emerald
+    category: Gem
+    family: beryl
+    rarity: Epic
+    hardness: [7.5, 8]
+    specificGravity: 2.72
+    habit: [prismatic]
+    luster: vitreous
+    transparency: transparent
+    colors: [green]
+    streak: white
+    fluorescence: null
+    refractiveIndex: [1.57, 1.58]
+    cleavage: poor
+    fracture: conchoidal
+    baseValue: 800
+    suitableCuts: [step, round_brilliant]
+    cutDifficulty: 4
+    realWorldLocations: [Colombia, Zambia, Brazil]
+    funFact: "Emerald is green beryl, usually full of inclusions ('jardin'). The step-shaped emerald cut was designed to protect this brittle stone."
+
+  # ---- Topaz ----
+  - id: topaz
+    name: Topaz
+    category: Gem
+    family: topaz
+    rarity: Rare
+    hardness: 8
+    specificGravity: 3.53
+    habit: [prismatic]
+    luster: vitreous
+    transparency: transparent
+    colors: [colorless, blue, yellow, pink, sherry]
+    streak: white
+    fluorescence: { longwave: cream, shortwave: none }
+    refractiveIndex: [1.610, 1.638]
+    cleavage: perfect
+    fracture: uneven
+    baseValue: 150
+    suitableCuts: [round_brilliant, step, princess]
+    cutDifficulty: 3
+    realWorldLocations: [Brazil, Pakistan, Utah]
+    funFact: "Topaz has perfect basal cleavage, so cutters must orient carefully to avoid splitting it."
+
+  # ---- Spinel (the historic ruby impostor) ----
+  - id: spinel
+    name: Spinel
+    category: Gem
+    family: spinel
+    rarity: Rare
+    hardness: 8
+    specificGravity: 3.60
+    habit: [octahedral]
+    luster: vitreous
+    transparency: transparent
+    colors: [red, pink, blue, lavender, violet]
+    streak: white
+    fluorescence: { longwave: red, shortwave: none }
+    refractiveIndex: 1.72
+    cleavage: none
+    fracture: conchoidal
+    baseValue: 250
+    suitableCuts: [cabochon, round_brilliant, step, princess]
+    cutDifficulty: 3
+    realWorldLocations: [Myanmar, Sri Lanka, Tanzania]
+    funFact: "For centuries red spinel was mistaken for ruby — the crown 'Black Prince's Ruby' is actually a spinel. Its octahedral crystals and lower density give it away."
+
+  # ---- Peridot (olivine) ----
+  - id: peridot
+    name: Peridot
+    category: Gem
+    family: olivine
+    rarity: Uncommon
+    hardness: [6.5, 7]
+    specificGravity: 3.34
+    habit: [prismatic, granular]
+    luster: vitreous
+    transparency: transparent
+    colors: [green, olive, yellow-green]
+    streak: white
+    fluorescence: null
+    refractiveIndex: [1.65, 1.69]
+    cleavage: poor
+    fracture: conchoidal
+    baseValue: 60
+    suitableCuts: [round_brilliant, step, cabochon]
+    cutDifficulty: 3
+    realWorldLocations: [Arizona, Pakistan, Myanmar]
+    funFact: "Peridot forms deep in the mantle and even inside some meteorites — one of the few gems found in outer space."
+
+  # ---- Tanzanite (zoisite) ----
+  - id: tanzanite
+    name: Tanzanite
+    category: Gem
+    family: zoisite
+    rarity: Epic
+    hardness: [6.5, 7]
+    specificGravity: 3.35
+    habit: [prismatic]
+    luster: vitreous
+    transparency: transparent
+    colors: [blue, violet, blue-violet]
+    streak: white
+    fluorescence: null
+    refractiveIndex: [1.69, 1.70]
+    cleavage: perfect
+    fracture: conchoidal
+    baseValue: 500
+    suitableCuts: [round_brilliant, step, cabochon]
+    cutDifficulty: 4
+    realWorldLocations: [Tanzania]
+    funFact: "Tanzanite comes from a single place on Earth — the Merelani Hills of Tanzania. It is strongly pleochroic, so cutters orient it to bring out the blue."
+
+  # ---- Tourmaline ----
+  - id: tourmaline
+    name: Tourmaline
+    category: Gem
+    family: tourmaline
+    rarity: Rare
+    hardness: [7, 7.5]
+    specificGravity: 3.06
+    habit: [prismatic]
+    luster: vitreous
+    transparency: transparent
+    colors: [green, pink, blue, red, watermelon, multicolor]
+    streak: white
+    fluorescence: null
+    refractiveIndex: [1.62, 1.64]
+    cleavage: poor
+    fracture: conchoidal
+    baseValue: 180
+    suitableCuts: [round_brilliant, step, princess]
+    cutDifficulty: 3
+    realWorldLocations: [Brazil, Afghanistan, Maine]
+    funFact: "Tourmaline can show several colors in one crystal ('watermelon' is pink inside, green outside). It is strongly pleochroic, so cutters orient it for the best color."
+
+  # ---- Feldspar (phenomenal) ----
+  - id: moonstone
+    name: Moonstone
+    category: Gem
+    family: feldspar
+    rarity: Uncommon
+    hardness: [6, 6.5]
+    specificGravity: 2.57
+    habit: [prismatic, tabular]
+    luster: pearly
+    transparency: translucent
+    colors: [colorless, white, blue-sheen]
+    streak: white
+    fluorescence: null
+    refractiveIndex: [1.52, 1.53]
+    cleavage: perfect
+    fracture: uneven
+    baseValue: 40
+    suitableCuts: [cabochon]
+    cutDifficulty: 3
+    phenomena:
+      - { type: adularescence, revealedBy: cabochon }
+    realWorldLocations: [Sri Lanka, India, Madagascar]
+    funFact: "Moonstone's floating blue glow (adularescence) comes from light scattering between microscopic feldspar layers — only a cabochon reveals it."
+
+  # ---- Opal (play-of-color showpiece) ----
+  - id: opal
+    name: Opal
+    category: Gem
+    family: opal
+    rarity: Epic
+    hardness: [5.5, 6.5]
+    specificGravity: 2.15
+    habit: [massive]
+    luster: vitreous
+    transparency: translucent
+    colors: [white, black, blue, orange, play-of-color]
+    streak: white
+    fluorescence: null
+    refractiveIndex: [1.37, 1.47]
+    cleavage: none
+    fracture: conchoidal
+    baseValue: 450
+    suitableCuts: [cabochon]
+    cutDifficulty: 4
+    phenomena:
+      - { type: play_of_color, revealedBy: cabochon }
+    realWorldLocations: [Australia, Ethiopia, Mexico]
+    funFact: "Opal is hardened, water-bearing silica. Its play-of-color is light diffracting off microscopic silica spheres — a domed cabochon shows it best."
+
+  # ---- Chrysoberyl (color-change) ----
+  - id: alexandrite
+    name: Alexandrite
+    category: Gem
+    family: chrysoberyl
+    rarity: Legendary
+    hardness: 8.5
+    specificGravity: 3.73
+    habit: [prismatic, tabular]
+    luster: vitreous
+    transparency: transparent
+    colors: [green, red, purple]
+    streak: white
+    fluorescence: { longwave: red, shortwave: none }
+    refractiveIndex: [1.74, 1.75]
+    cleavage: poor
+    fracture: conchoidal
+    baseValue: 3000
+    suitableCuts: [round_brilliant, step, princess]
+    cutDifficulty: 4
+    phenomena:
+      - { type: color_change, revealedBy: round_brilliant }
+    realWorldLocations: [Russia, Brazil, Sri Lanka]
+    funFact: "Alexandrite is 'emerald by day, ruby by night' — green in daylight, red under lamplight. Fine stones are among the priciest gems by carat."
+
+  # ---- Diamond (the kimberlite capstone) ----
+  - id: diamond
+    name: Diamond
+    category: Gem
+    family: diamond
+    rarity: Legendary
+    hardness: 10
+    specificGravity: 3.52
+    habit: [octahedral]
+    luster: adamantine
+    transparency: transparent
+    colors: [colorless, yellow, brown, pink, blue]
+    streak: white
+    fluorescence: { longwave: blue, shortwave: none }
+    refractiveIndex: 2.42
+    cleavage: perfect
+    fracture: conchoidal
+    baseValue: 5000
+    suitableCuts: [round_brilliant, princess, step, fancy]
+    cutDifficulty: 5
+    realWorldLocations: [South Africa, Botswana, Russia, Canada]
+    funFact: "Diamond is pure carbon and the hardest natural material (Mohs 10). It forms ~150 km deep and rides up in kimberlite — yet its perfect cleavage means one wrong tap can split it."
+
+  # ---- Fluorite (soft, cleavable, fluorescent — a great teaching stone) ----
   - id: fluorite
     name: Fluorite
     category: Mineral
@@ -185,3 +472,26 @@ species:
     cutDifficulty: 4
     realWorldLocations: [England, China, Illinois]
     funFact: "The word 'fluorescence' was coined after fluorite, which often glows under UV light."
+
+  # ---- Obsidian (volcanic glass) ----
+  - id: obsidian
+    name: Obsidian
+    category: Mineral
+    family: obsidian
+    rarity: Common
+    hardness: 5.5
+    specificGravity: 2.40
+    habit: [massive]
+    luster: vitreous
+    transparency: opaque
+    colors: [black, gray, brown, sheen]
+    streak: white
+    fluorescence: null
+    refractiveIndex: [1.48, 1.51]
+    cleavage: none
+    fracture: conchoidal
+    baseValue: 8
+    suitableCuts: [cabochon]
+    cutDifficulty: 2
+    realWorldLocations: [USA, Mexico, Iceland]
+    funFact: "Obsidian is volcanic glass — it cooled too fast to crystallize, and its conchoidal fracture makes edges sharper than surgical steel."
