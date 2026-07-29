@@ -42,8 +42,15 @@ describe('Rockhound shell', () => {
   it('shows the locality map with a locked, hinted neighbor in Explore', () => {
     render(<Rockhound />);
     // starter is unlocked and selected; a gear-gated neighbor is locked with a hint
-    screen.getByRole('button', { name: /Hidden Creek/i });
+    screen.getByRole('button', { name: 'Hidden Creek' });
     screen.getByText(/Needs the sieve/i);
+  });
+
+  it('opens a locality field guide from the Explore map', () => {
+    render(<Rockhound />);
+    fireEvent.click(screen.getByRole('button', { name: /Hidden Creek field guide/i }));
+    screen.getByRole('dialog');
+    screen.getByText(/Look for/i);
   });
 
   it('shows the career panel (reputation) on the Gemdex Career subtab', () => {

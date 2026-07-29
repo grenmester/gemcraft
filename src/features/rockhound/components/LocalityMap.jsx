@@ -1,31 +1,44 @@
-import { describeGate } from '../logic/progression.js';
+import { useState } from 'react';
+import LocalityCard from './LocalityCard.jsx';
+import LocalityEntry from './LocalityEntry.jsx';
+import { findPoolView, rarityCeiling, localitySetProgress } from '../logic/localityView.js';
 
-export default function LocalityMap({ localities, unlockedIds, selectedId, onSelect }) {
+export default function LocalityMap({
+  localities, unlockedIds, selectedId, onSelect, speciesById, gemdex
+}) {
+  const [infoId, setInfoId] = useState(null);
   const unlocked = new Set(unlockedIds);
+  const infoLocality = localities.find((l) => l.id === infoId) ?? null;
+
   return (
-    <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      {localities.map((loc) => {
-        const isUnlocked = unlocked.has(loc.id);
-        const isSelected = loc.id === selectedId;
-        return (
+    <>
+      <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        {localities.map((loc) => (
           <li key={loc.id}>
-            <button
-              type="button"
-              disabled={!isUnlocked}
-              onClick={() => onSelect(loc.id)}
-              className={`w-full text-left rounded-lg border p-3 ${
-                isSelected ? 'border-yellow-400 bg-slate-700' : 'border-slate-600 bg-slate-800'
-              } ${isUnlocked ? 'hover:border-yellow-400' : 'opacity-60 cursor-not-allowed'}`}
-            >
-              <span className="font-semibold text-slate-100">{loc.name}</span>
-              <span className="block text-xs text-slate-400 capitalize">{loc.depositType} · {loc.method}</span>
-            </button>
-            {!isUnlocked && (
-              <span className="block text-xs text-amber-400 mt-1">🔒 {describeGate(loc.unlockGate)}</span>
-            )}
+            <LocalityCard
+              locality={loc}
+              unlocked={unlocked.has(loc.id)}
+              selected={loc.id === selectedId}
+              pool={findPoolView(loc, speciesById, gemdex)}
+              ceiling={rarityCeiling(loc, speciesById)}
+              progress={localitySetProgress(loc, gemdex)}
+              onSelect={onSelect}
+              onOpenInfo={setInfoId}
+            />
           </li>
-        );
-      })}
-    </ul>
+        ))}
+      </ul>
+
+      {infoLocality && (
+        <LocalityEntry
+          locality={infoLocality}
+          localities={localities}
+          speciesById={speciesById}
+          gemdex={gemdex}
+          unlocked={unlocked.has(infoLocality.id)}
+          onClose={() => setInfoId(null)}
+        />
+      )}
+    </>
   );
 }
