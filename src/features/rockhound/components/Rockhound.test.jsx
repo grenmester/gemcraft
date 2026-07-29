@@ -42,7 +42,7 @@ describe('Rockhound shell', () => {
   it('shows the locality map with a locked, hinted neighbor in Explore', () => {
     render(<Rockhound />);
     // starter is unlocked and selected; a gear-gated neighbor is locked with a hint
-    screen.getByRole('button', { name: 'Hidden Creek' });
+    screen.getByRole('button', { name: /^Hidden Creek,/ });
     screen.getByText(/Needs the sieve/i);
   });
 

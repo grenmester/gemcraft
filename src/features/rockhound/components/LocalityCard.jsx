@@ -9,7 +9,7 @@ export default function LocalityCard({
       <button
         type="button"
         disabled={!unlocked}
-        aria-label={locality.name}
+        aria-label={`${locality.name}, ${locality.depositType} ${locality.method}, ${progress.found} of ${progress.total} found, up to ${ceiling}`}
         onClick={() => onSelect(locality.id)}
         className={`w-full rounded-lg border p-3 pr-10 text-left ${
           selected ? 'border-yellow-400 bg-slate-700' : 'border-slate-600 bg-slate-800'

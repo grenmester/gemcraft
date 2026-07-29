@@ -21,14 +21,14 @@ function renderMap(overrides = {}) {
 describe('LocalityMap', () => {
   it('renders unlocked localities as enabled and locked ones with a hint', () => {
     renderMap();
-    const creek = screen.getByRole('button', { name: 'Hidden Creek' });
+    const creek = screen.getByRole('button', { name: /^Hidden Creek,/ });
     expect(creek.disabled).toBe(false);
     screen.getByText(/Needs the sieve/i);
   });
 
   it('keeps the requirement text out of the select button accessible name', () => {
     renderMap();
-    const creek = screen.getByRole('button', { name: 'Hidden Creek' });
+    const creek = screen.getByRole('button', { name: /^Hidden Creek,/ });
     expect(creek.textContent).not.toMatch(/available now/i);
   });
 
@@ -40,13 +40,13 @@ describe('LocalityMap', () => {
 
   it('selects a locality when its card is clicked', () => {
     const { onSelect } = renderMap();
-    fireEvent.click(screen.getByRole('button', { name: 'Hidden Creek' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Hidden Creek,/ }));
     expect(onSelect).toHaveBeenCalledWith('hidden_creek');
   });
 
   it('does not select a locked locality', () => {
     const { onSelect } = renderMap();
-    const locked = screen.getByRole('button', { name: 'Gravel Bar' });
+    const locked = screen.getByRole('button', { name: /^Gravel Bar,/ });
     expect(locked.disabled).toBe(true);
     fireEvent.click(locked);
     expect(onSelect).not.toHaveBeenCalled();
@@ -57,8 +57,16 @@ describe('LocalityMap', () => {
     // hidden_creek pools 4 species; the player has found quartz. '1 / 4' is not
     // unique across cards (gravel_bar pools the same four species), so scope
     // the assertion to the Hidden Creek card rather than querying the page.
-    const creek = screen.getByRole('button', { name: 'Hidden Creek' });
+    const creek = screen.getByRole('button', { name: /^Hidden Creek,/ });
     expect(creek.textContent).toMatch(/1 \/ 4/);
+  });
+
+  it('carries the set progress and rarity ceiling in the accessible name', () => {
+    renderMap();
+    const creek = screen.getByRole('button', { name: /^Hidden Creek,/ });
+    const label = creek.getAttribute('aria-label');
+    expect(label).toMatch(/1 of 4 found/);
+    expect(label).toMatch(/up to /);
   });
 
   it('opens the field guide from the info button without selecting', () => {
