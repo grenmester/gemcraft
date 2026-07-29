@@ -185,7 +185,7 @@ export default function GemdexEntry({
         <Section title="🏆 Your best">
           {best ? (
             <p className="text-sm text-slate-200">
-              <span className="capitalize">{titleize(best.cut)}</span> · score{' '}
+              <span>{cutName(best.cut)}</span> · score{' '}
               <span className="font-mono">{best.score}</span>
               {best.phenomena?.length > 0 && <span className="text-yellow-400"> · ✨ {best.phenomena.join(', ')}</span>}
             </p>

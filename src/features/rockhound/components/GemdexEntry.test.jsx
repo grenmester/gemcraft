@@ -96,9 +96,24 @@ describe('GemdexEntry', () => {
     screen.getByText(/no cut stone yet/i);
   });
 
-  it('shows the best cut stone when one exists', () => {
+  it('shows the best cut stone when one exists, naming the cut properly', () => {
     renderEntry({ best: { cut: 'cabochon', score: 812, phenomena: ['asterism'] } });
-    screen.getByText(/812/);
+    // the trophy names the technique, not its raw id
+    const trophy = screen.getByText(/score/);
+    expect(trophy.textContent).toMatch(/Cabochon/);
+    expect(trophy.textContent).toMatch(/812/);
+  });
+
+  it('closes when the backdrop behind the dialog is clicked', () => {
+    const { onClose } = renderEntry();
+    fireEvent.click(screen.getByRole('dialog').parentElement);
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('does not close when the dialog body itself is clicked', () => {
+    const { onClose } = renderEntry();
+    fireEvent.click(screen.getByRole('dialog'));
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it('closes on the close button', () => {
