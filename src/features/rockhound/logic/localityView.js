@@ -1,8 +1,12 @@
 import { RARITY_ENUM } from '../../../schemas/items.js';
+import { localitySetComplete } from './progression.js';
 
-// Read-only derivations for the Explore views. Find-pool weights are the
-// authoring knob; players see words, never the raw numbers, so tuning weights
-// never turns into a UI change.
+// Read-only derivations for the Explore views. Locality set grouping lives here
+// (not in progression.js) because it is presentation shape, not game rules;
+// progression.js remains the authority on whether a locality set is *complete*,
+// so `complete` below delegates to it rather than restating the rule. Find-pool
+// weights are the authoring knob; players see words, never the raw numbers, so
+// tuning weights never turns into a UI change.
 
 const FREQUENCY_BANDS = [
   { minShare: 0.35, label: 'common here' },
@@ -53,7 +57,7 @@ export function localitySetProgress(locality, gemdex) {
   const found = new Set(gemdex);
   const ids = locality.findPool.map((e) => e.species);
   const discovered = ids.filter((id) => found.has(id)).length;
-  return { found: discovered, total: ids.length, complete: discovered === ids.length };
+  return { found: discovered, total: ids.length, complete: localitySetComplete(locality, found) };
 }
 
 function gateNeedsLocalitySet(gate, localityId) {
