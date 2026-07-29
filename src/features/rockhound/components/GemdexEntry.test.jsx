@@ -68,8 +68,10 @@ describe('GemdexEntry', () => {
 
   it('names the phenomenon and the cut that reveals it', () => {
     renderEntry();
-    const phenomenon = screen.getByText(/asterism/i);
+    const phenomenon = screen.getByText(/asterism/i).closest('li');
     expect(phenomenon.textContent).toMatch(/Cabochon/);
+    // "revealed by" stays lowercase — only the phenomenon name is capitalized
+    expect(phenomenon.textContent).toMatch(/revealed by/);
   });
 
   it('shows lapidary data: value, difficulty and named cuts', () => {

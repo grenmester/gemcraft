@@ -150,8 +150,8 @@ export default function GemdexEntry({
           <Section title="✨ Phenomena">
             <ul className="text-sm text-slate-200">
               {species.phenomena.map((p) => (
-                <li key={p.type} className="capitalize">
-                  {titleize(p.type)} —{' '}
+                <li key={p.type}>
+                  <span className="capitalize">{titleize(p.type)}</span> —{' '}
                   <span className="text-slate-400">revealed by <span className="text-slate-200">{cutName(p.revealedBy)}</span></span>
                 </li>
               ))}

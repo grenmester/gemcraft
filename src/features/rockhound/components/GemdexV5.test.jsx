@@ -66,6 +66,19 @@ describe('GemdexV5', () => {
     expect(screen.queryByRole('button', { name: /\?\?\?/ })).toBeNull();
   });
 
+  it('collapses single-species families into one section instead of a heading each', () => {
+    renderGemdex();
+    // 4 multi-member families (quartz, garnet, corundum, beryl) + 1 shared section
+    const headings = screen.getAllByRole('heading', { level: 3 });
+    expect(headings).toHaveLength(5);
+    expect(headings.some((h) => /one species per family/i.test(h.textContent))).toBe(true);
+  });
+
+  it('still renders every species in the roster exactly once', () => {
+    renderGemdex({ gemdex: species.map((s) => s.id) });
+    species.forEach((s) => screen.getByText(s.name));
+  });
+
   it('passes the opened species its own trophy, not another species', () => {
     renderGemdex({
       gemdex: ['sapphire', 'ruby'],
