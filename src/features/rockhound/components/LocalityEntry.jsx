@@ -1,9 +1,15 @@
 import EntryModal, { Section, Row } from './EntryModal.jsx';
 import { gemArt } from '../logic/gemArt.js';
-import { describeGate } from '../logic/progression.js';
+import { describeGate, describeGateSubject } from '../logic/progression.js';
 import {
   findPoolView, rarityCeiling, localitySetProgress, localitiesGatedBy, titleizeWords
 } from '../logic/localityView.js';
+
+function requirementText(gate, unlocked) {
+  if (!unlocked) return `🔒 ${describeGate(gate)}`;
+  const subject = describeGateSubject(gate);
+  return subject ? `✓ Unlocked with ${subject}` : '✓ Open from the start';
+}
 
 export default function LocalityEntry({
   locality, localities, speciesById, gemdex, unlocked, onClose
@@ -32,10 +38,7 @@ export default function LocalityEntry({
 
       <Section title="Access">
         <Row label="Requirement">
-          <span>
-            {unlocked ? '✓ ' : '🔒 '}
-            {describeGate(locality.unlockGate)}
-          </span>
+          <span>{requirementText(locality.unlockGate, unlocked)}</span>
         </Row>
         <Row label="Host rock"><span className="capitalize">{locality.hostRock}</span></Row>
         <Row label="Look for">
@@ -72,7 +75,7 @@ export default function LocalityEntry({
       </Section>
 
       {opens.length > 0 && (
-        <Section title="🔓 Completing this set opens">
+        <Section title="🔓 Counts toward unlocking">
           <p className="text-sm text-slate-200">{opens.map((l) => l.name).join(', ')}</p>
         </Section>
       )}

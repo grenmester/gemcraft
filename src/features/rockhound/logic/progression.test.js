@@ -3,7 +3,7 @@ import {
   reputationTier, familiarityFactor, FAMILIARITY_BONUS,
   localitySetComplete, completedLocalityIds,
   familyComplete, completedFamilies,
-  isLocalityUnlocked, earnedGear, describeGate
+  isLocalityUnlocked, earnedGear, describeGate, describeGateSubject
 } from './progression.js';
 import { species, speciesById } from '../../../loaders/species.js';
 import { localities, localitiesById } from '../../../loaders/localities.js';
@@ -78,5 +78,26 @@ describe('describeGate', () => {
   it('produces a non-empty hint for a gated locality', () => {
     expect(describeGate(localitiesById.gravel_bar.unlockGate).length).toBeGreaterThan(0);
     expect(describeGate(localitiesById.hidden_creek.unlockGate)).toMatch(/open|available|unlocked/i);
+  });
+});
+
+describe('describeGateSubject', () => {
+  it('renders a gear condition as a noun phrase', () => {
+    expect(describeGateSubject(localitiesById.gravel_bar.unlockGate)).toBe('the sieve');
+  });
+  it('renders a reputation condition as a noun phrase', () => {
+    expect(describeGateSubject(localitiesById.mogok_marble.unlockGate)).toBe('reputation tier 3');
+  });
+  it('joins an anyOf gate with "or"', () => {
+    // old_quarry: anyOf [reputation tier 2, gear rock_hammer]
+    expect(describeGateSubject(localitiesById.old_quarry.unlockGate))
+      .toBe('reputation tier 2 or the rock hammer');
+  });
+  it('recurses into a nested gate', () => {
+    const nested = { allOf: [{ type: 'reputation', tier: 4 }, { anyOf: [{ type: 'gear', id: 'rock_hammer' }, { type: 'setComplete', setType: 'locality', id: 'mogok_marble' }] }] };
+    expect(describeGateSubject(nested)).toBe('reputation tier 4 and the rock hammer or the mogok marble locality set');
+  });
+  it('returns the empty string for an empty gate', () => {
+    expect(describeGateSubject(localitiesById.hidden_creek.unlockGate)).toBe('');
   });
 });

@@ -102,3 +102,31 @@ export function describeGate(gate) {
   if (gate.allOf && gate.allOf.length) return gate.allOf.map(describeNode).join(' and ');
   return 'Open — available now';
 }
+
+function describeConditionSubject(cond) {
+  switch (cond.type) {
+    case 'gear':
+      return `the ${cond.id.replace(/_/g, ' ')}`;
+    case 'reputation':
+      return `reputation tier ${cond.tier}`;
+    case 'setComplete':
+      return `the ${cond.id.replace(/_/g, ' ')} ${cond.setType} set`;
+    case 'cash':
+      return `${cond.amount} cash`;
+    default:
+      return '';
+  }
+}
+
+const describeNodeSubject = (node) => ('type' in node ? describeConditionSubject(node) : describeGateSubject(node));
+
+/**
+ * Same gate tree as describeGate, but rendered as noun phrases rather than
+ * imperative commands — for surfacing an ALREADY-satisfied requirement,
+ * where "Needs the sieve" reads as a false demand.
+ */
+export function describeGateSubject(gate) {
+  if (gate.anyOf && gate.anyOf.length) return gate.anyOf.map(describeNodeSubject).join(' or ');
+  if (gate.allOf && gate.allOf.length) return gate.allOf.map(describeNodeSubject).join(' and ');
+  return '';
+}

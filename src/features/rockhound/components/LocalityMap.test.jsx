@@ -29,13 +29,13 @@ describe('LocalityMap', () => {
   it('keeps the requirement text out of the select button accessible name', () => {
     renderMap();
     const creek = screen.getByRole('button', { name: /^Hidden Creek,/ });
-    expect(creek.textContent).not.toMatch(/available now/i);
+    expect(creek.textContent).not.toMatch(/Open from the start/i);
   });
 
   it('shows the satisfied requirement for an unlocked locality', () => {
     renderMap();
     // Hidden Creek has an empty gate; it reads as open rather than hiding the row
-    expect(screen.getAllByText(/available now/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Open from the start/i).length).toBeGreaterThan(0);
   });
 
   it('selects a locality when its card is clicked', () => {

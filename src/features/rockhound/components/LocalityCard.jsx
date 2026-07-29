@@ -1,5 +1,11 @@
 import { gemArt } from '../logic/gemArt.js';
-import { describeGate } from '../logic/progression.js';
+import { describeGate, describeGateSubject } from '../logic/progression.js';
+
+function requirementText(gate, unlocked) {
+  if (!unlocked) return `🔒 ${describeGate(gate)}`;
+  const subject = describeGateSubject(gate);
+  return subject ? `✓ Unlocked with ${subject}` : '✓ Open from the start';
+}
 
 export default function LocalityCard({
   locality, unlocked, selected, pool, ceiling, progress, onSelect, onOpenInfo
@@ -51,8 +57,7 @@ export default function LocalityCard({
 
       {/* Outside the select button so it never leaks into its accessible name. */}
       <span className={`mt-1 block text-xs ${unlocked ? 'text-slate-500' : 'text-amber-400'}`}>
-        {unlocked ? '✓ ' : '🔒 '}
-        {describeGate(locality.unlockGate)}
+        {requirementText(locality.unlockGate, unlocked)}
       </span>
     </div>
   );

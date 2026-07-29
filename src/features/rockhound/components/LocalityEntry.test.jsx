@@ -64,12 +64,14 @@ describe('LocalityEntry', () => {
     renderEntry();
     const access = screen.getByText(/reputation tier 3/i);
     expect(access.textContent).toMatch(/✓/);
+    expect(access.textContent).toBe('✓ Unlocked with reputation tier 3');
   });
 
   it('shows a pending access requirement for a locked locality', () => {
     renderEntry({ unlocked: false });
     const access = screen.getByText(/reputation tier 3/i);
     expect(access.textContent).toMatch(/🔒/);
+    expect(access.textContent).toBe('🔒 Reach reputation tier 3');
   });
 
   it('lists indicator minerals to prospect for', () => {
