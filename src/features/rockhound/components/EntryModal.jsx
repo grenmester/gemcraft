@@ -29,13 +29,18 @@ export function Section({ title, children }) {
 export default function EntryModal({ titleId, onClose, children }) {
   const dialogRef = useRef(null);
   const closeRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     const opener = document.activeElement;
     closeRef.current?.focus();
 
     const onKey = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current();
     };
     window.addEventListener('keydown', onKey);
 
@@ -44,9 +49,11 @@ export default function EntryModal({ titleId, onClose, children }) {
       // Return focus where the player left it rather than dumping it on <body>.
       if (opener instanceof HTMLElement && document.contains(opener)) opener.focus();
     };
-    // onClose is intentionally the only dependency; re-running on every parent
-    // render would re-steal focus mid-read.
-  }, [onClose]);
+    // Empty deps: this mount effect runs exactly once (and cleans up on
+    // unmount only). Callers pass a fresh inline onClose on every render, so
+    // keying this effect on it would re-run per render and re-steal focus;
+    // onCloseRef is kept current above and Escape reads from it instead.
+  }, []);
 
   const trapTab = (e) => {
     if (e.key !== 'Tab') return;

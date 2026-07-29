@@ -75,16 +75,69 @@ describe('EntryModal', () => {
     opener.remove();
   });
 
-  it('keeps Tab focus inside the dialog', () => {
+  it('keeps Tab focus inside the dialog by wrapping to the exact target element', () => {
     renderModal();
     const dialog = screen.getByRole('dialog');
+    const closeButton = screen.getByRole('button', { name: /close entry/i });
+    const inner = screen.getByRole('button', { name: /inner action/i });
+
+    // Tab from the last focusable element wraps to the first (close button).
+    inner.focus();
+    expect(document.activeElement).toBe(inner);
+    fireEvent.keyDown(dialog, { key: 'Tab' });
+    expect(document.activeElement).toBe(closeButton);
+
+    // Shift+Tab from the first focusable element wraps to the last (inner action).
+    closeButton.focus();
+    expect(document.activeElement).toBe(closeButton);
+    fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(inner);
+
+    // Tab fired while focus sits outside the dialog is pulled back inside,
+    // landing on the first focusable element.
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+    outside.focus();
+    expect(document.activeElement).toBe(outside);
+    fireEvent.keyDown(dialog, { key: 'Tab' });
+    expect(document.activeElement).toBe(closeButton);
+    outside.remove();
+  });
+
+  it('does not re-steal focus when the parent re-renders with a new onClose identity', () => {
+    const onCloseA = vi.fn();
+    const { rerender } = render(
+      <EntryModal titleId="test-title" onClose={onCloseA}>
+        <h3 id="test-title">A Title</h3>
+        <Section title="Details">
+          <Row label="Hardness">9</Row>
+        </Section>
+        <button type="button">inner action</button>
+      </EntryModal>
+    );
+
     const inner = screen.getByRole('button', { name: /inner action/i });
     inner.focus();
-    // Tab from the last focusable element wraps to the first
-    fireEvent.keyDown(dialog, { key: 'Tab' });
-    expect(dialog.contains(document.activeElement)).toBe(true);
-    // Shift+Tab from the first wraps to the last, still inside
-    fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true });
-    expect(dialog.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement).toBe(inner);
+
+    // A parent re-render with a brand-new onClose (an inline arrow, as real
+    // callers pass) must not tear down/re-run the mount effect and yank
+    // focus back onto the close button.
+    const onCloseB = vi.fn();
+    rerender(
+      <EntryModal titleId="test-title" onClose={onCloseB}>
+        <h3 id="test-title">A Title</h3>
+        <Section title="Details">
+          <Row label="Hardness">9</Row>
+        </Section>
+        <button type="button">inner action</button>
+      </EntryModal>
+    );
+    expect(document.activeElement).toBe(inner);
+
+    // Escape must still invoke the latest onClose, not the one captured at mount.
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onCloseA).not.toHaveBeenCalled();
+    expect(onCloseB).toHaveBeenCalled();
   });
 });
