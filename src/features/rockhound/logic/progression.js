@@ -62,8 +62,18 @@ export function isLocalityUnlocked(locality, ctx) {
 }
 
 export const GEAR_MILESTONES = [
-  { id: 'sieve', label: 'Sieve', when: (ctx) => reputationTier(ctx.reputation) >= 1 },
-  { id: 'rock_hammer', label: 'Rock Hammer', when: (ctx) => ctx.completedLocalities.includes('hidden_creek') }
+  {
+    id: 'sieve',
+    label: 'Sieve',
+    requirement: 'Reach reputation tier 1',
+    when: (ctx) => reputationTier(ctx.reputation) >= 1
+  },
+  {
+    id: 'rock_hammer',
+    label: 'Rock Hammer',
+    requirement: 'Complete the Hidden Creek set',
+    when: (ctx) => ctx.completedLocalities.includes('hidden_creek')
+  }
 ];
 
 export function earnedGear(ctx) {

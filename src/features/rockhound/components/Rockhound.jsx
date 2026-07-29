@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { RockhoundProvider, useRockhound, ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR } from '../RockhoundContext.jsx';
 import { localities, localitiesById } from '../../../loaders/localities.js';
 import { speciesById, species } from '../../../loaders/species.js';
-import { cutTechniques } from '../../../loaders/cutTechniques.js';
+import { cutTechniques, cutTechniquesById } from '../../../loaders/cutTechniques.js';
 import { completedLocalityIds, completedFamilies, isLocalityUnlocked } from '../logic/progression.js';
 import Explore from './Explore.jsx';
 import Identify from './Identify.jsx';
@@ -11,25 +11,18 @@ import Cut from './Cut.jsx';
 import Market from './Market.jsx';
 import GemdexV5 from './GemdexV5.jsx';
 import LocalityMap from './LocalityMap.jsx';
-import ProgressionPanel from './ProgressionPanel.jsx';
+import TrophyCase from './TrophyCase.jsx';
+import CareerPanel from './CareerPanel.jsx';
 
 const TABS = ['Explore', 'Identify', 'Cut', 'Market', 'Gemdex'];
-
-function familyProgressFor(gemdex) {
-  const set = new Set(gemdex);
-  const families = [...new Set(species.map((s) => s.family))];
-  return families.map((family) => {
-    const members = species.filter((s) => s.family === family);
-    const discovered = members.filter((s) => set.has(s.id)).length;
-    return { family, discovered, total: members.length, complete: discovered === members.length };
-  });
-}
+const GEMDEX_SUBTABS = ['Species', 'Trophies', 'Career'];
 
 function RockhoundInner() {
   const { state, dispatch } = useRockhound();
   const [tab, setTab] = useState('Explore');
   const [selectedLocalityId, setSelectedLocalityId] = useState('hidden_creek');
   const [selectedCutId, setSelectedCutId] = useState(null);
+  const [gemdexSub, setGemdexSub] = useState('Species');
 
   const activeRough = state.rough[0] ?? null;
 
@@ -40,10 +33,12 @@ function RockhoundInner() {
   const selectedLocality = localitiesById[selectedLocalityId] ?? localitiesById.hidden_creek;
 
   useEffect(() => {
-    if (tab === 'Gemdex' && state.newlyDiscovered.length > 0) {
+    // Badges clear only once the Species grid is actually looked at — not when
+    // the player lands on Trophies or Career.
+    if (tab === 'Gemdex' && gemdexSub === 'Species' && state.newlyDiscovered.length > 0) {
       dispatch({ type: CLEAR_NEW });
     }
-  }, [tab, state.newlyDiscovered.length, dispatch]);
+  }, [tab, gemdexSub, state.newlyDiscovered.length, dispatch]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -124,23 +119,50 @@ function RockhoundInner() {
 
       {tab === 'Gemdex' && (
         <div className="flex flex-col gap-4">
-          <ProgressionPanel reputation={state.reputation} gear={state.gear} familyProgress={familyProgressFor(state.gemdex)} />
-          <section className="rounded-lg border border-slate-700 bg-slate-800 p-4">
-            <h3 className="font-bold text-yellow-400 mb-2">Trophy case</h3>
-            {Object.keys(state.bestSpecimens).length === 0 ? (
-              <p className="text-slate-500 text-sm">No cut stones yet — cut an identified specimen to earn a trophy.</p>
-            ) : (
-              <ul className="flex flex-col gap-1">
-                {Object.entries(state.bestSpecimens).map(([speciesId, best]) => (
-                  <li key={speciesId} className="flex items-center justify-between text-sm">
-                    <span className="text-slate-100">{speciesById[speciesId].name} <span className="text-slate-400">({best.cut})</span>{best.phenomena?.length ? ' ✨' : ''}</span>
-                    <span className="font-mono text-slate-400">score {best.score}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-          <GemdexV5 species={species} gemdex={state.gemdex} newlyDiscovered={state.newlyDiscovered} />
+          <nav className="flex gap-2" aria-label="Gemdex sections">
+            {GEMDEX_SUBTABS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setGemdexSub(s)}
+                aria-current={gemdexSub === s ? 'page' : undefined}
+                className={`rounded-full px-3 py-1 text-sm font-semibold ${
+                  gemdexSub === s
+                    ? 'bg-slate-100 text-slate-900'
+                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </nav>
+
+          {gemdexSub === 'Species' && (
+            <GemdexV5
+              species={species}
+              gemdex={state.gemdex}
+              newlyDiscovered={state.newlyDiscovered}
+              localities={localities}
+              unlockedIds={unlockedIds}
+              cutTechniquesById={cutTechniquesById}
+              bestSpecimens={state.bestSpecimens}
+            />
+          )}
+
+          {gemdexSub === 'Trophies' && (
+            <TrophyCase bestSpecimens={state.bestSpecimens} speciesById={speciesById} />
+          )}
+
+          {gemdexSub === 'Career' && (
+            <CareerPanel
+              reputation={state.reputation}
+              gear={state.gear}
+              familySetsComplete={completedFams.length}
+              familySetsTotal={new Set(species.map((s) => s.family)).size}
+              localitySetsComplete={completedLocalities.length}
+              localitySetsTotal={localities.length}
+            />
+          )}
         </div>
       )}
     </div>

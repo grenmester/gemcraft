@@ -46,10 +46,20 @@ describe('Rockhound shell', () => {
     screen.getByText(/Needs the sieve/i);
   });
 
-  it('shows the progression panel (reputation) on the Gemdex tab', () => {
+  it('shows the career panel (reputation) on the Gemdex Career subtab', () => {
     render(<Rockhound />);
     fireEvent.click(screen.getByRole('button', { name: /Gemdex/i }));
-    screen.getByText(/Reputation/i);
+    fireEvent.click(screen.getByRole('button', { name: /^Career$/ }));
+    screen.getByText(/Reputation · tier/i);
+  });
+
+  it('defaults the Gemdex tab to the Species subtab', () => {
+    render(<Rockhound />);
+    fireEvent.click(screen.getByRole('button', { name: /Gemdex/i }));
+    screen.getByRole('button', { name: /^Species$/ });
+    screen.getByRole('button', { name: /^Trophies$/ });
+    screen.getByRole('button', { name: /^Career$/ });
+    screen.getByText(/discovered/i);
   });
 
   it('shows a Cut tab with an empty state before anything is identified', () => {
@@ -58,10 +68,11 @@ describe('Rockhound shell', () => {
     screen.getByText(/nothing to cut/i);
   });
 
-  it('shows the trophy case heading on the Gemdex tab', () => {
+  it('shows the trophy case on the Gemdex Trophies subtab', () => {
     render(<Rockhound />);
     fireEvent.click(screen.getByRole('button', { name: /Gemdex/i }));
-    screen.getByText(/Trophy case/i);
+    fireEvent.click(screen.getByRole('button', { name: /^Trophies$/ }));
+    screen.getByText(/finest cut stone/i);
   });
 
   it('shows a Market tab with an empty sell state before anything is sellable', () => {
