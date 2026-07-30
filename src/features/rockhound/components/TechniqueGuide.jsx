@@ -13,9 +13,15 @@ export default function TechniqueGuide({ technique, view, onClose }) {
         </p>
       </div>
 
+      {view.unsuitableReason && (
+        <Section title="Not suitable">
+          <p className="text-sm text-slate-400">{view.unsuitableReason}</p>
+        </Section>
+      )}
+
       <Section title="Odds on this stone">
         <Row label="Success">
-          {view.successPct == null ? 'learn it first' : `${view.successPct}%`}
+          {!view.suitable ? 'not suitable for this stone' : view.successPct == null ? 'learn it first' : `${view.successPct}%`}
         </Row>
         <Row label="Keeps">{view.keepsPct[0]}–{view.keepsPct[1]}% of the carat</Row>
         <Row label="Cut quality">{view.qualityRange[0]}–{view.qualityRange[1]}</Row>
@@ -32,7 +38,7 @@ export default function TechniqueGuide({ technique, view, onClose }) {
         )}
       </Section>
 
-      {view.shatterRisk && (
+      {view.shatterRisk && view.suitable && (
         <Section title="⚠️ Risk">
           <p className="text-sm text-red-300">
             This stone cleaves. A failed cut here can shatter it and lose it for good.

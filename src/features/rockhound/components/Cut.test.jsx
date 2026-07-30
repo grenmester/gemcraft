@@ -101,4 +101,31 @@ describe('Cut', () => {
     renderCut();
     expect(screen.queryByText(/last cut/i)).toBeNull();
   });
+
+  it('does not quote odds or shatter risk in the guide for an unsuitable technique', () => {
+    // topaz cannot take fancy; opening its guide must not show a real
+    // percentage or a shatter warning, even though fancy is learned and
+    // topaz cleaves (perfect cleavage) and fancy is catastrophicOnFail.
+    renderCut({
+      selectedId: 'i2',
+      cutTechniqueLevel: { cabochon: 4, princess: 1, fancy: 3 }
+    });
+    fireEvent.click(screen.getByRole('button', { name: /About Fancy/i }));
+    const dialog = screen.getByRole('dialog');
+    // Keeps/Cut quality legitimately show a % regardless of suitability, so
+    // scope the "no percentage" check to the Success row itself.
+    expect(screen.getByText('Success').closest('div').textContent).not.toMatch(/%/);
+    expect(dialog.textContent).not.toMatch(/shatter/i);
+    expect(dialog.textContent).toMatch(/does not take this cut/i);
+  });
+
+  it('shows the TRUE success odds in the guide, not the bare curve value', () => {
+    renderCut(); // ruby selected by default
+    const truth = Math.round(cutSuccessProbability(speciesById.ruby, cutTechniques.find((t) => t.id === 'cabochon'), 4) * 100);
+    fireEvent.click(screen.getByRole('button', { name: /About Cabochon/i }));
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.textContent).toMatch(`${truth}%`);
+    expect(truth).toBe(57);
+    expect(dialog.textContent).not.toMatch('76%');
+  });
 });
