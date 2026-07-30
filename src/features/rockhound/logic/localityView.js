@@ -4,26 +4,27 @@ import { localitySetComplete } from './progression.js';
 // Read-only derivations for the Explore views. Locality set grouping lives here
 // (not in progression.js) because it is presentation shape, not game rules;
 // progression.js remains the authority on whether a locality set is *complete*,
-// so `complete` below delegates to it rather than restating the rule. Find-pool
-// weights are the authoring knob; players see words, never the raw numbers, so
-// tuning weights never turns into a UI change.
+// so `complete` below delegates to it rather than restating the rule.
+//
+// Find-pool odds are shown as exact percentages while we prototype: banded
+// words ("common here") collapsed to a single label on the four localities
+// whose weights are nearly flat, hiding the very information the screen
+// exists to surface.
 
-const FREQUENCY_BANDS = [
-  { minShare: 0.35, label: 'common here' },
-  { minShare: 0.15, label: 'uncommon here' }
-];
-const RAREST_LABEL = 'rare here';
-
-function frequencyFor(weight, totalWeight) {
-  if (totalWeight <= 0) return RAREST_LABEL;
-  const share = weight / totalWeight;
-  return FREQUENCY_BANDS.find((b) => share >= b.minShare)?.label ?? RAREST_LABEL;
+/** A find-pool weight as its exact share of the pool, e.g. '30%'. */
+function chanceFor(weight, totalWeight) {
+  if (totalWeight <= 0) return '0%';
+  const pct = (weight / totalWeight) * 100;
+  // One decimal only when rounding to whole percent would misreport the odds.
+  const rounded = Math.round(pct);
+  const text = Math.abs(pct - rounded) < 0.05 ? `${rounded}` : pct.toFixed(1);
+  return `${text}%`;
 }
 
 /**
  * The find pool as the player may see it: discovered species are named,
  * undiscovered ones are withheld (spoiler rule). Ordered richest first.
- * Raw weights are deliberately not returned.
+ * `chance` is the exact percentage; the raw weight stays internal.
  */
 export function findPoolView(locality, speciesById, gemdex) {
   const found = new Set(gemdex);
@@ -36,7 +37,7 @@ export function findPoolView(locality, speciesById, gemdex) {
         speciesId: e.species,
         name: discovered ? (speciesById[e.species]?.name ?? null) : null,
         discovered,
-        frequency: frequencyFor(e.weight, total)
+        chance: chanceFor(e.weight, total)
       };
     });
 }

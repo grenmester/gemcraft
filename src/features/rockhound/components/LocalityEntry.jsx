@@ -66,7 +66,7 @@ export default function LocalityEntry({
                 <span className={entry.discovered ? 'text-slate-100' : 'text-slate-500'}>
                   {entry.discovered ? entry.name : '???'}
                 </span>
-                <span className="ml-auto text-xs text-slate-500">{entry.frequency}</span>
+                <span className="ml-auto font-mono text-xs text-slate-400">{entry.chance}</span>
               </li>
             );
           })}

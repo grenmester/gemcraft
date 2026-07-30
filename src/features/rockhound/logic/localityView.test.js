@@ -30,11 +30,23 @@ describe('findPoolView', () => {
     expect(view.map((e) => e.speciesId)).toEqual(['quartz', 'sapphire', 'topaz']);
   });
 
-  it('describes frequency in words rather than raw weights', () => {
+  it('reports each species chance as an exact percentage of the pool', () => {
     const view = findPoolView(CREEK, SPECIES_BY_ID, []);
-    // 50/75 = 0.67 -> common; 20/75 = 0.27 -> uncommon; 5/75 = 0.07 -> rare
-    expect(view.map((e) => e.frequency)).toEqual(['common here', 'uncommon here', 'rare here']);
+    // total 75: 50 -> 66.7%, 20 -> 26.7%, 5 -> 6.7%
+    expect(view.map((e) => e.chance)).toEqual(['66.7%', '26.7%', '6.7%']);
+    // the raw authoring weight stays internal
     view.forEach((e) => expect(e.weight).toBeUndefined());
+  });
+
+  it('drops the decimal when the odds are a whole percent', () => {
+    const flat = { findPool: [{ species: 'quartz', weight: 1 }, { species: 'sapphire', weight: 3 }] };
+    expect(findPoolView(flat, SPECIES_BY_ID, []).map((e) => e.chance)).toEqual(['75%', '25%']);
+  });
+
+  it('percentages across a pool sum to 100', () => {
+    const view = findPoolView(CREEK, SPECIES_BY_ID, []);
+    const sum = view.reduce((t, e) => t + parseFloat(e.chance), 0);
+    expect(Math.abs(sum - 100)).toBeLessThan(0.15);
   });
 });
 

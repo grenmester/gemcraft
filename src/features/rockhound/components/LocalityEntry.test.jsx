@@ -86,12 +86,21 @@ describe('LocalityEntry', () => {
     expect(screen.getAllByText('???').length).toBe(2);
   });
 
-  it('describes frequency in words, never raw weights', () => {
+  it('shows exact find percentages, never the raw authoring weights', () => {
     renderEntry();
-    screen.getByText('common here');
-    screen.getByText('uncommon here');
-    screen.getByText('rare here');
-    expect(screen.queryByText(/50/)).toBeNull();
+    // pool weights 50/20/5 (total 75) -> 66.7% / 26.7% / 6.7%
+    screen.getByText('66.7%');
+    screen.getByText('26.7%');
+    screen.getByText('6.7%');
+    // the raw weight 50 must not appear anywhere
+    expect(screen.queryByText(/\b50\b/)).toBeNull();
+  });
+
+  it('shows the chance for undiscovered species too, without naming them', () => {
+    renderEntry();
+    // ruby is undiscovered but its odds are still informative while prototyping
+    const rubyRow = screen.getByText('26.7%').closest('li');
+    expect(rubyRow.textContent).toMatch(/\?\?\?/);
   });
 
   it('shows the rarity ceiling even though the rare species are unfound', () => {
