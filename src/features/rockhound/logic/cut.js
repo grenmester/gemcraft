@@ -47,12 +47,35 @@ export function applyCut(specimen, species, technique, level, rng = Math.random)
   };
 }
 
-export function specimenScore(specimen, species) {
+export const SCORE_WEIGHTS = { carat: 0.25, color: 0.25, clarity: 0.2, cut: 0.3 };
+
+/**
+ * The score with its parts exposed, so the Market can show a player why a
+ * stone is worth what it is. This is the single computation — specimenScore
+ * delegates to it so the two can never drift apart.
+ */
+export function scoreBreakdown(specimen, species) {
   const carat = specimen.caratRetained ?? specimen.caratWeight ?? 0;
   const caratNorm = clamp(carat / 5, 0, 1) * 100; // 5 ct saturates
-  const cut = specimen.cutQuality ?? 0;
-  const color = specimen.colorGrade ?? 0;
-  const clarity = specimen.clarity ?? 0;
+  const raws = {
+    carat: { raw: carat, normalised: caratNorm, label: 'Carat' },
+    color: { raw: specimen.colorGrade ?? 0, normalised: specimen.colorGrade ?? 0, label: 'Colour' },
+    clarity: { raw: specimen.clarity ?? 0, normalised: specimen.clarity ?? 0, label: 'Clarity' },
+    cut: { raw: specimen.cutQuality ?? 0, normalised: specimen.cutQuality ?? 0, label: 'Cut' }
+  };
+  const parts = Object.entries(raws).map(([key, v]) => ({
+    key,
+    label: v.label,
+    raw: v.raw,
+    normalised: v.normalised,
+    weight: SCORE_WEIGHTS[key],
+    points: SCORE_WEIGHTS[key] * v.normalised
+  }));
   const traitBonus = (specimen.phenomena?.length ? 15 : 0) + (specimen.untreated ? 5 : 0);
-  return Math.round(0.25 * caratNorm + 0.25 * color + 0.2 * clarity + 0.3 * cut + traitBonus);
+  const total = Math.round(parts.reduce((t, p) => t + p.points, 0) + traitBonus);
+  return { parts, traitBonus, total };
+}
+
+export function specimenScore(specimen, species) {
+  return scoreBreakdown(specimen, species).total;
 }

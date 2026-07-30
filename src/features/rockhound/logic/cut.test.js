@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canApply, cutSuccessProbability, applyCut, specimenScore } from './cut.js';
+import { canApply, cutSuccessProbability, applyCut, specimenScore, scoreBreakdown, SCORE_WEIGHTS } from './cut.js';
 import { speciesById } from '../../../loaders/species.js';
 import { cutTechniquesById } from '../../../loaders/cutTechniques.js';
 
@@ -68,5 +68,27 @@ describe('specimenScore', () => {
     const starred = { ...base, phenomena: ['asterism'] };
     expect(specimenScore(better, speciesById.sapphire)).toBeGreaterThan(specimenScore(base, speciesById.sapphire));
     expect(specimenScore(starred, speciesById.sapphire)).toBeGreaterThan(specimenScore(base, speciesById.sapphire));
+  });
+});
+
+describe('scoreBreakdown', () => {
+  const SPECIES = { id: 'ruby', baseValue: 900, phenomena: [] };
+  const STONE = { caratRetained: 1.4, cutQuality: 88, colorGrade: 91, clarity: 82, phenomena: ['asterism'] };
+
+  it('totals to exactly what specimenScore returns', () => {
+    expect(scoreBreakdown(STONE, SPECIES).total).toBe(specimenScore(STONE, SPECIES));
+  });
+
+  it('splits the score into the four graded parts plus a trait bonus', () => {
+    const b = scoreBreakdown(STONE, SPECIES);
+    expect(b.parts.map((p) => p.key)).toEqual(['carat', 'color', 'clarity', 'cut']);
+    expect(b.traitBonus).toBe(15); // phenomena revealed
+    const sum = b.parts.reduce((t, p) => t + p.points, 0) + b.traitBonus;
+    expect(Math.round(sum)).toBe(b.total);
+  });
+
+  it('weights each part as SCORE_WEIGHTS declares', () => {
+    const b = scoreBreakdown(STONE, SPECIES);
+    expect(b.parts.find((p) => p.key === 'cut').weight).toBe(SCORE_WEIGHTS.cut);
   });
 });
