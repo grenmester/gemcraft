@@ -16,6 +16,16 @@ export function cutSuccessProbability(species, technique, level) {
   return clamp(base * difficulty, 0.05, 0.98);
 }
 
+/**
+ * Whether this pairing can destroy the stone at all: a catastrophic
+ * technique on a species that cleaves. Eligibility only — applyCut still
+ * requires a failed roll before it actually shatters.
+ */
+export function canShatter(species, technique) {
+  return !!technique.catastrophicOnFail
+    && ['good', 'perfect'].includes(species?.cleavage);
+}
+
 export function applyCut(specimen, species, technique, level, rng = Math.random) {
   const p = cutSuccessProbability(species, technique, level);
   const roll = rng();
@@ -33,8 +43,7 @@ export function applyCut(specimen, species, technique, level, rng = Math.random)
     };
   }
 
-  const cleaves = species.cleavage === 'perfect' || species.cleavage === 'good';
-  if (technique.catastrophicOnFail && cleaves && roll > 0.9) {
+  if (canShatter(species, technique) && roll > 0.9) {
     return { outcome: 'shattered', specimen: null };
   }
 

@@ -1,6 +1,5 @@
-import { canApply, cutSuccessProbability } from './cut.js';
+import { canApply, cutSuccessProbability, canShatter } from './cut.js';
 
-const CLEAVES = ['good', 'perfect'];
 const round2 = (n) => Math.round(n * 100) / 100;
 const pct = (x) => Math.round(x * 100);
 
@@ -22,8 +21,9 @@ export function techniqueView(species, technique, level) {
     reveals: (species?.phenomena ?? [])
       .filter((p) => p.revealedBy === technique.id)
       .map((p) => p.type),
-    // The exact condition applyCut checks before destroying the stone.
-    shatterRisk: !!technique.catastrophicOnFail && CLEAVES.includes(species?.cleavage),
+    // Whether this pairing can shatter the stone at all (eligibility only —
+    // applyCut additionally requires a failed roll above 0.9 to actually destroy it).
+    shatterRisk: canShatter(species, technique),
     unsuitableReason: suitable || !species ? null : `${species.name} does not take this cut`
   };
 }

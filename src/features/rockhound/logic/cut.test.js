@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canApply, cutSuccessProbability, applyCut, specimenScore, scoreBreakdown, SCORE_WEIGHTS } from './cut.js';
+import { canApply, cutSuccessProbability, applyCut, specimenScore, scoreBreakdown, SCORE_WEIGHTS, canShatter } from './cut.js';
 import { speciesById } from '../../../loaders/species.js';
 import { cutTechniquesById } from '../../../loaders/cutTechniques.js';
 
@@ -58,6 +58,28 @@ describe('applyCut', () => {
     const res = applyCut(rough({ trueSpeciesId: 'topaz' }), speciesById.topaz, cutTechniquesById.princess, 1, () => 0.999);
     expect(res.outcome).toBe('shattered');
     expect(res.specimen).toBeNull();
+  });
+});
+
+describe('canShatter', () => {
+  it('is true for a cleaving species with a catastrophic technique', () => {
+    // topaz cleavage 'perfect'; princess is catastrophicOnFail
+    expect(canShatter(speciesById.topaz, cutTechniquesById.princess)).toBe(true);
+  });
+
+  it('is false for a non-cleaving species with a catastrophic technique', () => {
+    // ruby cleavage 'none'; princess is catastrophicOnFail
+    expect(canShatter(speciesById.ruby, cutTechniquesById.princess)).toBe(false);
+  });
+
+  it('is false for a cleaving species with a non-catastrophic technique', () => {
+    // topaz cleavage 'perfect'; cabochon is not catastrophicOnFail
+    expect(canShatter(speciesById.topaz, cutTechniquesById.cabochon)).toBe(false);
+  });
+
+  it('is false and does not throw for a null or undefined species', () => {
+    expect(canShatter(null, cutTechniquesById.princess)).toBe(false);
+    expect(canShatter(undefined, cutTechniquesById.princess)).toBe(false);
   });
 });
 
