@@ -1,6 +1,7 @@
 import EntryModal, { Section, Row } from './EntryModal.jsx';
-import { gemArt, colorHex } from '../logic/gemArt.js';
+import { colorHex } from '../logic/gemArt.js';
 import { localitiesForSpecies } from '../logic/gemdexView.js';
+import GemGlyph from './GemGlyph.jsx';
 
 const RARITY_COLOR = {
   Common: 'text-slate-300',
@@ -22,8 +23,6 @@ const titleize = (s) => s.replace(/_/g, ' ');
 export default function GemdexEntry({
   species, localities, unlockedIds, cutTechniquesById, best, familyGroup, onClose
 }) {
-  const art = gemArt(species.id);
-
   const pools = localitiesForSpecies(localities, species.id);
   const unlocked = new Set(unlockedIds);
   const knownPools = pools.filter((l) => unlocked.has(l.id));
@@ -36,13 +35,7 @@ export default function GemdexEntry({
     <EntryModal titleId="gemdex-entry-title" onClose={onClose}>
       {/* Header */}
       <div className="flex items-start gap-4 p-5">
-        <div
-          className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-slate-600 text-4xl"
-          style={{ backgroundColor: `${art.tint}33` }}
-          aria-hidden="true"
-        >
-          {art.glyph}
-        </div>
+        <GemGlyph speciesId={species.id} variant="hero" />
         <div className="flex-1">
           <h3 id="gemdex-entry-title" className="text-2xl font-bold text-slate-50">{species.name}</h3>
           <p className="text-sm text-slate-400">

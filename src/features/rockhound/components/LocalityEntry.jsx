@@ -1,9 +1,9 @@
 import EntryModal, { Section, Row } from './EntryModal.jsx';
-import { gemArt } from '../logic/gemArt.js';
 import { describeGate, describeGateSubject } from '../logic/progression.js';
 import {
   findPoolView, rarityCeiling, localitySetProgress, localitiesGatedBy, titleizeWords
 } from '../logic/localityView.js';
+import GemGlyph from './GemGlyph.jsx';
 
 function requirementText(gate, unlocked) {
   if (!unlocked) return `🔒 ${describeGate(gate)}`;
@@ -53,16 +53,9 @@ export default function LocalityEntry({
         </div>
         <ul className="flex flex-col gap-1">
           {pool.map((entry) => {
-            const art = gemArt(entry.speciesId);
             return (
               <li key={entry.speciesId} className="flex items-center gap-2 text-sm">
-                <span
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-slate-700 text-base"
-                  style={entry.discovered ? { backgroundColor: `${art.tint}33` } : undefined}
-                  aria-hidden="true"
-                >
-                  {entry.discovered ? art.glyph : '❔'}
-                </span>
+                <GemGlyph speciesId={entry.speciesId} variant="pool" hidden={!entry.discovered} />
                 <span className={entry.discovered ? 'text-slate-100' : 'text-slate-500'}>
                   {entry.discovered ? entry.name : '???'}
                 </span>

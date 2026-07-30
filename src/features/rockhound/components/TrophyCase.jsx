@@ -1,4 +1,4 @@
-import { gemArt } from '../logic/gemArt.js';
+import GemGlyph from './GemGlyph.jsx';
 
 const titleize = (s) => s.replace(/_/g, ' ');
 
@@ -18,19 +18,12 @@ export default function TrophyCase({ bestSpecimens, speciesById }) {
       ) : (
         <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {entries.map(([speciesId, best]) => {
-            const art = gemArt(speciesId);
             return (
               <li
                 key={speciesId}
                 className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 p-3"
               >
-                <span
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-600 text-xl"
-                  style={{ backgroundColor: `${art.tint}33` }}
-                  aria-hidden="true"
-                >
-                  {art.glyph}
-                </span>
+                <GemGlyph speciesId={speciesId} variant="row" />
                 <span className="flex-1">
                   <span className="block font-semibold text-slate-100">{speciesById[speciesId].name}</span>
                   <span className="block text-xs capitalize text-slate-400">

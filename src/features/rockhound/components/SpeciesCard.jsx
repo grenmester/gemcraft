@@ -1,4 +1,4 @@
-import { gemArt } from '../logic/gemArt.js';
+import GemGlyph from './GemGlyph.jsx';
 
 const RARITY_COLOR = {
   Common: 'text-slate-400',
@@ -9,8 +9,6 @@ const RARITY_COLOR = {
 };
 
 export default function SpeciesCard({ species, discovered, isNew, onOpen }) {
-  const art = gemArt(species.id);
-
   if (!discovered) {
     return (
       <div className="flex h-full w-full flex-col items-center gap-1 rounded-lg border border-dashed border-slate-700 bg-slate-800/40 p-3 text-center">
@@ -29,13 +27,7 @@ export default function SpeciesCard({ species, discovered, isNew, onOpen }) {
       onClick={onOpen}
       className="flex h-full w-full flex-col items-center gap-1 rounded-lg border border-slate-600 bg-slate-800 p-3 text-center transition hover:border-yellow-400 hover:bg-slate-700"
     >
-      <div
-        className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-600 text-2xl"
-        style={{ backgroundColor: `${art.tint}33` }}
-        aria-hidden="true"
-      >
-        {art.glyph}
-      </div>
+      <GemGlyph speciesId={species.id} variant="card" />
       <span className="font-semibold text-slate-100">{species.name}</span>
       <span className="flex items-center gap-1 text-xs">
         <span className={RARITY_COLOR[species.rarity] ?? 'text-slate-400'}>{species.rarity}</span>
