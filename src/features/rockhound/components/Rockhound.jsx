@@ -99,7 +99,6 @@ function RockhoundInner() {
           speciesById={speciesById}
           selectedId={selectedCutId ?? state.identified[0]?.instanceId ?? null}
           onSelectSpecimen={setSelectedCutId}
-          lastCutResult={state.lastCutResult}
           onUnlock={(techniqueId) => dispatch({ type: UNLOCK_TECHNIQUE, payload: { techniqueId } })}
           onLevel={(techniqueId) => dispatch({ type: LEVEL_TECHNIQUE, payload: { techniqueId } })}
           onApply={(instanceId, techniqueId) => dispatch({ type: APPLY_CUT, payload: { instanceId, techniqueId } })}
