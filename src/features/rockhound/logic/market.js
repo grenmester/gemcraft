@@ -6,9 +6,12 @@ export function stoneValue(stone, species) {
   return Math.round(species.baseValue * gradeFactor(stone.score));
 }
 
+export function roughGradeFactor(specimen) {
+  return 0.5 + ((specimen.colorGrade + specimen.clarity) / 2) / 100;
+}
+
 export function identifiedValue(specimen, species) {
-  const grade = 0.5 + ((specimen.colorGrade + specimen.clarity) / 2) / 100;
-  return Math.round(species.baseValue * grade * UNCUT_DISCOUNT);
+  return Math.round(species.baseValue * roughGradeFactor(specimen) * UNCUT_DISCOUNT);
 }
 
 export const SHOP_GEAR = [

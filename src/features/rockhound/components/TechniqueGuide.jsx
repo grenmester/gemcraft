@@ -28,7 +28,7 @@ export default function TechniqueGuide({ technique, view, onClose }) {
       </Section>
 
       <Section title="Suits">
-        <Row label="Stone type">
+        <Row label="Designed for">
           <span className="capitalize">{technique.suitableFor.transparency.join(', ')}</span>
         </Row>
         {view.reveals.length > 0 && (

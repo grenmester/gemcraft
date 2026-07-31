@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { stonePrice, roughPrice, bestCutEstimate } from './marketView.js';
-import { stoneValue, identifiedValue, gradeFactor } from './market.js';
+import { stoneValue, identifiedValue } from './market.js';
 
 const RUBY = { id: 'ruby', name: 'Ruby', baseValue: 900, suitableCuts: ['cabochon'], phenomena: [{ type: 'asterism', revealedBy: 'cabochon' }] };
 const AGATE = { id: 'agate', name: 'Agate', baseValue: 15, suitableCuts: [], phenomena: [] };
@@ -32,7 +32,7 @@ describe('stonePrice', () => {
     const p = stonePrice(rest, RUBY);
     // the multiplier must be derived from the score actually shown, not from
     // a missing field standing in as zero
-    expect(p.multiplier).toBeCloseTo(gradeFactor(p.score), 10);
+    expect(Math.round(p.base * p.multiplier)).toBe(p.total);
     expect(p.multiplier).toBeGreaterThan(0.5);
   });
 });

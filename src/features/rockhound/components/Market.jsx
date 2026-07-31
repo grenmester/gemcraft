@@ -9,8 +9,8 @@ const titleize = (s) => s.replace(/_/g, ' ');
 
 // What each purchase actually gets you — a bare price list says nothing.
 const GEAR_OPENS = {
-  sieve: 'opens Gravel Bar',
-  rock_hammer: 'opens Pala Pegmatite and Old Quarry'
+  sieve: 'needed for Gravel Bar',
+  rock_hammer: 'needed for Pala Pegmatite and Old Quarry'
 };
 
 function SellRow({ glyphId, name, detail, total, sellLabel, whyLabel, onSell, onWhy, children }) {

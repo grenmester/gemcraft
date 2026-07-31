@@ -1,5 +1,5 @@
-import { stoneValue, identifiedValue, gradeFactor, UNCUT_DISCOUNT } from './market.js';
-import { scoreBreakdown, specimenScore } from './cut.js';
+import { stoneValue, identifiedValue, gradeFactor, roughGradeFactor, UNCUT_DISCOUNT } from './market.js';
+import { scoreBreakdown, specimenScore, canApply } from './cut.js';
 
 const mid = ([lo, hi]) => (lo + hi) / 2;
 
@@ -11,7 +11,7 @@ export function stonePrice(stone, species) {
   const { parts, traitBonus } = scoreBreakdown(stone, species);
   const score = stone.score ?? specimenScore(stone, species);
   return {
-    total: stoneValue(stone, species),
+    total: stoneValue({ ...stone, score }, species),
     base: species.baseValue,
     score,
     multiplier: gradeFactor(score),
@@ -27,7 +27,7 @@ export function roughPrice(specimen, species) {
     base: species.baseValue,
     colorGrade: specimen.colorGrade,
     clarity: specimen.clarity,
-    multiplier: 0.5 + ((specimen.colorGrade + specimen.clarity) / 2) / 100,
+    multiplier: roughGradeFactor(specimen),
     uncutDiscount: UNCUT_DISCOUNT
   };
 }
@@ -37,7 +37,7 @@ export function roughPrice(specimen, species) {
  * middling roll. An estimate to inform the sell-or-cut choice, not a promise.
  */
 export function bestCutEstimate(specimen, species, techniques) {
-  const suitable = techniques.filter((t) => species.suitableCuts.includes(t.id));
+  const suitable = techniques.filter((t) => canApply(species, t));
   if (suitable.length === 0) return null;
   return suitable.reduce((best, t) => {
     const cut = {
