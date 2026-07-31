@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { stonePrice, roughPrice, bestCutEstimate } from './marketView.js';
-import { stoneValue, identifiedValue } from './market.js';
+import { stoneValue, identifiedValue, gradeFactor } from './market.js';
 
 const RUBY = { id: 'ruby', name: 'Ruby', baseValue: 900, suitableCuts: ['cabochon'], phenomena: [{ type: 'asterism', revealedBy: 'cabochon' }] };
 const AGATE = { id: 'agate', name: 'Agate', baseValue: 15, suitableCuts: [], phenomena: [] };
@@ -21,6 +21,20 @@ describe('stonePrice', () => {
     expect(p.parts.map((x) => x.key)).toEqual(['carat', 'color', 'clarity', 'cut']);
     expect(p.traitBonus).toBe(15);
   });
+
+  it('shows arithmetic that reconciles to the price it explains', () => {
+    const p = stonePrice(STONE, RUBY);
+    expect(Math.round(p.base * p.multiplier)).toBe(p.total);
+  });
+
+  it('reports a score and a multiplier that agree, even for an unscored stone', () => {
+    const { score, ...rest } = STONE;
+    const p = stonePrice(rest, RUBY);
+    // the multiplier must be derived from the score actually shown, not from
+    // a missing field standing in as zero
+    expect(p.multiplier).toBeCloseTo(gradeFactor(p.score), 10);
+    expect(p.multiplier).toBeGreaterThan(0.5);
+  });
 });
 
 describe('roughPrice', () => {
@@ -30,6 +44,20 @@ describe('roughPrice', () => {
 
   it('exposes the uncut penalty', () => {
     expect(roughPrice(ROUGH, RUBY).uncutDiscount).toBe(0.5);
+  });
+
+  it('exposes the grade multiplier the colour and clarity produce', () => {
+    // (91 + 82) / 2 = 86.5 -> 0.5 + 0.865
+    expect(roughPrice(ROUGH, RUBY).multiplier).toBeCloseTo(1.365, 10);
+  });
+
+  it('shows arithmetic that reconciles to the price it explains', () => {
+    // This is the drift guard. roughPrice mirrors a grade expression that
+    // identifiedValue keeps private; if the two ever diverge, the modal would
+    // explain a price with arithmetic that does not produce it. Reconciling
+    // against the real total catches that the moment it happens.
+    const p = roughPrice(ROUGH, RUBY);
+    expect(Math.round(p.base * p.multiplier * p.uncutDiscount)).toBe(p.total);
   });
 });
 

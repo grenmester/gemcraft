@@ -9,11 +9,12 @@ const mid = ([lo, hi]) => (lo + hi) / 2;
  */
 export function stonePrice(stone, species) {
   const { parts, traitBonus } = scoreBreakdown(stone, species);
+  const score = stone.score ?? specimenScore(stone, species);
   return {
     total: stoneValue(stone, species),
     base: species.baseValue,
-    score: stone.score ?? specimenScore(stone, species),
-    multiplier: gradeFactor(stone.score),
+    score,
+    multiplier: gradeFactor(score),
     parts,
     traitBonus
   };
