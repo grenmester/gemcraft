@@ -4,7 +4,7 @@ import PriceBreakdown from './PriceBreakdown.jsx';
 import { SHOP_GEAR } from '../logic/market.js';
 import { stonePrice, roughPrice, bestCutEstimate } from '../logic/marketView.js';
 
-const money = (n) => Math.round(n).toLocaleString();
+const money = (n) => `💰 ${Math.round(n).toLocaleString()}`;
 const titleize = (s) => s.replace(/_/g, ' ');
 
 // What each purchase actually gets you — a bare price list says nothing.

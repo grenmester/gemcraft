@@ -42,27 +42,35 @@ describe('Market', () => {
 
   it('does not duplicate the cash total the shell already shows', () => {
     renderMarket();
-    // No modal is open in this render, so the only place a 💰 total could
-    // leak from is a duplicate on the Market screen itself. Check every
-    // element's direct text rather than one hard-coded string, so a
-    // differently-formatted duplicate would still be caught.
-    const cashElements = screen.queryAllByText((_, el) => {
+    // The shell renders the running cash total on every tab; Market must not
+    // render a second one. Match the VALUE of cash in any formatting rather
+    // than one hard-coded string, so a reformatted duplicate is still caught —
+    // but do not forbid the 💰 marker outright, since each price legitimately
+    // carries it.
+    const cashTotals = screen.queryAllByText((_, el) => {
       const direct = Array.from(el.childNodes)
         .filter((n) => n.nodeType === 3)
         .map((n) => n.textContent)
         .join('')
-        .trim();
-      return direct.startsWith('💰');
+        .replace(/[^0-9]/g, '');
+      return direct === '340';
     });
-    expect(cashElements).toHaveLength(0);
+    expect(cashTotals).toHaveLength(0);
+  });
+
+  it('marks every price with the currency', () => {
+    renderMarket();
+    // a bare number is not a price — each row must say what the unit is
+    const ruby = screen.getByRole('button', { name: /Sell rough Ruby/i }).closest('li');
+    expect(ruby.textContent).toMatch(/💰/);
   });
 
   it('prices rough and cut stones by the value rules', () => {
     renderMarket();
-    // The row displays money with toLocaleString (comma thousands separators),
-    // so match the same formatting the component uses rather than the bare
-    // numeric string — the cut Ruby's total is 1242, rendered as "1,242".
-    const displayed = (n) => Math.round(n).toLocaleString();
+    // The row displays money with a currency marker and comma thousands
+    // separators, so match the component's formatting rather than the bare
+    // numeric string — the cut Ruby's total is 1242, rendered as "💰 1,242".
+    const displayed = (n) => `💰 ${Math.round(n).toLocaleString()}`;
     screen.getByText(displayed(identifiedValue(ROUGH, speciesById.ruby)));
     screen.getByText(displayed(stoneValue(STONE, speciesById.ruby)));
   });
