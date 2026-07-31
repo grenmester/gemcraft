@@ -7,8 +7,8 @@ import { techniqueView } from '../logic/cutView.js';
 function Meter({ label, value, max = 100, unit = '' }) {
   return (
     <div className="flex items-baseline gap-2">
-      <span className="w-16 text-xs uppercase tracking-wide text-slate-500">{label}</span>
-      <span className="w-12 font-mono text-sm text-slate-200">{value}{unit}</span>
+      <span className="w-16 shrink-0 text-xs uppercase tracking-wide text-slate-500">{label}</span>
+      <span className="w-16 shrink-0 whitespace-nowrap font-mono text-sm text-slate-200">{value}{unit}</span>
       <span className="h-1.5 flex-1 overflow-hidden rounded bg-slate-700">
         <span className="block h-full bg-yellow-400" style={{ width: `${Math.min((value / max) * 100, 100)}%` }} />
       </span>

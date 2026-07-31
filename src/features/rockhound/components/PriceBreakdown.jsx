@@ -32,12 +32,16 @@ export default function PriceBreakdown({ title, price, kind, onClose }) {
         <Section title="What made the grade">
           {price.parts.map((p) => (
             <div key={p.key} className="flex items-baseline gap-2 py-0.5">
-              <span className="w-16 text-xs uppercase tracking-wide text-slate-500">{p.label}</span>
-              <span className="w-10 font-mono text-xs text-slate-300">{Math.round(p.raw)}</span>
+              <span className="w-16 shrink-0 text-xs uppercase tracking-wide text-slate-500">{p.label}</span>
+              {/* Carat is the one part whose raw value is fractional — rounding
+                  it to a whole number would understate a 1.4 ct stone as "1". */}
+              <span className="w-10 shrink-0 font-mono text-xs text-slate-300">
+                {p.key === 'carat' ? p.raw : Math.round(p.raw)}
+              </span>
               <span className="h-1.5 flex-1 overflow-hidden rounded bg-slate-700">
                 <span className="block h-full bg-yellow-400" style={{ width: `${Math.min(p.normalised, 100)}%` }} />
               </span>
-              <span className="w-16 text-right font-mono text-xs text-slate-400">
+              <span className="w-20 shrink-0 whitespace-nowrap text-right font-mono text-xs text-slate-400">
                 +{p.points.toFixed(1)} pts
               </span>
             </div>
