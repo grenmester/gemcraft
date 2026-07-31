@@ -42,7 +42,19 @@ describe('Market', () => {
 
   it('does not duplicate the cash total the shell already shows', () => {
     renderMarket();
-    expect(screen.queryByText(/💰 340/)).toBeNull();
+    // No modal is open in this render, so the only place a 💰 total could
+    // leak from is a duplicate on the Market screen itself. Check every
+    // element's direct text rather than one hard-coded string, so a
+    // differently-formatted duplicate would still be caught.
+    const cashElements = screen.queryAllByText((_, el) => {
+      const direct = Array.from(el.childNodes)
+        .filter((n) => n.nodeType === 3)
+        .map((n) => n.textContent)
+        .join('')
+        .trim();
+      return direct.startsWith('💰');
+    });
+    expect(cashElements).toHaveLength(0);
   });
 
   it('prices rough and cut stones by the value rules', () => {
@@ -68,6 +80,17 @@ describe('Market', () => {
     expect(onSellStone).toHaveBeenCalledWith('s1');
   });
 
+  it('gives two rough stones of the same species distinct sell/why labels', () => {
+    const ROUGH_2 = { instanceId: 'i2', trueSpeciesId: 'ruby', caratWeight: 2.5, clarity: 82, colorGrade: 91 };
+    renderMarket({ identified: [ROUGH, ROUGH_2] });
+    const sellLight = screen.getByRole('button', { name: /Sell rough Ruby, 1.8 carat/i });
+    const sellHeavy = screen.getByRole('button', { name: /Sell rough Ruby, 2.5 carat/i });
+    expect(sellLight).not.toBe(sellHeavy);
+    const whyLight = screen.getByRole('button', { name: /Why this price for rough Ruby, 1.8 carat/i });
+    const whyHeavy = screen.getByRole('button', { name: /Why this price for rough Ruby, 2.5 carat/i });
+    expect(whyLight).not.toBe(whyHeavy);
+  });
+
   it('explains a price in a breakdown modal', () => {
     renderMarket();
     fireEvent.click(screen.getByRole('button', { name: /Why this price for cut Ruby/i }));
@@ -84,6 +107,15 @@ describe('Market', () => {
     expect(screen.getByRole('dialog').textContent).toMatch(/uncut/i);
   });
 
+  it('shows a rough multiplier precise enough to reconcile with the total', () => {
+    renderMarket();
+    fireEvent.click(screen.getByRole('button', { name: /Why this price for rough Ruby/i }));
+    // ROUGH has colorGrade 91, clarity 82: 0.5 + ((91 + 82) / 2) / 100 = 1.365.
+    // toFixed(2) would round this to 1.36, which no longer multiplies back
+    // to the shown total — the whole point of this modal.
+    expect(screen.getByRole('dialog').textContent).toMatch(/1\.365/);
+  });
+
   it('says what each piece of gear opens, and marks what is owned', () => {
     renderMarket();
     screen.getByText(/Gravel Bar/);
@@ -92,6 +124,12 @@ describe('Market', () => {
     // rather than the brief's two overlapping queries for the same button.
     const rockHammerButton = screen.getByRole('button', { name: /Buy Rock Hammer/i });
     expect(rockHammerButton.disabled).toBe(false); // cash 340 >= price 300 — affordable
+
+    // ownedGear includes 'sieve' in the default fixture — assert it actually
+    // presents as owned, not merely that some other button is affordable.
+    const sieveButton = screen.getByRole('button', { name: /Sieve owned/i });
+    expect(sieveButton.disabled).toBe(true);
+    expect(sieveButton.textContent).toBe('Owned');
   });
 
   it('disables a purchase that cannot be afforded', () => {

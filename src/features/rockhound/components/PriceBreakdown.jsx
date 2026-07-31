@@ -21,7 +21,7 @@ export default function PriceBreakdown({ title, price, kind, onClose }) {
           <>
             <Row label="Colour">{price.colorGrade}</Row>
             <Row label="Clarity">{price.clarity}</Row>
-            <Row label="Multiplier">×{price.multiplier.toFixed(2)}</Row>
+            <Row label="Multiplier">×{price.multiplier.toFixed(3)}</Row>
             <Row label="Uncut penalty">×{price.uncutDiscount}</Row>
           </>
         )}

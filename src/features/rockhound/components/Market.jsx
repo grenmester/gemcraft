@@ -67,8 +67,8 @@ export default function Market({
                   name={species.name}
                   detail={`${sp.caratWeight} ct · colour ${sp.colorGrade} · clarity ${sp.clarity}`}
                   total={price.total}
-                  sellLabel={`Sell rough ${species.name}`}
-                  whyLabel={`Why this price for rough ${species.name}`}
+                  sellLabel={`Sell rough ${species.name}, ${sp.caratWeight} carat`}
+                  whyLabel={`Why this price for rough ${species.name}, ${sp.caratWeight} carat`}
                   onSell={() => onSellIdentified(sp.instanceId)}
                   onWhy={() => setExplain({ title: `${species.name} (rough)`, price, kind: 'rough' })}
                 >
@@ -93,15 +93,16 @@ export default function Market({
             {stones.map((st) => {
               const species = speciesById[st.trueSpeciesId];
               const price = stonePrice(st, species);
+              const weight = st.caratRetained ?? st.caratWeight;
               return (
                 <SellRow
                   key={st.instanceId}
                   glyphId={st.trueSpeciesId}
                   name={species.name}
-                  detail={`${titleize(st.cut)} · ${st.caratRetained ?? st.caratWeight} ct · quality ${st.cutQuality}${st.phenomena?.length ? ' · ✨' : ''}`}
+                  detail={`${titleize(st.cut)} · ${weight} ct · quality ${st.cutQuality}${st.phenomena?.length ? ' · ✨' : ''}`}
                   total={price.total}
-                  sellLabel={`Sell cut ${species.name}`}
-                  whyLabel={`Why this price for cut ${species.name}`}
+                  sellLabel={`Sell cut ${species.name}, ${weight} carat`}
+                  whyLabel={`Why this price for cut ${species.name}, ${weight} carat`}
                   onSell={() => onSellStone(st.instanceId)}
                   onWhy={() => setExplain({ title: `${species.name} (${titleize(st.cut)})`, price, kind: 'cut' })}
                 />
