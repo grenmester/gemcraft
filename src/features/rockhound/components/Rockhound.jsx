@@ -112,6 +112,7 @@ function RockhoundInner() {
           stones={state.stones}
           speciesById={speciesById}
           ownedGear={state.gear}
+          techniques={cutTechniques}
           onSellIdentified={(instanceId) => dispatch({ type: SELL_IDENTIFIED, payload: { instanceId } })}
           onSellStone={(instanceId) => dispatch({ type: SELL_STONE, payload: { instanceId } })}
           onBuyGear={(gearId) => dispatch({ type: BUY_GEAR, payload: { gearId } })}

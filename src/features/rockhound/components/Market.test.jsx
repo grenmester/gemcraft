@@ -2,48 +2,100 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Market from './Market.jsx';
 import { speciesById } from '../../../loaders/species.js';
+import { cutTechniques } from '../../../loaders/cutTechniques.js';
+import { identifiedValue, stoneValue } from '../logic/market.js';
 
-const identified = [{ instanceId: 'g1', trueSpeciesId: 'sapphire', identifiedAs: 'sapphire', caratWeight: 2, clarity: 80, colorGrade: 80, origin: 'hidden_creek' }];
-const stones = [{ instanceId: 'st1', trueSpeciesId: 'sapphire', cut: 'cabochon', cutQuality: 90, phenomena: ['asterism'], caratRetained: 1.6, clarity: 80, colorGrade: 80, score: 88 }];
+const ROUGH = { instanceId: 'i1', trueSpeciesId: 'ruby', caratWeight: 1.8, clarity: 82, colorGrade: 91 };
+const STONE = { instanceId: 's1', trueSpeciesId: 'ruby', cut: 'cabochon', cutQuality: 88, caratRetained: 1.4, clarity: 82, colorGrade: 91, phenomena: ['asterism'], score: 88 };
 
-function setup(over = {}) {
+function renderMarket(overrides = {}) {
   const props = {
-    cash: 0, identified, stones, speciesById, ownedGear: [],
-    onSellIdentified: vi.fn(), onSellStone: vi.fn(), onBuyGear: vi.fn(), ...over
+    cash: 340,
+    identified: [ROUGH],
+    stones: [STONE],
+    speciesById,
+    ownedGear: ['sieve'],
+    techniques: cutTechniques,
+    onSellIdentified: vi.fn(),
+    onSellStone: vi.fn(),
+    onBuyGear: vi.fn(),
+    ...overrides
   };
   render(<Market {...props} />);
   return props;
 }
 
 describe('Market', () => {
-  it('shows current cash', () => {
-    setup({ cash: 425 });
-    screen.getByText(/425/);
-  });
-
-  it('sells an identified specimen', () => {
-    const p = setup();
-    fireEvent.click(screen.getAllByRole('button', { name: /Sell/i })[0]);
-    expect(p.onSellIdentified).toHaveBeenCalledWith('g1');
-  });
-
-  it('sells a cut stone', () => {
-    const p = setup({ identified: [] }); // only the stone is sellable → its Sell button is first
-    fireEvent.click(screen.getByRole('button', { name: /Sell/i }));
-    expect(p.onSellStone).toHaveBeenCalledWith('st1');
-  });
-
-  it('disables Buy for unaffordable gear and buys when affordable', () => {
-    const p = setup({ cash: 200 }); // sieve 120 affordable, rock_hammer 300 not
-    const buyButtons = screen.getAllByRole('button', { name: /Buy/i });
-    const affordable = buyButtons.find((b) => !b.disabled);
-    fireEvent.click(affordable);
-    expect(p.onBuyGear).toHaveBeenCalledWith('sieve');
-    expect(buyButtons.some((b) => b.disabled)).toBe(true); // rock_hammer disabled at cash 200
-  });
-
-  it('shows an empty state when nothing is sellable', () => {
-    setup({ identified: [], stones: [] });
+  it('prompts when there is nothing to sell', () => {
+    renderMarket({ identified: [], stones: [] });
     screen.getByText(/nothing to sell/i);
+  });
+
+  it('separates rough from cut stones', () => {
+    renderMarket();
+    screen.getByText(/rough/i);
+    // Exact string, not /cut stones/i: the rough section's own helper text
+    // ("uncut stones sell at half") contains "cut stones" as a substring
+    // ("un" + "cut stones..."), so a case-insensitive regex is ambiguous.
+    screen.getByText('Cut stones');
+  });
+
+  it('does not duplicate the cash total the shell already shows', () => {
+    renderMarket();
+    expect(screen.queryByText(/💰 340/)).toBeNull();
+  });
+
+  it('prices rough and cut stones by the value rules', () => {
+    renderMarket();
+    // The row displays money with toLocaleString (comma thousands separators),
+    // so match the same formatting the component uses rather than the bare
+    // numeric string — the cut Ruby's total is 1242, rendered as "1,242".
+    const displayed = (n) => Math.round(n).toLocaleString();
+    screen.getByText(displayed(identifiedValue(ROUGH, speciesById.ruby)));
+    screen.getByText(displayed(stoneValue(STONE, speciesById.ruby)));
+  });
+
+  it('suggests what cutting a rough stone could fetch', () => {
+    renderMarket();
+    screen.getByText(/could fetch/i);
+  });
+
+  it('sells a rough stone and a cut stone', () => {
+    const { onSellIdentified, onSellStone } = renderMarket();
+    fireEvent.click(screen.getByRole('button', { name: /Sell rough Ruby/i }));
+    expect(onSellIdentified).toHaveBeenCalledWith('i1');
+    fireEvent.click(screen.getByRole('button', { name: /Sell cut Ruby/i }));
+    expect(onSellStone).toHaveBeenCalledWith('s1');
+  });
+
+  it('explains a price in a breakdown modal', () => {
+    renderMarket();
+    fireEvent.click(screen.getByRole('button', { name: /Why this price for cut Ruby/i }));
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.textContent).toMatch(/900/);      // base value
+    expect(dialog.textContent).toMatch(/Clarity/i); // a score part
+    fireEvent.click(screen.getByRole('button', { name: /close entry/i }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('shows the uncut penalty when explaining a rough price', () => {
+    renderMarket();
+    fireEvent.click(screen.getByRole('button', { name: /Why this price for rough Ruby/i }));
+    expect(screen.getByRole('dialog').textContent).toMatch(/uncut/i);
+  });
+
+  it('says what each piece of gear opens, and marks what is owned', () => {
+    renderMarket();
+    screen.getByText(/Gravel Bar/);
+    // ownedGear only includes 'sieve', so the Rock Hammer button is the sole
+    // element named "Rock Hammer" — query it once and assert it directly,
+    // rather than the brief's two overlapping queries for the same button.
+    const rockHammerButton = screen.getByRole('button', { name: /Buy Rock Hammer/i });
+    expect(rockHammerButton.disabled).toBe(false); // cash 340 >= price 300 — affordable
+  });
+
+  it('disables a purchase that cannot be afforded', () => {
+    renderMarket({ cash: 10, ownedGear: [] });
+    expect(screen.getByRole('button', { name: /Buy Sieve/i }).disabled).toBe(true);
   });
 });
