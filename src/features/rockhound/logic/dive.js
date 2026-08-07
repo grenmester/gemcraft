@@ -6,17 +6,26 @@ const clamp = (x, lo, hi) => Math.min(Math.max(x, lo), hi);
 const round2 = (n) => Math.round(n * 100) / 100;
 
 export const MAX_METHOD_LEVEL = 10;
-export const LEVELS_PER_DEPTH = 2;
-export const LEVELS_PER_EXTRA_STONE = 3;
-export const BREAK_PER_DEPTH = 0.15;
-export const BREAK_PER_LEVEL = 0.01;
+const LEVELS_PER_DEPTH = 2;
+const LEVELS_PER_EXTRA_STONE = 3;
+const BREAK_PER_DEPTH = 0.15;
+const BREAK_PER_LEVEL = 0.01;
 export const MAX_BREAK_CHANCE = 0.6;
 /** The depth at and below which a break costs stones, not just quality. */
 export const REAL_LOSS_DEPTH = 3;
-export const XP_PER_DEPTH = 10;
-export const BREAK_XP_FRACTION = 0.5;
-export const DEGRADE_CLARITY = 12;
-export const DEGRADE_CARAT = 0.85;
+const XP_PER_DEPTH = 10;
+const BREAK_XP_FRACTION = 0.5;
+const DEGRADE_CLARITY = 12;
+const DEGRADE_CARAT = 0.85;
+/** Depth bonus granted once a locality's stone set is complete. */
+const SET_COMPLETE_BONUS_DEPTH = 1;
+/** Degraded clarity can never drop below this. */
+const MIN_CLARITY = 1;
+/** Degraded caratWeight can never drop to (or below) zero — the locality
+ * schema requires every caratRange to be strictly positive. */
+const MIN_CARAT_WEIGHT = 0.01;
+/** Coefficient of the quadratic XP curve: L1 40, L2 120, L5 600, L10 2200. */
+const XP_CURVE_COEFFICIENT = 20;
 
 export function reachDepth(level) {
   return 1 + Math.floor(level / LEVELS_PER_DEPTH);
@@ -27,7 +36,7 @@ export function reachDepth(level) {
  * knowing the ground, but never past the locality's bedrock.
  */
 export function effectiveReach(level, maxDepth, setComplete) {
-  return Math.min(reachDepth(level) + (setComplete ? 1 : 0), maxDepth);
+  return Math.min(reachDepth(level) + (setComplete ? SET_COMPLETE_BONUS_DEPTH : 0), maxDepth);
 }
 
 export function haulSize(depth, level) {
@@ -48,8 +57,8 @@ export function severityAt(targetDepth) {
 export function degradeSpecimen(specimen) {
   return {
     ...specimen,
-    clarity: Math.max(1, specimen.clarity - DEGRADE_CLARITY),
-    caratWeight: round2(specimen.caratWeight * DEGRADE_CARAT)
+    clarity: Math.max(MIN_CLARITY, specimen.clarity - DEGRADE_CLARITY),
+    caratWeight: Math.max(MIN_CARAT_WEIGHT, round2(specimen.caratWeight * DEGRADE_CARAT))
   };
 }
 
@@ -76,7 +85,7 @@ export function xpForRun(depths, broke) {
 
 /** Quadratic curve: L1 40, L2 120, L5 600, L10 2200. */
 export function xpThreshold(level) {
-  return 20 * level * level + 20 * level;
+  return XP_CURVE_COEFFICIENT * level * level + XP_CURVE_COEFFICIENT * level;
 }
 
 export function levelForXp(xp) {

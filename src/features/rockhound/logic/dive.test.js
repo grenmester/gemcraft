@@ -102,6 +102,20 @@ describe('break consequences', () => {
   it('never degrades clarity below 1', () => {
     expect(degradeSpecimen({ clarity: 3, caratWeight: 0.1 }).clarity).toBeGreaterThanOrEqual(1);
   });
+
+  it('never degrades caratWeight to zero or below the floor', () => {
+    const { caratWeight } = degradeSpecimen({ clarity: 60, caratWeight: 0.001 });
+    expect(caratWeight).toBeGreaterThan(0);
+    expect(caratWeight).toBeGreaterThanOrEqual(0.01);
+  });
+
+  it('keeps every shallower stage when a real break hits a multi-depth haul', () => {
+    const haul = [stone(1), stone(2), stone(3)];
+    const { kept, lost } = breakConsequence(haul, 4);
+    expect(kept.map((s) => s.foundDepth).sort()).toEqual([1, 2]);
+    expect(lost.map((s) => s.foundDepth)).toEqual([3]);
+    expect(kept.length).toBeGreaterThan(0);
+  });
 });
 
 describe('experience', () => {
