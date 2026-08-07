@@ -19,7 +19,7 @@
 - **Never write a test that passes when the behaviour is removed.** After writing a test, mentally stub the implementation to a no-op and confirm the test would fail.
 - Levels run 0–10 inclusive, matching `successCurve.maxLevel` in `cutTechniques.yaml`.
 - The four methods are exactly `panning`, `hardrock`, `geode`, `surface` (`METHOD_ENUM` in `src/schemas/localities.js`).
-- All new numeric constants are named exports, never inline magic numbers.
+- No inline magic numbers: every tuned value is a named constant. Export it when another module or a test needs it; keep it module-private otherwise.
 
 ## File Structure
 
@@ -1565,9 +1565,13 @@ describe('Explore — before a run', () => {
     expect(screen.queryByRole('button', { name: /go deeper/i })).toBeNull();
   });
 
-  it('shows a beginner no depth machinery at all', () => {
+  it('shows a beginner no depth machinery even mid-run', () => {
+    // The ramp's first rung: at level 0 Explore is one button, a haul, and
+    // banking. Asserting this before the run starts would pass trivially.
     renderExplore({ methodXp: 0 });
-    expect(screen.queryByRole('button', { name: /bank/i })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /work the gravel/i }));
+    expect(screen.queryByRole('button', { name: /go deeper/i })).toBeNull();
+    screen.getByRole('button', { name: /bank this haul/i });
   });
 });
 
