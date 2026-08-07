@@ -32,9 +32,33 @@ function renderSapphire(overrides = {}) {
 }
 
 describe('Identify', () => {
+  // foundDepth: null tests below legitimately cover the backward-compatibility
+  // path (pre-Dive saves with no recorded depth) — kept as-is.
   it('starts with all find-pool candidates as suspects', () => {
     renderSapphire();
     screen.getByText(/SUSPECTS: 4/);
+  });
+
+  it('narrows the suspect list to the depth-reachable pool for a real dive specimen', () => {
+    // hidden_creek find pool has 4 species, but topaz has minDepth: 2, so a
+    // specimen genuinely dug at depth 1 can only be one of the other 3:
+    // quartz, almandine_garnet, sapphire.
+    const specimen = createRough(
+      { trueSpeciesId: 'sapphire', caratWeight: 1, clarity: 80, colorGrade: 80, origin: 'hidden_creek', foundDepth: 1 },
+      () => 'r-depth1'
+    );
+    render(
+      <Identify
+        specimen={specimen}
+        locality={localitiesById.hidden_creek}
+        speciesById={speciesById}
+        testMastery={mastery}
+        onRunTest={vi.fn()}
+        onCommit={vi.fn()}
+        rng={() => 1}
+      />
+    );
+    screen.getByText(/SUSPECTS: 3/);
   });
 
   it('a sharp scratch test narrows the four colorless-pool candidates toward sapphire', () => {

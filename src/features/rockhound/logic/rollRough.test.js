@@ -22,30 +22,50 @@ describe('properties', () => {
 });
 
 describe('rollRough', () => {
-  // rng is called in order: [speciesPick, carat, clarity, color]
+  // rng is called in order: [speciesPick, carat, clarity, color, form].
+  // carat/clarity/color are each `bestOf(depth, rng)`, which consumes one
+  // draw per level of depth, so at depth 1 the full sequence is exactly
+  // five draws: speciesPick, carat, clarity, color, form. `stubRng` throws
+  // if asked for a value it wasn't given, so an under-supplied array fails
+  // loudly instead of silently returning `undefined`.
   const stubRng = (values) => {
     let i = 0;
-    return () => values[i++];
+    return () => {
+      if (i >= values.length) {
+        throw new Error(`stubRng exhausted: requested draw ${i + 1} but only ${values.length} value(s) were supplied`);
+      }
+      return values[i++];
+    };
   };
 
   it('picks the first find-pool species when the pick roll is 0', () => {
     const loc = localitiesById.hidden_creek; // first entry: quartz
-    const spec = rollRough(loc, 1, stubRng([0, 0, 0, 0]), () => 'id-1');
+    // hidden_creek uses method 'panning' -> form pool [waterworn 70, fragment 20, crystal 10].
+    // A form roll of 0 genuinely lands on the first entry (waterworn) via the
+    // weighted loop; the old fallback-on-exhaustion bug always produced the
+    // *last* entry (crystal), so this assertion would catch a regression.
+    const spec = rollRough(loc, 1, stubRng([0, 0, 0, 0, 0]), () => 'id-1');
     expect(spec.trueSpeciesId).toBe('quartz');
     expect(spec.origin).toBe('hidden_creek');
     expect(spec.stage).toBe('rough');
     expect(spec.identifiedAs).toBe(null);
     expect(spec.instanceId).toBe('id-1');
+    expect(spec.form).toBe('waterworn');
   });
 
   it('rolls stats within the find-pool ranges', () => {
     const loc = localitiesById.hidden_creek;
-    const spec = rollRough(loc, 1, stubRng([0, 1, 1, 1]), () => 'id-2');
+    // Form roll of 0.95 genuinely walks past waterworn (70) and fragment (20)
+    // to land in crystal (10) via the weighted loop, distinct from both the
+    // other test's result and from the last-entry fallback that a
+    // running-dry stub would coincidentally also produce.
+    const spec = rollRough(loc, 1, stubRng([0, 1, 1, 1, 0.95]), () => 'id-2');
     // quartz entry: caratRange [0.5,4.0], clarityRange [40,90], colorRange [30,70]
     expect(spec.caratWeight).toBeGreaterThanOrEqual(0.5);
     expect(spec.caratWeight).toBeLessThanOrEqual(4.0);
     expect(spec.clarity).toBe(90);
     expect(spec.colorGrade).toBe(70);
+    expect(spec.form).toBe('crystal');
   });
 
   it('createRough fills defaults', () => {
