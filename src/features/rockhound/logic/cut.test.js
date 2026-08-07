@@ -144,6 +144,20 @@ describe('crystal habit constrains the cut', () => {
     expect(asPebble.outcome).toBe('success');
     expect(asCrystal.specimen.caratRetained).toBeGreaterThan(asPebble.specimen.caratRetained);
   });
+
+  it('carries the habit through a botched cut too, not just a clean one', () => {
+    // applyCut applies the habit modifier in two places. Testing only the
+    // success branch would let a regression drop it from the failure branch
+    // silently. quartz + round_brilliant at level 10 succeeds ~90% of the
+    // time, so a roll of 0.95 fails; round_brilliant is not catastrophic and
+    // quartz does not cleave, so this fails rather than shatters.
+    const species = speciesById.quartz;
+    const asCrystal = applyCut(rough('crystal'), species, brilliant, 10, () => 0.95);
+    const asPebble = applyCut(rough('waterworn'), species, brilliant, 10, () => 0.95);
+    expect(asCrystal.outcome).toBe('fail');
+    expect(asPebble.outcome).toBe('fail');
+    expect(asCrystal.specimen.caratRetained).toBeGreaterThan(asPebble.specimen.caratRetained);
+  });
 });
 
 describe('scoreBreakdown', () => {
