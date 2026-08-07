@@ -55,17 +55,18 @@ describe('rollRough', () => {
 
   it('rolls stats within the find-pool ranges', () => {
     const loc = localitiesById.hidden_creek;
-    // Form roll of 0.95 genuinely walks past waterworn (70) and fragment (20)
-    // to land in crystal (10) via the weighted loop, distinct from both the
-    // other test's result and from the last-entry fallback that a
-    // running-dry stub would coincidentally also produce.
-    const spec = rollRough(loc, 1, stubRng([0, 1, 1, 1, 0.95]), () => 'id-2');
+    // Form roll of 0.8 walks past waterworn (70) and lands in fragment (20),
+    // a MIDDLE entry. That matters: crystal is the last entry, so expecting
+    // crystal here would agree with the last-entry value a running-dry stub
+    // coincidentally produces, and the assertion could not tell a working
+    // weighted loop from a broken one.
+    const spec = rollRough(loc, 1, stubRng([0, 1, 1, 1, 0.8]), () => 'id-2');
     // quartz entry: caratRange [0.5,4.0], clarityRange [40,90], colorRange [30,70]
     expect(spec.caratWeight).toBeGreaterThanOrEqual(0.5);
     expect(spec.caratWeight).toBeLessThanOrEqual(4.0);
     expect(spec.clarity).toBe(90);
     expect(spec.colorGrade).toBe(70);
-    expect(spec.form).toBe('crystal');
+    expect(spec.form).toBe('fragment');
   });
 
   it('createRough fills defaults', () => {
