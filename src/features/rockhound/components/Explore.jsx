@@ -10,7 +10,7 @@ export default function Explore({ locality, roughCount, onCollect, rng = Math.ra
 
       <button
         type="button"
-        onClick={() => onCollect(rollRough(locality, rng))}
+        onClick={() => onCollect(rollRough(locality, 1, rng))}
         className="self-start rounded-lg bg-blue-600 hover:bg-blue-500 px-6 py-3 font-bold text-white"
       >
         Pan the {locality.hostRock}

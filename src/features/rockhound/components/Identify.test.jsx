@@ -9,8 +9,12 @@ import { createRough } from '../logic/rollRough.js';
 const mastery = { scratch: 100, heft: 100, uv: 100 };
 
 function renderSapphire(overrides = {}) {
+  // foundDepth is explicitly null here (not the createRough default of 1):
+  // these tests exercise test-elimination logic against the whole find
+  // pool, independent of the depth-narrowing feature, so the specimen
+  // models a depth-unknown stone the way a pre-Dive save would.
   const specimen = createRough(
-    { trueSpeciesId: 'sapphire', caratWeight: 1, clarity: 80, colorGrade: 80, origin: 'hidden_creek' },
+    { trueSpeciesId: 'sapphire', caratWeight: 1, clarity: 80, colorGrade: 80, origin: 'hidden_creek', foundDepth: null },
     () => 'r1'
   );
   const props = {

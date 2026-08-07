@@ -1,5 +1,6 @@
 import { RARITY_ENUM } from '../../../schemas/items.js';
 import { localitySetComplete } from './progression.js';
+import { effectivePool } from './rollRough.js';
 
 // Read-only derivations for the Explore views. Locality set grouping lives here
 // (not in progression.js) because it is presentation shape, not game rules;
@@ -25,19 +26,28 @@ function chanceFor(weight, totalWeight) {
  * The find pool as the player may see it: discovered species are named,
  * undiscovered ones are withheld (spoiler rule). Ordered richest first.
  * `chance` is the exact percentage; the raw weight stays internal.
+ *
+ * `depth` is optional. With no depth, the guide shows the whole pool at
+ * surface weights (the pre-Dive view). With a depth, it delegates to
+ * `effectivePool` — the same weighting `rollRough` actually draws from —
+ * so entries not yet reachable are absent and shown odds can never drift
+ * from rolled odds.
  */
-export function findPoolView(locality, speciesById, gemdex) {
+export function findPoolView(locality, speciesById, gemdex, depth = null) {
   const found = new Set(gemdex);
-  const total = locality.findPool.reduce((sum, e) => sum + e.weight, 0);
-  return [...locality.findPool]
-    .sort((a, b) => b.weight - a.weight)
+  const pool = depth == null
+    ? locality.findPool.map((e) => ({ ...e, effectiveWeight: e.weight }))
+    : effectivePool(locality.findPool, depth);
+  const total = pool.reduce((sum, e) => sum + e.effectiveWeight, 0);
+  return [...pool]
+    .sort((a, b) => b.effectiveWeight - a.effectiveWeight)
     .map((e) => {
       const discovered = found.has(e.species);
       return {
         speciesId: e.species,
         name: discovered ? (speciesById[e.species]?.name ?? null) : null,
         discovered,
-        chance: chanceFor(e.weight, total)
+        chance: chanceFor(e.effectiveWeight, total)
       };
     });
 }

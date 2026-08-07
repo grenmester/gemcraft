@@ -5,7 +5,7 @@ import { seedCandidates } from '../logic/candidates.js';
 import { familiarityFactor } from '../logic/progression.js';
 
 export default function Identify({ specimen, locality, speciesById, testMastery, completedFamilies = [], onRunTest, onCommit, rng = Math.random }) {
-  const [candidates, setCandidates] = useState(() => seedCandidates(locality));
+  const [candidates, setCandidates] = useState(() => seedCandidates(locality, specimen.foundDepth));
   const trueSpecies = speciesById[specimen.trueSpeciesId];
 
   const handleTest = (testId) => {
