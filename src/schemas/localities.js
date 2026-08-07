@@ -50,6 +50,11 @@ const statRange = z
 export const findPoolEntrySchema = z.object({
   species: z.string().min(1), // species id (cross-checked in tests)
   weight: z.number().positive(),
+  // Weight is multiplied by depthBias^(depth-1): below 1 thins out with
+  // depth, above 1 concentrates. minDepth excludes the entry above that
+  // depth entirely — this is how a locality gets finds you must dive for.
+  depthBias: z.number().positive().optional().default(1),
+  minDepth: z.number().int().min(1).optional().default(1),
   caratRange: z
     .tuple([z.number().positive(), z.number().positive()])
     .refine(([lo, hi]) => lo <= hi, { message: 'caratRange min must be <= max' }),
@@ -64,6 +69,7 @@ export const localitySchema = z.object({
   depositType: z.enum(DEPOSIT_TYPE_ENUM),
   method: z.enum(METHOD_ENUM),
   hostRock: z.string().min(1),
+  maxDepth: z.number().int().min(3).max(5), // the locality's bedrock
   indicatorMinerals: z.array(z.string().min(1)).optional().default([]),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
   findPool: z.array(findPoolEntrySchema).min(1),

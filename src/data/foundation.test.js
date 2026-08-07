@@ -135,3 +135,34 @@ describe('foundation: schemas reject malformed data', () => {
     }
   });
 });
+
+describe('locality depth fields', () => {
+  it('gives every locality a bedrock depth of at least 3', () => {
+    for (const l of localities) {
+      expect(l.maxDepth, `${l.id} maxDepth`).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('gives every locality at least one deep-only find', () => {
+    for (const l of localities) {
+      const deepOnly = l.findPool.filter((e) => e.minDepth > 1);
+      expect(deepOnly.length, `${l.id} deep-only entries`).toBeGreaterThan(0);
+    }
+  });
+
+  it('never puts a find deeper than the locality goes', () => {
+    for (const l of localities) {
+      for (const e of l.findPool) {
+        expect(e.minDepth, `${l.id}/${e.species} minDepth`).toBeLessThanOrEqual(l.maxDepth);
+      }
+    }
+  });
+
+  it('defaults depthBias to 1 and minDepth to 1 when unstated', () => {
+    // hidden_creek's quartz entry states a bias; its garnet entry does not.
+    const creek = localities.find((l) => l.id === 'hidden_creek');
+    const garnet = creek.findPool.find((e) => e.species === 'almandine_garnet');
+    expect(garnet.depthBias).toBe(1);
+    expect(garnet.minDepth).toBe(1);
+  });
+});

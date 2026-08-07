@@ -15,21 +15,23 @@ localities:
     region: north_america
     depositType: alluvial
     method: panning
+    maxDepth: 3
     hostRock: gravel
     indicatorMinerals: [garnet, magnetite]
     color: '#3b6ea5'
     unlockGate: {}
     findPool:
-      - { species: quartz,           weight: 50, caratRange: [0.5, 4.0], clarityRange: [40, 90], colorRange: [30, 70] }
+      - { species: quartz,           weight: 50, depthBias: 0.6, caratRange: [0.5, 4.0], clarityRange: [40, 90], colorRange: [30, 70] }
       - { species: almandine_garnet, weight: 25, caratRange: [0.3, 2.0], clarityRange: [50, 95], colorRange: [50, 90] }
-      - { species: sapphire,         weight: 20, caratRange: [0.2, 1.5], clarityRange: [45, 95], colorRange: [40, 95] }
-      - { species: topaz,            weight: 5,  caratRange: [0.5, 3.0], clarityRange: [55, 98], colorRange: [30, 80] }
+      - { species: sapphire,         weight: 20, depthBias: 1.5, caratRange: [0.2, 1.5], clarityRange: [45, 95], colorRange: [40, 95] }
+      - { species: topaz,            weight: 5,  depthBias: 1.6, minDepth: 2, caratRange: [0.5, 3.0], clarityRange: [55, 98], colorRange: [30, 80] }
 
   - id: gravel_bar
     name: Gravel Bar
     region: north_america
     depositType: alluvial
     method: panning
+    maxDepth: 3
     hostRock: gravel
     indicatorMinerals: [garnet, magnetite]
     color: '#5a8fbf'
@@ -37,16 +39,17 @@ localities:
       allOf:
         - { type: gear, id: sieve }
     findPool:
-      - { species: quartz,           weight: 40, caratRange: [0.5, 5.0], clarityRange: [40, 90], colorRange: [30, 70] }
+      - { species: quartz,           weight: 40, depthBias: 0.6, caratRange: [0.5, 5.0], clarityRange: [40, 90], colorRange: [30, 70] }
       - { species: almandine_garnet, weight: 25, caratRange: [0.3, 2.5], clarityRange: [50, 95], colorRange: [50, 92] }
-      - { species: sapphire,         weight: 30, caratRange: [0.3, 2.0], clarityRange: [50, 98], colorRange: [45, 98] }
-      - { species: topaz,            weight: 5,  caratRange: [0.5, 3.5], clarityRange: [55, 98], colorRange: [30, 80] }
+      - { species: sapphire,         weight: 30, depthBias: 1.5, caratRange: [0.3, 2.0], clarityRange: [50, 98], colorRange: [45, 98] }
+      - { species: topaz,            weight: 5,  depthBias: 1.6, minDepth: 2, caratRange: [0.5, 3.5], clarityRange: [55, 98], colorRange: [30, 80] }
 
   - id: basalt_mesa
     name: Basalt Mesa
     region: southwest
     depositType: volcanic
     method: surface
+    maxDepth: 3
     hostRock: basalt
     indicatorMinerals: [olivine, obsidian]
     color: '#6b7c4a'
@@ -54,8 +57,8 @@ localities:
       allOf:
         - { type: reputation, tier: 1 }
     findPool:
-      - { species: obsidian, weight: 45, caratRange: [1.0, 10.0], clarityRange: [20, 60], colorRange: [20, 60] }
-      - { species: peridot,  weight: 35, caratRange: [0.3, 2.5],  clarityRange: [50, 95], colorRange: [50, 90] }
+      - { species: obsidian, weight: 45, depthBias: 0.6, caratRange: [1.0, 10.0], clarityRange: [20, 60], colorRange: [20, 60] }
+      - { species: peridot,  weight: 35, depthBias: 1.5, minDepth: 2, caratRange: [0.3, 2.5],  clarityRange: [50, 95], colorRange: [50, 90] }
       - { species: agate,    weight: 20, caratRange: [1.0, 8.0],  clarityRange: [30, 80], colorRange: [40, 90] }
 
   # ---------- Tier 2: hydrothermal vug / pegmatite ----------
@@ -64,6 +67,7 @@ localities:
     region: south_america
     depositType: hydrothermal
     method: geode
+    maxDepth: 4
     hostRock: basalt
     indicatorMinerals: [agate, calcite]
     color: '#7a4fa0'
@@ -71,17 +75,18 @@ localities:
       allOf:
         - { type: setComplete, setType: locality, id: hidden_creek }
     findPool:
-      - { species: agate,    weight: 40, caratRange: [1.0, 8.0], clarityRange: [30, 80], colorRange: [40, 90] }
-      - { species: amethyst, weight: 30, caratRange: [0.5, 4.0], clarityRange: [45, 95], colorRange: [50, 98] }
-      - { species: quartz,   weight: 20, caratRange: [0.5, 5.0], clarityRange: [40, 90], colorRange: [30, 70] }
-      - { species: citrine,  weight: 15, caratRange: [0.5, 4.0], clarityRange: [45, 95], colorRange: [50, 95] }
-      - { species: fluorite, weight: 10, caratRange: [0.5, 3.0], clarityRange: [40, 90], colorRange: [45, 95] }
+      - { species: agate,    weight: 40, depthBias: 0.8, caratRange: [1.0, 8.0], clarityRange: [30, 80], colorRange: [40, 90] }
+      - { species: amethyst, weight: 30, depthBias: 1.4, caratRange: [0.5, 4.0], clarityRange: [45, 95], colorRange: [50, 98] }
+      - { species: quartz,   weight: 20, depthBias: 0.6, caratRange: [0.5, 5.0], clarityRange: [40, 90], colorRange: [30, 70] }
+      - { species: citrine,  weight: 15, depthBias: 1.3, caratRange: [0.5, 4.0], clarityRange: [45, 95], colorRange: [50, 95] }
+      - { species: fluorite, weight: 10, depthBias: 1.5, minDepth: 3, caratRange: [0.5, 3.0], clarityRange: [40, 90], colorRange: [45, 95] }
 
   - id: pala_pegmatite
     name: Pala Pegmatite
     region: california
     depositType: pegmatite
     method: hardrock
+    maxDepth: 4
     hostRock: pegmatite
     indicatorMinerals: [tourmaline, mica, lepidolite]
     color: '#c96f9c'
@@ -90,10 +95,10 @@ localities:
         - { type: reputation, tier: 2 }
         - { type: gear, id: rock_hammer }
     findPool:
-      - { species: tourmaline, weight: 30, caratRange: [0.4, 3.0], clarityRange: [50, 96], colorRange: [50, 96] }
-      - { species: aquamarine, weight: 25, caratRange: [0.5, 4.0], clarityRange: [60, 98], colorRange: [45, 90] }
-      - { species: topaz,      weight: 25, caratRange: [0.5, 4.0], clarityRange: [60, 99], colorRange: [35, 85] }
-      - { species: moonstone,  weight: 20, caratRange: [1.0, 5.0], clarityRange: [30, 70], colorRange: [40, 85] }
+      - { species: tourmaline, weight: 30, depthBias: 1.3, caratRange: [0.4, 3.0], clarityRange: [50, 96], colorRange: [50, 96] }
+      - { species: aquamarine, weight: 25, depthBias: 1.2, caratRange: [0.5, 4.0], clarityRange: [60, 98], colorRange: [45, 90] }
+      - { species: topaz,      weight: 25, depthBias: 0.8, caratRange: [0.5, 4.0], clarityRange: [60, 99], colorRange: [35, 85] }
+      - { species: moonstone,  weight: 20, depthBias: 1.4, minDepth: 3, caratRange: [1.0, 5.0], clarityRange: [30, 70], colorRange: [40, 85] }
 
   # ---------- Tier 2-3: metamorphic hard-rock ----------
   - id: old_quarry
@@ -101,6 +106,7 @@ localities:
     region: europe
     depositType: metamorphic
     method: hardrock
+    maxDepth: 4
     hostRock: marble
     indicatorMinerals: [spinel, mica]
     color: '#8a7d6b'
@@ -109,10 +115,10 @@ localities:
         - { type: reputation, tier: 2 }
         - { type: gear, id: rock_hammer }
     findPool:
-      - { species: almandine_garnet, weight: 40, caratRange: [0.5, 3.0], clarityRange: [50, 95], colorRange: [50, 92] }
-      - { species: sapphire,         weight: 30, caratRange: [0.4, 2.5], clarityRange: [55, 98], colorRange: [50, 98] }
+      - { species: almandine_garnet, weight: 40, depthBias: 0.6, caratRange: [0.5, 3.0], clarityRange: [50, 95], colorRange: [50, 92] }
+      - { species: sapphire,         weight: 30, depthBias: 1.3, caratRange: [0.4, 2.5], clarityRange: [55, 98], colorRange: [50, 98] }
       - { species: topaz,            weight: 15, caratRange: [0.5, 4.0], clarityRange: [60, 99], colorRange: [35, 85] }
-      - { species: spinel,           weight: 15, caratRange: [0.3, 2.0], clarityRange: [55, 97], colorRange: [55, 95] }
+      - { species: spinel,           weight: 15, depthBias: 1.5, minDepth: 3, caratRange: [0.3, 2.0], clarityRange: [55, 97], colorRange: [55, 95] }
 
   # ---------- Tier 3: high-value hard-rock & veins ----------
   - id: mogok_marble
@@ -120,6 +126,7 @@ localities:
     region: myanmar
     depositType: metamorphic
     method: hardrock
+    maxDepth: 4
     hostRock: marble
     indicatorMinerals: [spinel, ruby, calcite]
     color: '#b23a48'
@@ -127,16 +134,17 @@ localities:
       allOf:
         - { type: reputation, tier: 3 }
     findPool:
-      - { species: spinel,    weight: 30, caratRange: [0.3, 2.0], clarityRange: [55, 97], colorRange: [55, 95] }
+      - { species: spinel,    weight: 30, depthBias: 0.9, caratRange: [0.3, 2.0], clarityRange: [55, 97], colorRange: [55, 95] }
       - { species: sapphire,  weight: 28, caratRange: [0.4, 2.5], clarityRange: [55, 98], colorRange: [55, 98] }
-      - { species: ruby,      weight: 24, caratRange: [0.3, 2.0], clarityRange: [50, 96], colorRange: [55, 98] }
-      - { species: tanzanite, weight: 18, caratRange: [0.5, 3.0], clarityRange: [55, 97], colorRange: [55, 96] }
+      - { species: ruby,      weight: 24, depthBias: 1.6, minDepth: 3, caratRange: [0.3, 2.0], clarityRange: [50, 96], colorRange: [55, 98] }
+      - { species: tanzanite, weight: 18, depthBias: 1.4, caratRange: [0.5, 3.0], clarityRange: [55, 97], colorRange: [55, 96] }
 
   - id: muzo_vein
     name: Muzo Vein
     region: colombia
     depositType: hydrothermal
     method: hardrock
+    maxDepth: 4
     hostRock: shale
     indicatorMinerals: [calcite, pyrite]
     color: '#2f8f5b'
@@ -144,16 +152,17 @@ localities:
       allOf:
         - { type: reputation, tier: 3 }
     findPool:
-      - { species: emerald,    weight: 30, caratRange: [0.3, 2.5], clarityRange: [35, 85], colorRange: [55, 98] }
-      - { species: tsavorite,  weight: 25, caratRange: [0.3, 2.0], clarityRange: [55, 96], colorRange: [55, 96] }
-      - { species: aquamarine, weight: 25, caratRange: [0.5, 4.0], clarityRange: [60, 98], colorRange: [45, 90] }
-      - { species: tourmaline, weight: 20, caratRange: [0.4, 3.0], clarityRange: [50, 96], colorRange: [50, 96] }
+      - { species: emerald,    weight: 30, depthBias: 1.6, minDepth: 3, caratRange: [0.3, 2.5], clarityRange: [35, 85], colorRange: [55, 98] }
+      - { species: tsavorite,  weight: 25, depthBias: 1.4, caratRange: [0.3, 2.0], clarityRange: [55, 96], colorRange: [55, 96] }
+      - { species: aquamarine, weight: 25, depthBias: 0.7, caratRange: [0.5, 4.0], clarityRange: [60, 98], colorRange: [45, 90] }
+      - { species: tourmaline, weight: 20, depthBias: 0.7, caratRange: [0.4, 3.0], clarityRange: [50, 96], colorRange: [50, 96] }
 
   - id: opal_flats
     name: Opal Flats
     region: australia
     depositType: volcanic
     method: surface
+    maxDepth: 3
     hostRock: sandstone
     indicatorMinerals: [agate, common_opal]
     color: '#d98f5a'
@@ -161,9 +170,9 @@ localities:
       allOf:
         - { type: reputation, tier: 3 }
     findPool:
-      - { species: agate,    weight: 40, caratRange: [1.0, 8.0],  clarityRange: [30, 80], colorRange: [40, 90] }
-      - { species: opal,     weight: 30, caratRange: [0.5, 5.0],  clarityRange: [40, 90], colorRange: [55, 98] }
-      - { species: obsidian, weight: 30, caratRange: [1.0, 10.0], clarityRange: [20, 60], colorRange: [20, 60] }
+      - { species: agate,    weight: 40, depthBias: 0.6, caratRange: [1.0, 8.0],  clarityRange: [30, 80], colorRange: [40, 90] }
+      - { species: opal,     weight: 30, depthBias: 1.6, minDepth: 3, caratRange: [0.5, 5.0],  clarityRange: [40, 90], colorRange: [55, 98] }
+      - { species: obsidian, weight: 30, depthBias: 0.6, caratRange: [1.0, 10.0], clarityRange: [20, 60], colorRange: [20, 60] }
 
   # ---------- Tier 4: kimberlite capstone ----------
   - id: kimberlite_pipe
@@ -171,6 +180,7 @@ localities:
     region: south_africa
     depositType: volcanic
     method: hardrock
+    maxDepth: 5
     hostRock: kimberlite
     indicatorMinerals: [pyrope_garnet, chrome_diopside, ilmenite]
     color: '#3a3f4a'
@@ -179,6 +189,6 @@ localities:
         - { type: reputation, tier: 4 }
         - { type: setComplete, setType: locality, id: mogok_marble }
     findPool:
-      - { species: almandine_garnet, weight: 40, caratRange: [0.3, 2.0], clarityRange: [50, 90], colorRange: [50, 90] }
-      - { species: diamond,          weight: 35, caratRange: [0.2, 1.5], clarityRange: [55, 99], colorRange: [40, 95] }
-      - { species: alexandrite,      weight: 25, caratRange: [0.2, 1.5], clarityRange: [55, 97], colorRange: [55, 96] }
+      - { species: almandine_garnet, weight: 40, depthBias: 0.5, caratRange: [0.3, 2.0], clarityRange: [50, 90], colorRange: [50, 90] }
+      - { species: diamond,          weight: 35, depthBias: 1.6, minDepth: 4, caratRange: [0.2, 1.5], clarityRange: [55, 99], colorRange: [40, 95] }
+      - { species: alexandrite,      weight: 25, depthBias: 1.4, caratRange: [0.2, 1.5], clarityRange: [55, 97], colorRange: [55, 96] }
