@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { gradeFactor, stoneValue, identifiedValue, SHOP_GEAR, gearPrice, UNCUT_DISCOUNT } from './market.js';
+import { gradeFactor, stoneValue, identifiedValue, SHOP_GEAR, gearPrice, UNCUT_DISCOUNT, uncutDiscountFor } from './market.js';
 import { speciesById } from '../../../loaders/species.js';
 
 describe('gradeFactor', () => {
@@ -25,6 +25,29 @@ describe('identifiedValue', () => {
     const idVal = identifiedValue(specimen, speciesById.sapphire); // 700 * 1.3 * 0.5 = 455
     expect(idVal).toBe(455);
     expect(idVal).toBeLessThan(stoneValue({ score: 80 }, speciesById.sapphire)); // cutting adds value
+  });
+});
+
+describe('mineral specimens', () => {
+  // clarity/colorGrade 70/70 (not 80/80): with quartz's baseValue of 5, an
+  // 80/80 grade lands the full-value multiplier exactly on a .5 rounding
+  // boundary (6.5), which rounds opposite to the discounted-then-reversed
+  // path (round(3.25)/0.5 -> 6) and makes this assertion fail for ANY
+  // correct implementation, not just a broken one. 70/70 avoids the boundary.
+  const base = { trueSpeciesId: 'quartz', caratWeight: 2, clarity: 70, colorGrade: 70 };
+
+  it('sells a crystal on matrix at full value, with no uncut penalty', () => {
+    // A matrix specimen cannot be cut, so charging it the cutter's-risk
+    // discount would price it as something it can never become.
+    const onMatrix = identifiedValue({ ...base, form: 'matrix' }, speciesById.quartz);
+    const loose = identifiedValue({ ...base, form: 'fragment' }, speciesById.quartz);
+    expect(onMatrix).toBe(Math.round(loose / UNCUT_DISCOUNT));
+  });
+
+  it('still discounts every other habit', () => {
+    for (const form of ['waterworn', 'crystal', 'fragment', 'nodule', 'druzy', undefined]) {
+      expect(uncutDiscountFor({ ...base, form }), `${form}`).toBe(UNCUT_DISCOUNT);
+    }
   });
 });
 

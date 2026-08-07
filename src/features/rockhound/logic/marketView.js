@@ -1,4 +1,4 @@
-import { stoneValue, identifiedValue, gradeFactor, roughGradeFactor, UNCUT_DISCOUNT } from './market.js';
+import { stoneValue, identifiedValue, gradeFactor, roughGradeFactor, uncutDiscountFor } from './market.js';
 import { scoreBreakdown, specimenScore, canApply } from './cut.js';
 
 const mid = ([lo, hi]) => (lo + hi) / 2;
@@ -28,7 +28,7 @@ export function roughPrice(specimen, species) {
     colorGrade: specimen.colorGrade,
     clarity: specimen.clarity,
     multiplier: roughGradeFactor(specimen),
-    uncutDiscount: UNCUT_DISCOUNT
+    uncutDiscount: uncutDiscountFor(specimen)
   };
 }
 

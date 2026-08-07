@@ -1,16 +1,54 @@
-import { canApply, cutSuccessProbability, canShatter } from './cut.js';
+import { canApply, cutSuccessProbability, canShatter, formAllows } from './cut.js';
+import { FORM_LABELS, FORM_EFFECTS } from './forms.js';
 
 const round2 = (n) => Math.round(n * 100) / 100;
 const pct = (x) => Math.round(x * 100);
+
+const STYLE_PHRASE = { cabochon: 'a cabochon', faceted: 'faceting' };
+
+/**
+ * Player-facing reason a habit blocks this cut, distinct from a species
+ * mismatch. Only meaningful once `formAllows` has already said no.
+ * forms.js owns which styles a habit admits (FORM_EFFECTS) and what to call
+ * it (FORM_LABELS) — this only turns that into a sentence, it does not
+ * re-derive the rule.
+ */
+function habitUnsuitableReason(form) {
+  const label = FORM_LABELS[form];
+  const effect = FORM_EFFECTS[form];
+  if (!label || !effect) return null;
+  const named = label.toLowerCase();
+  if (effect.styles.length === 0) {
+    return `this piece is a ${named} — it cannot be cut at all`;
+  }
+  if (effect.styles.length === 1) {
+    return `this piece is a ${named} — only ${STYLE_PHRASE[effect.styles[0]]} will work`;
+  }
+  return null;
+}
 
 /**
  * A technique as it applies to the selected stone. `successPct` is the TRUE
  * probability applyCut will roll against — the technique's own curve scaled by
  * the species' cut difficulty — not the bare curve value.
+ *
+ * `specimen` is optional and defaults to no habit constraint, so callers that
+ * predate crystal habit (or have no stone selected) behave exactly as before.
  */
-export function techniqueView(species, technique, level) {
+export function techniqueView(species, technique, level, specimen = null) {
   const unlocked = level >= 1;
-  const suitable = !!species && canApply(species, technique);
+  const speciesOk = !!species && canApply(species, technique);
+  const habitOk = formAllows(specimen?.form, technique);
+  const suitable = speciesOk && habitOk;
+
+  let unsuitableReason = null;
+  if (species && !speciesOk) {
+    unsuitableReason = `${species.name} does not take this cut`;
+  } else if (species && !habitOk) {
+    unsuitableReason = habitUnsuitableReason(specimen?.form)
+      ?? `${species.name} cannot take this cut in its current form`;
+  }
+
   return {
     level,
     unlocked,
@@ -24,7 +62,7 @@ export function techniqueView(species, technique, level) {
     // Whether this pairing can shatter the stone at all (eligibility only —
     // applyCut additionally requires a failed roll above 0.9 to actually destroy it).
     shatterRisk: canShatter(species, technique),
-    unsuitableReason: suitable || !species ? null : `${species.name} does not take this cut`
+    unsuitableReason
   };
 }
 

@@ -5,8 +5,8 @@ import { cutSuccessProbability } from './cut.js';
 const RUBY = { id: 'ruby', name: 'Ruby', transparency: 'transparent', cleavage: 'none', cutDifficulty: 4, suitableCuts: ['cabochon', 'princess'], phenomena: [{ type: 'asterism', revealedBy: 'cabochon' }] };
 const TOPAZ = { id: 'topaz', name: 'Topaz', transparency: 'transparent', cleavage: 'perfect', cutDifficulty: 3, suitableCuts: ['princess'], phenomena: [] };
 
-const CABOCHON = { id: 'cabochon', name: 'Cabochon', cutQualityRange: [50, 100], yieldRange: [0.7, 0.9], catastrophicOnFail: false, successCurve: { base: 0.65, perLevel: 0.035, maxLevel: 10 } };
-const PRINCESS = { id: 'princess', name: 'Princess / Boxed Cut', cutQualityRange: [65, 105], yieldRange: [0.65, 0.85], catastrophicOnFail: true, successCurve: { base: 0.40, perLevel: 0.050, maxLevel: 10 } };
+const CABOCHON = { id: 'cabochon', name: 'Cabochon', style: 'cabochon', cutQualityRange: [50, 100], yieldRange: [0.7, 0.9], catastrophicOnFail: false, successCurve: { base: 0.65, perLevel: 0.035, maxLevel: 10 } };
+const PRINCESS = { id: 'princess', name: 'Princess / Boxed Cut', style: 'faceted', cutQualityRange: [65, 105], yieldRange: [0.65, 0.85], catastrophicOnFail: true, successCurve: { base: 0.40, perLevel: 0.050, maxLevel: 10 } };
 
 describe('techniqueView', () => {
   it('reports the TRUE success odds, not the technique base rate', () => {
@@ -53,6 +53,30 @@ describe('techniqueView', () => {
   it('tolerates no selected species', () => {
     const view = techniqueView(null, CABOCHON, 3);
     expect(view).toMatchObject({ unlocked: true, suitable: false, successPct: null, shatterRisk: false });
+  });
+
+  it('makes a faceted technique unsuitable because of habit even when the species allows it', () => {
+    // Ruby's suitableCuts includes 'princess' -> species alone permits this
+    // cut. A druzy cavity permits only a cabochon, so the habit must be what
+    // blocks it, and the player needs to be told which fact applies.
+    const druzy = { form: 'druzy' };
+    const view = techniqueView(RUBY, PRINCESS, 1, druzy);
+    expect(view.suitable).toBe(false);
+    expect(view.unsuitableReason).not.toMatch(/Ruby/);
+    expect(view.unsuitableReason).toMatch(/druzy cavity/);
+    expect(view.unsuitableReason).toMatch(/cabochon/);
+  });
+
+  it('still allows a cabochon on that same druzy stone', () => {
+    const druzy = { form: 'druzy' };
+    const view = techniqueView(RUBY, CABOCHON, 1, druzy);
+    expect(view.suitable).toBe(true);
+    expect(view.unsuitableReason).toBeNull();
+  });
+
+  it('defaults to no habit constraint when no specimen is given', () => {
+    // Same pairing that habit would otherwise block, but no specimen passed.
+    expect(techniqueView(RUBY, PRINCESS, 1).suitable).toBe(true);
   });
 });
 

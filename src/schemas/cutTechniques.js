@@ -24,6 +24,9 @@ export const cutTechniqueSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   difficulty: z.number().int().min(1).max(5),
+  // The physical family of the cut. A shaped, polished dome is a different
+  // operation from grinding facets, and rough of some habits admits only one.
+  style: z.enum(['faceted', 'cabochon']),
   suitableFor: cutSuitabilitySchema.optional(),
   unlockMinigame: z.string().min(1),
   successCurve: successCurveSchema,

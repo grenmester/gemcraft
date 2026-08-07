@@ -1,4 +1,5 @@
 import { cutSuccessAtLevel } from '../../../loaders/cutTechniques.js';
+import { FORM_EFFECTS } from './forms.js';
 
 export const CUT_DIFFICULTY_STEP = 0.08;
 
@@ -8,6 +9,28 @@ const round2 = (n) => Math.round(n * 100) / 100;
 
 export function canApply(species, technique) {
   return species.suitableCuts.includes(technique.id);
+}
+
+/**
+ * Whether this rough's crystal habit admits this style of cut. An absent or
+ * unrecognised form imposes no constraint — rough saved before habits
+ * existed must stay exactly as cuttable as it was.
+ */
+export function formAllows(form, technique) {
+  const effect = FORM_EFFECTS[form];
+  if (!effect) return true;
+  return effect.styles.includes(technique.style);
+}
+
+/** The species rule and the habit rule together. Neither restates the other. */
+export function canApplyToSpecimen(specimen, species, technique) {
+  return canApply(species, technique) && formAllows(specimen.form, technique);
+}
+
+/** Habit scales carat retention on faceted cuts only. */
+export function formYield(form, technique) {
+  if (technique.style !== 'faceted') return 1;
+  return FORM_EFFECTS[form]?.facetedYield ?? 1;
 }
 
 export function cutSuccessProbability(species, technique, level) {
@@ -33,7 +56,9 @@ export function applyCut(specimen, species, technique, level, rng = Math.random)
 
   if (roll < p) {
     const cutQuality = Math.round(lerp(technique.cutQualityRange, qualityRoll));
-    const caratRetained = round2(specimen.caratWeight * lerp(technique.yieldRange, qualityRoll));
+    const caratRetained = round2(
+      specimen.caratWeight * lerp(technique.yieldRange, qualityRoll) * formYield(specimen.form, technique)
+    );
     const phenomena = (species.phenomena ?? [])
       .filter((ph) => ph.revealedBy === technique.id)
       .map((ph) => ph.type);
@@ -49,7 +74,9 @@ export function applyCut(specimen, species, technique, level, rng = Math.random)
 
   const floor = technique.cutQualityRange[0];
   const cutQuality = Math.max(10, Math.round(lerp([floor - 20, floor], qualityRoll)));
-  const caratRetained = round2(specimen.caratWeight * lerp([0.3, technique.yieldRange[0]], qualityRoll));
+  const caratRetained = round2(
+    specimen.caratWeight * lerp([0.3, technique.yieldRange[0]], qualityRoll) * formYield(specimen.form, technique)
+  );
   return {
     outcome: 'fail',
     specimen: { ...specimen, stage: 'cut', cut: technique.id, cutQuality, caratRetained, symmetry: cutQuality, phenomena: [] }

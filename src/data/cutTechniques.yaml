@@ -4,6 +4,7 @@ techniques:
   - id: cabochon
     name: Cabochon
     difficulty: 1
+    style: cabochon
     suitableFor:
       transparency: [translucent, opaque]
     unlockMinigame: doming
@@ -17,6 +18,7 @@ techniques:
   - id: round_brilliant
     name: Round Brilliant
     difficulty: 2
+    style: faceted
     suitableFor:
       transparency: [transparent]
     unlockMinigame: radial_symmetry
@@ -30,6 +32,7 @@ techniques:
   - id: step
     name: Step / Emerald Cut
     difficulty: 3
+    style: faceted
     suitableFor:
       transparency: [transparent, translucent]
     unlockMinigame: parallel_lines
@@ -42,6 +45,7 @@ techniques:
   - id: princess
     name: Princess / Boxed Cut
     difficulty: 4
+    style: faceted
     suitableFor:
       transparency: [transparent]
     unlockMinigame: radial_symmetry
@@ -55,6 +59,7 @@ techniques:
   - id: fancy
     name: Fancy / Fantasy Cut
     difficulty: 5
+    style: faceted
     suitableFor:
       transparency: [transparent]
     unlockMinigame: freeform_facet

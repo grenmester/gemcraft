@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { canApply, cutSuccessProbability, applyCut, specimenScore, scoreBreakdown, SCORE_WEIGHTS, canShatter } from './cut.js';
+import {
+  canApply, cutSuccessProbability, applyCut, specimenScore, scoreBreakdown, SCORE_WEIGHTS, canShatter,
+  formAllows, canApplyToSpecimen, formYield
+} from './cut.js';
 import { speciesById } from '../../../loaders/species.js';
-import { cutTechniquesById } from '../../../loaders/cutTechniques.js';
+import { cutTechniquesById, cutTechniques } from '../../../loaders/cutTechniques.js';
 
 const rough = (over = {}) => ({
   instanceId: 'c1', stage: 'identified', trueSpeciesId: 'sapphire', identifiedAs: 'sapphire',
@@ -90,6 +93,56 @@ describe('specimenScore', () => {
     const starred = { ...base, phenomena: ['asterism'] };
     expect(specimenScore(better, speciesById.sapphire)).toBeGreaterThan(specimenScore(base, speciesById.sapphire));
     expect(specimenScore(starred, speciesById.sapphire)).toBeGreaterThan(specimenScore(base, speciesById.sapphire));
+  });
+});
+
+describe('crystal habit constrains the cut', () => {
+  const cab = cutTechniques.find((t) => t.id === 'cabochon');
+  const brilliant = cutTechniques.find((t) => t.id === 'round_brilliant');
+  const rough = (form) => ({ instanceId: 'x', trueSpeciesId: 'quartz', caratWeight: 2, clarity: 70, colorGrade: 70, form });
+
+  it('admits no cut at all for a crystal still on its matrix', () => {
+    expect(formAllows('matrix', cab)).toBe(false);
+    expect(formAllows('matrix', brilliant)).toBe(false);
+  });
+
+  it('lets a druzy cavity take a cabochon but never facets', () => {
+    expect(formAllows('druzy', cab)).toBe(true);
+    expect(formAllows('druzy', brilliant)).toBe(false);
+  });
+
+  it('lets a broken fragment take either', () => {
+    expect(formAllows('fragment', cab)).toBe(true);
+    expect(formAllows('fragment', brilliant)).toBe(true);
+  });
+
+  it('imposes no constraint on rough that predates forms', () => {
+    // Saves written before the Dive carry no form; those stones must stay
+    // cuttable exactly as they were.
+    expect(formAllows(undefined, brilliant)).toBe(true);
+  });
+
+  it('combines the species rule and the form rule without replacing either', () => {
+    const quartz = speciesById.quartz;
+    // Same species, same technique, different habit -> different answer.
+    expect(canApplyToSpecimen(rough('fragment'), quartz, cab)).toBe(canApply(quartz, cab));
+    expect(canApplyToSpecimen(rough('matrix'), quartz, cab)).toBe(false);
+  });
+
+  it('scales faceted carat retention by habit but leaves cabochons alone', () => {
+    expect(formYield('crystal', brilliant)).toBeGreaterThan(1);
+    expect(formYield('waterworn', brilliant)).toBeLessThan(1);
+    expect(formYield('crystal', cab)).toBe(1);
+    expect(formYield('waterworn', cab)).toBe(1);
+  });
+
+  it('carries the habit through into the carat a cut actually keeps', () => {
+    const species = speciesById.quartz;
+    const asCrystal = applyCut(rough('crystal'), species, brilliant, 10, () => 0.01);
+    const asPebble = applyCut(rough('waterworn'), species, brilliant, 10, () => 0.01);
+    expect(asCrystal.outcome).toBe('success');
+    expect(asPebble.outcome).toBe('success');
+    expect(asCrystal.specimen.caratRetained).toBeGreaterThan(asPebble.specimen.caratRetained);
   });
 });
 

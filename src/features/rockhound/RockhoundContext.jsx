@@ -5,7 +5,7 @@ import { localities } from '../../loaders/localities.js';
 import { identifyReward, commitIdentification } from './logic/identifyResult.js';
 import { completedLocalityIds, completedFamilies, earnedGear } from './logic/progression.js';
 import { cutTechniquesById } from '../../loaders/cutTechniques.js';
-import { applyCut, canApply, specimenScore } from './logic/cut.js';
+import { applyCut, canApplyToSpecimen, specimenScore } from './logic/cut.js';
 import { identifiedValue, stoneValue, gearPrice } from './logic/market.js';
 
 export const ADD_ROUGH = 'ADD_ROUGH';
@@ -112,7 +112,7 @@ export function rockhoundReducer(state, action) {
       const level = state.cutTechniqueLevel[techniqueId] ?? 0;
       if (!specimen || !technique || level < 1) return state;
       const species = speciesById[specimen.trueSpeciesId];
-      if (!canApply(species, technique)) return state;
+      if (!canApplyToSpecimen(specimen, species, technique)) return state;
 
       const result = applyCut(specimen, species, technique, level, rng ?? Math.random);
       const identified = state.identified.filter((s) => s.instanceId !== instanceId);

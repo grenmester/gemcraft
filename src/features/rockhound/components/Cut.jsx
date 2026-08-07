@@ -80,7 +80,7 @@ export default function Cut({
             <TechniqueCard
               key={t.id}
               technique={t}
-              view={techniqueView(species, t, cutTechniqueLevel[t.id] ?? 0)}
+              view={techniqueView(species, t, cutTechniqueLevel[t.id] ?? 0, selected)}
               specimen={selected}
               onUnlock={onUnlock}
               onLevel={onLevel}
@@ -94,7 +94,7 @@ export default function Cut({
       {guide && (
         <TechniqueGuide
           technique={guide}
-          view={techniqueView(species, guide, cutTechniqueLevel[guide.id] ?? 0)}
+          view={techniqueView(species, guide, cutTechniqueLevel[guide.id] ?? 0, selected)}
           onClose={() => setGuideId(null)}
         />
       )}
