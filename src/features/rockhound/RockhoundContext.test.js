@@ -4,11 +4,12 @@ import {
   rockhoundReducer, initialRockhoundState,
   ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW,
   UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT,
-  SELL_IDENTIFIED, SELL_STONE, BUY_GEAR
+  SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, COLLECT_HAUL
 } from './RockhoundContext.jsx';
 import { createRough } from './logic/rollRough.js';
 import { species, speciesById } from '../../loaders/species.js';
 import { localitiesById } from '../../loaders/localities.js';
+import { METHOD_ENUM } from '../../schemas/localities.js';
 import { cutTechniquesById } from '../../loaders/cutTechniques.js';
 import { stoneValue, identifiedValue, gearPrice } from './logic/market.js';
 
@@ -199,5 +200,60 @@ describe('rockhoundReducer', () => {
     // too poor → no-op
     const poor = { ...initialRockhoundState, cash: 10 };
     expect(rockhoundReducer(poor, { type: BUY_GEAR, payload: { gearId: 'rock_hammer' } })).toBe(poor);
+  });
+
+  describe('COLLECT_HAUL', () => {
+    const specimen = (id) => ({ instanceId: id, stage: 'rough', trueSpeciesId: 'quartz', caratWeight: 1, clarity: 50, colorGrade: 50, origin: 'hidden_creek', foundDepth: 1, form: 'waterworn' });
+
+    it('starts every method at zero experience', () => {
+      for (const m of METHOD_ENUM) {
+        expect(initialRockhoundState.exploreMethodXp[m], m).toBe(0);
+      }
+    });
+
+    it('adds a whole haul to the bench in one action', () => {
+      const next = rockhoundReducer(initialRockhoundState, {
+        type: COLLECT_HAUL,
+        payload: { specimens: [specimen('a'), specimen('b')], method: 'panning', xp: 10 }
+      });
+      expect(next.rough.map((r) => r.instanceId)).toEqual(['a', 'b']);
+    });
+
+    it('credits experience to the method that earned it, and no other', () => {
+      const next = rockhoundReducer(initialRockhoundState, {
+        type: COLLECT_HAUL,
+        payload: { specimens: [specimen('a')], method: 'geode', xp: 30 }
+      });
+      expect(next.exploreMethodXp.geode).toBe(30);
+      expect(next.exploreMethodXp.panning).toBe(0);
+      expect(next.exploreMethodXp.hardrock).toBe(0);
+      expect(next.exploreMethodXp.surface).toBe(0);
+    });
+
+    it('accumulates experience across runs', () => {
+      const once = rockhoundReducer(initialRockhoundState, {
+        type: COLLECT_HAUL, payload: { specimens: [], method: 'panning', xp: 10 }
+      });
+      const twice = rockhoundReducer(once, {
+        type: COLLECT_HAUL, payload: { specimens: [], method: 'panning', xp: 25 }
+      });
+      expect(twice.exploreMethodXp.panning).toBe(35);
+    });
+
+    it('keeps rough already on the bench', () => {
+      const seeded = { ...initialRockhoundState, rough: [specimen('old')] };
+      const next = rockhoundReducer(seeded, {
+        type: COLLECT_HAUL, payload: { specimens: [specimen('new')], method: 'panning', xp: 10 }
+      });
+      expect(next.rough.map((r) => r.instanceId)).toEqual(['old', 'new']);
+    });
+
+    it('ignores an unknown method rather than corrupting the experience map', () => {
+      const next = rockhoundReducer(initialRockhoundState, {
+        type: COLLECT_HAUL, payload: { specimens: [specimen('a')], method: 'spelunking', xp: 10 }
+      });
+      expect(next.exploreMethodXp).toEqual(initialRockhoundState.exploreMethodXp);
+      expect(next.rough).toHaveLength(1); // the stones are still real
+    });
   });
 });

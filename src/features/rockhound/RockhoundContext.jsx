@@ -18,11 +18,13 @@ export const APPLY_CUT = 'APPLY_CUT';
 export const SELL_IDENTIFIED = 'SELL_IDENTIFIED';
 export const SELL_STONE = 'SELL_STONE';
 export const BUY_GEAR = 'BUY_GEAR';
+export const COLLECT_HAUL = 'COLLECT_HAUL';
 
 const STORAGE_KEY = 'rockhound_save_v1';
 
 export const initialRockhoundState = {
   rough: [],
+  exploreMethodXp: { panning: 0, hardrock: 0, geode: 0, surface: 0 },
   identified: [],
   gemdex: [],
   newlyDiscovered: [],
@@ -52,6 +54,18 @@ export function rockhoundReducer(state, action) {
   switch (action.type) {
     case ADD_ROUGH:
       return { ...state, rough: [...state.rough, action.payload] };
+
+    case COLLECT_HAUL: {
+      const { specimens, method, xp } = action.payload;
+      const known = Object.prototype.hasOwnProperty.call(state.exploreMethodXp, method);
+      return {
+        ...state,
+        rough: [...state.rough, ...specimens],
+        exploreMethodXp: known
+          ? { ...state.exploreMethodXp, [method]: state.exploreMethodXp[method] + xp }
+          : state.exploreMethodXp
+      };
+    }
 
     case RECORD_TEST_SCORE: {
       const { testId, score } = action.payload;
