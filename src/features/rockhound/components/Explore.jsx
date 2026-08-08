@@ -29,7 +29,7 @@ function Haul({ stones }) {
   );
 }
 
-export default function Explore({ locality, methodXp, setComplete, roughCount, onBank, rng = Math.random }) {
+export default function Explore({ locality, methodXp, setComplete, roughCount, onBank, onLeave, rng = Math.random }) {
   const [run, setRun] = useState(null);
 
   const site = siteView(locality, methodXp, setComplete);
@@ -65,6 +65,14 @@ export default function Explore({ locality, methodXp, setComplete, roughCount, o
 
   return (
     <section className="flex flex-col gap-4">
+      <button
+        type="button"
+        onClick={onLeave}
+        className="self-start text-sm text-slate-400 transition-colors hover:text-yellow-400"
+      >
+        {run ? '← Leave run (haul is lost)' : '← Back to the map'}
+      </button>
+
       <header>
         <h2 className="text-2xl font-bold text-yellow-400">{locality.name}</h2>
         <p className="capitalize text-slate-400">{locality.depositType} · {locality.method}</p>

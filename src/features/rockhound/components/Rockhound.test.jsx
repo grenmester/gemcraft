@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RockhoundProvider } from '../RockhoundContext.jsx';
 import Rockhound from './Rockhound.jsx';
+import App from '../../../App.jsx';
 
 // The provider now lives at the app root (src/App.jsx) rather than inside
 // Rockhound itself, so tests mounting the shell in isolation supply their own.
@@ -27,8 +28,10 @@ describe('Rockhound shell', () => {
 
   it('panning then switching to Identify shows a rough to work on', () => {
     renderRockhound();
-    // Working the gravel starts a dive; banking the haul is what actually
-    // lands a specimen on the bench for Identify to see.
+    // The map and the run are separate screens now: pick the locality to
+    // open the run screen, then work the gravel to start a dive; banking
+    // the haul is what actually lands a specimen on the bench for Identify.
+    fireEvent.click(screen.getByRole('button', { name: /^Hidden Creek,/ }));
     fireEvent.click(screen.getByRole('button', { name: /work the gravel/i }));
     fireEvent.click(screen.getByRole('button', { name: /bank this haul/i }));
     fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
@@ -113,7 +116,10 @@ describe('Explore wiring', () => {
 
   it('banks a haul onto the bench', () => {
     renderRockhound();
-    // Hidden Creek is the default locality and is panning-worked.
+    // Hidden Creek is the default locality and is panning-worked. The map
+    // and the run are separate screens, so the locality must be opened
+    // before the run's own controls appear.
+    fireEvent.click(screen.getByRole('button', { name: /^Hidden Creek,/ }));
     fireEvent.click(screen.getByRole('button', { name: /work the gravel/i }));
     fireEvent.click(screen.getByRole('button', { name: /bank this haul/i }));
     // The bench readout is the shell's own, so this proves the dispatch landed.
@@ -122,6 +128,7 @@ describe('Explore wiring', () => {
 
   it('carries a banked stone through to Identify', () => {
     renderRockhound();
+    fireEvent.click(screen.getByRole('button', { name: /^Hidden Creek,/ }));
     fireEvent.click(screen.getByRole('button', { name: /work the gravel/i }));
     fireEvent.click(screen.getByRole('button', { name: /bank this haul/i }));
     fireEvent.click(screen.getByRole('button', { name: 'Identify' }));
@@ -129,5 +136,41 @@ describe('Explore wiring', () => {
     // species (quartz, almandine garnet, sapphire), but never the deep-only
     // topaz (minDepth: 2 in localities.yaml).
     expect(screen.getByText(/SUSPECTS/).textContent).toMatch(/3/);
+  });
+});
+
+describe('Explore map and run are separate screens', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('starts on the map with no run in progress', () => {
+    render(<App />);
+    // Anchored with the trailing comma: a bare /^Hidden Creek/ also matches
+    // the field-guide button ("Hidden Creek field guide") and is ambiguous.
+    screen.getByRole('button', { name: /^Hidden Creek,/ });
+    expect(screen.queryByRole('button', { name: /work the gravel/i })).toBeNull();
+  });
+
+  it('opens the run screen when a locality is chosen, hiding the map', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /^Hidden Creek,/ }));
+    screen.getByRole('button', { name: /work the gravel/i });
+    // The map must be gone: switching localities mid-run made the header
+    // disagree with the locality actually being dug.
+    expect(screen.queryByRole('button', { name: /^Gravel Bar/ })).toBeNull();
+  });
+
+  it('returns to the map from the run screen', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /^Hidden Creek,/ }));
+    fireEvent.click(screen.getByRole('button', { name: /back to the map/i }));
+    screen.getByRole('button', { name: /^Gravel Bar,/ });
+  });
+
+  it('still banks a haul onto the bench from the run screen', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /^Hidden Creek,/ }));
+    fireEvent.click(screen.getByRole('button', { name: /work the gravel/i }));
+    fireEvent.click(screen.getByRole('button', { name: /bank this haul/i }));
+    expect(screen.getByLabelText(/bench/i).textContent).toMatch(/1/);
   });
 });

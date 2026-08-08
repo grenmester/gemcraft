@@ -21,7 +21,7 @@ const GEMDEX_SUBTABS = ['Species', 'Trophies', 'Career'];
 function RockhoundInner() {
   const { state, dispatch } = useRockhound();
   const [tab, setTab] = useState('Explore');
-  const [selectedLocalityId, setSelectedLocalityId] = useState('hidden_creek');
+  const [exploringId, setExploringId] = useState(null);
   const [selectedCutId, setSelectedCutId] = useState(null);
   const [gemdexSub, setGemdexSub] = useState('Species');
 
@@ -31,7 +31,7 @@ function RockhoundInner() {
   const completedFams = completedFamilies(species, state.gemdex);
   const ctx = { reputation: state.reputation, gear: state.gear, completedLocalities, completedFamilies: completedFams };
   const unlockedIds = localities.filter((l) => isLocalityUnlocked(l, ctx)).map((l) => l.id);
-  const selectedLocality = localitiesById[selectedLocalityId] ?? localitiesById.hidden_creek;
+  const selectedLocality = localitiesById[exploringId] ?? localitiesById.hidden_creek;
 
   useEffect(() => {
     // Badges clear only once the Species grid is actually looked at — not when
@@ -57,24 +57,26 @@ function RockhoundInner() {
       </nav>
 
       {tab === 'Explore' && (
-        <div className="flex flex-col gap-4">
-          <LocalityMap
-            localities={localities}
-            unlockedIds={unlockedIds}
-            selectedId={selectedLocalityId}
-            onSelect={setSelectedLocalityId}
-            speciesById={speciesById}
-            gemdex={state.gemdex}
-            exploreMethodXp={state.exploreMethodXp}
-          />
+        exploringId ? (
           <Explore
             locality={selectedLocality}
             methodXp={state.exploreMethodXp[selectedLocality.method] ?? 0}
             setComplete={completedLocalities.includes(selectedLocality.id)}
             roughCount={state.rough.length}
             onBank={(payload) => dispatch({ type: COLLECT_HAUL, payload })}
+            onLeave={() => setExploringId(null)}
           />
-        </div>
+        ) : (
+          <LocalityMap
+            localities={localities}
+            unlockedIds={unlockedIds}
+            selectedId={null}
+            onSelect={setExploringId}
+            speciesById={speciesById}
+            gemdex={state.gemdex}
+            exploreMethodXp={state.exploreMethodXp}
+          />
+        )
       )}
 
       {tab === 'Identify' && (
