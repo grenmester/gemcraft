@@ -1,5 +1,5 @@
 import { stoneValue, identifiedValue, gradeFactor, roughGradeFactor, uncutDiscountFor } from './market.js';
-import { scoreBreakdown, specimenScore, canApplyToSpecimen } from './cut.js';
+import { scoreBreakdown, specimenScore, canApplyToSpecimen, formYield } from './cut.js';
 
 const mid = ([lo, hi]) => (lo + hi) / 2;
 
@@ -46,7 +46,7 @@ export function bestCutEstimate(specimen, species, techniques) {
   return suitable.reduce((best, t) => {
     const cut = {
       ...specimen,
-      caratRetained: (specimen.caratWeight ?? 0) * mid(t.yieldRange),
+      caratRetained: (specimen.caratWeight ?? 0) * mid(t.yieldRange) * formYield(specimen.form, t),
       cutQuality: mid(t.cutQualityRange),
       phenomena: (species.phenomena ?? []).filter((p) => p.revealedBy === t.id).map((p) => p.type)
     };

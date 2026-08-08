@@ -1,4 +1,4 @@
-import { canApply, cutSuccessProbability, canShatter, formAllows } from './cut.js';
+import { canApply, cutSuccessProbability, canShatter, formAllows, formYield } from './cut.js';
 import { FORM_LABELS, FORM_EFFECTS } from './forms.js';
 
 const round2 = (n) => Math.round(n * 100) / 100;
@@ -69,5 +69,6 @@ export function techniqueView(species, technique, level, specimen = null) {
 /** Carat the stone would retain, as a [low, high] range. */
 export function expectedCarat(specimen, technique) {
   const w = specimen.caratWeight ?? 0;
-  return [round2(w * technique.yieldRange[0]), round2(w * technique.yieldRange[1])];
+  const yieldFactor = formYield(specimen.form, technique);
+  return [round2(w * technique.yieldRange[0] * yieldFactor), round2(w * technique.yieldRange[1] * yieldFactor)];
 }

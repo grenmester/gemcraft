@@ -107,4 +107,17 @@ describe('bestCutEstimate respects crystal habit', () => {
   it('is unchanged for rough that predates crystal habit', () => {
     expect(bestCutEstimate(base, ruby, cutTechniques)).toBeGreaterThan(0);
   });
+
+  it('quotes a lower estimate for a waterworn stone than the same stone as a crystal', () => {
+    // Emerald's suitable cuts (step, round_brilliant) are both faceted, so its
+    // best cut is always faceted — unlike ruby, whose cabochon reveals
+    // asterism and wins regardless of habit. That makes emerald the stone
+    // where formYield's 0.9x (waterworn) vs 1.1x (crystal) carat scaling
+    // actually reaches the estimate: same species, same carat/colour/clarity,
+    // only the habit differs.
+    const emerald = speciesById.emerald;
+    const waterworn = bestCutEstimate({ ...base, trueSpeciesId: 'emerald', form: 'waterworn' }, emerald, cutTechniques);
+    const crystal = bestCutEstimate({ ...base, trueSpeciesId: 'emerald', form: 'crystal' }, emerald, cutTechniques);
+    expect(waterworn).toBeLessThan(crystal);
+  });
 });

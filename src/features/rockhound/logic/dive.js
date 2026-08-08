@@ -12,7 +12,7 @@ const BREAK_PER_DEPTH = 0.15;
 const BREAK_PER_LEVEL = 0.01;
 export const MAX_BREAK_CHANCE = 0.6;
 /** The depth at and below which a break costs stones, not just quality. */
-export const REAL_LOSS_DEPTH = 3;
+const REAL_LOSS_DEPTH = 3;
 const XP_PER_DEPTH = 10;
 const BREAK_XP_FRACTION = 0.5;
 const DEGRADE_CLARITY = 12;

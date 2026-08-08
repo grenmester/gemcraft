@@ -84,4 +84,18 @@ describe('expectedCarat', () => {
   it('scales the yield range by the stone weight', () => {
     expect(expectedCarat({ caratWeight: 2 }, CABOCHON)).toEqual([1.4, 1.8]);
   });
+
+  it('scales a faceted band by crystal habit, so waterworn quotes lower than crystal', () => {
+    // Same stone, same faceted technique — only the habit differs. Waterworn
+    // scales carat retention down (0.9x) and a terminated crystal scales it
+    // up (1.1x), so applyCut will deliver a lower band for the waterworn
+    // stone. Quoting the same band for both would promise carat the Cut
+    // screen will not pay out.
+    const waterworn = expectedCarat({ caratWeight: 2, form: 'waterworn' }, PRINCESS);
+    const crystal = expectedCarat({ caratWeight: 2, form: 'crystal' }, PRINCESS);
+    expect(waterworn).toEqual([1.17, 1.53]);
+    expect(crystal).toEqual([1.43, 1.87]);
+    expect(waterworn[0]).toBeLessThan(crystal[0]);
+    expect(waterworn[1]).toBeLessThan(crystal[1]);
+  });
 });
