@@ -7,6 +7,7 @@ import { completedLocalityIds, completedFamilies, earnedGear } from './logic/pro
 import { cutTechniquesById } from '../../loaders/cutTechniques.js';
 import { applyCut, canApplyToSpecimen, specimenScore } from './logic/cut.js';
 import { identifiedValue, stoneValue, gearPrice } from './logic/market.js';
+import { xpThreshold, levelForXp, MAX_METHOD_LEVEL } from './logic/dive.js';
 
 export const ADD_ROUGH = 'ADD_ROUGH';
 export const RECORD_TEST_SCORE = 'RECORD_TEST_SCORE';
@@ -19,8 +20,11 @@ export const SELL_IDENTIFIED = 'SELL_IDENTIFIED';
 export const SELL_STONE = 'SELL_STONE';
 export const BUY_GEAR = 'BUY_GEAR';
 export const COLLECT_HAUL = 'COLLECT_HAUL';
+export const DEBUG_SET_METHOD_LEVEL = 'DEBUG_SET_METHOD_LEVEL';
+export const DEBUG_ADD_CASH = 'DEBUG_ADD_CASH';
+export const DEBUG_RESET = 'DEBUG_RESET';
 
-const STORAGE_KEY = 'rockhound_save_v1';
+export const STORAGE_KEY = 'rockhound_save_v1';
 
 export const initialRockhoundState = {
   rough: [],
@@ -187,6 +191,22 @@ export function rockhoundReducer(state, action) {
       if (price == null || state.gear.includes(gearId) || state.cash < price) return state;
       return { ...state, cash: state.cash - price, gear: [...state.gear, gearId] };
     }
+
+    case DEBUG_SET_METHOD_LEVEL: {
+      const { method, level } = action.payload;
+      if (!Object.prototype.hasOwnProperty.call(state.exploreMethodXp, method)) return state;
+      const clamped = Math.min(Math.max(Math.round(level), 0), MAX_METHOD_LEVEL);
+      return {
+        ...state,
+        exploreMethodXp: { ...state.exploreMethodXp, [method]: xpThreshold(clamped) }
+      };
+    }
+
+    case DEBUG_ADD_CASH:
+      return { ...state, cash: state.cash + action.payload.amount };
+
+    case DEBUG_RESET:
+      return initialRockhoundState;
 
     default:
       return state;

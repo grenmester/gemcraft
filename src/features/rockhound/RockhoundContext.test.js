@@ -4,7 +4,8 @@ import {
   rockhoundReducer, initialRockhoundState,
   ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW,
   UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT,
-  SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, COLLECT_HAUL
+  SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, COLLECT_HAUL,
+  DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET
 } from './RockhoundContext.jsx';
 import { createRough } from './logic/rollRough.js';
 import { species, speciesById } from '../../loaders/species.js';
@@ -12,6 +13,7 @@ import { localitiesById } from '../../loaders/localities.js';
 import { METHOD_ENUM } from '../../schemas/localities.js';
 import { cutTechniquesById } from '../../loaders/cutTechniques.js';
 import { stoneValue, identifiedValue, gearPrice } from './logic/market.js';
+import { levelForXp, MAX_METHOD_LEVEL } from './logic/dive.js';
 
 const sapphireRough = createRough(
   { trueSpeciesId: 'sapphire', caratWeight: 1, clarity: 80, colorGrade: 80, origin: 'hidden_creek' },
@@ -255,5 +257,47 @@ describe('rockhoundReducer', () => {
       expect(next.exploreMethodXp).toEqual(initialRockhoundState.exploreMethodXp);
       expect(next.rough).toHaveLength(1); // the stones are still real
     });
+  });
+});
+
+describe('debug actions', () => {
+  it('sets a method to the exact xp its level requires', () => {
+    const next = rockhoundReducer(initialRockhoundState, {
+      type: DEBUG_SET_METHOD_LEVEL, payload: { method: 'geode', level: 6 }
+    });
+    // Stored as xp, never as a level — a stored level would be a second
+    // source of truth that can drift from the xp that produced it.
+    expect(levelForXp(next.exploreMethodXp.geode)).toBe(6);
+    expect(next.exploreMethodXp.panning).toBe(0);
+  });
+
+  it('clamps a requested level into the real range', () => {
+    const hi = rockhoundReducer(initialRockhoundState, {
+      type: DEBUG_SET_METHOD_LEVEL, payload: { method: 'panning', level: 99 }
+    });
+    const lo = rockhoundReducer(initialRockhoundState, {
+      type: DEBUG_SET_METHOD_LEVEL, payload: { method: 'panning', level: -5 }
+    });
+    expect(levelForXp(hi.exploreMethodXp.panning)).toBe(MAX_METHOD_LEVEL);
+    expect(lo.exploreMethodXp.panning).toBe(0);
+  });
+
+  it('ignores an unknown method rather than inventing a track', () => {
+    const next = rockhoundReducer(initialRockhoundState, {
+      type: DEBUG_SET_METHOD_LEVEL, payload: { method: 'spelunking', level: 4 }
+    });
+    expect(next.exploreMethodXp).toEqual(initialRockhoundState.exploreMethodXp);
+  });
+
+  it('grants cash the Market can actually spend', () => {
+    const next = rockhoundReducer({ ...initialRockhoundState, cash: 40 }, {
+      type: DEBUG_ADD_CASH, payload: { amount: 1000 }
+    });
+    expect(next.cash).toBe(1040);
+  });
+
+  it('resets to a genuinely fresh state', () => {
+    const dirty = { ...initialRockhoundState, cash: 999, gemdex: ['ruby'], reputation: 50 };
+    expect(rockhoundReducer(dirty, { type: DEBUG_RESET })).toEqual(initialRockhoundState);
   });
 });
