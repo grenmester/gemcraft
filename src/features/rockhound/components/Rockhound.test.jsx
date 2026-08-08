@@ -16,7 +16,10 @@ describe('Rockhound shell', () => {
 
   it('panning then switching to Identify shows a rough to work on', () => {
     render(<Rockhound />);
-    fireEvent.click(screen.getByRole('button', { name: /Pan the/i }));
+    // Working the gravel starts a dive; banking the haul is what actually
+    // lands a specimen on the bench for Identify to see.
+    fireEvent.click(screen.getByRole('button', { name: /work the gravel/i }));
+    fireEvent.click(screen.getByRole('button', { name: /bank this haul/i }));
     fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
     // A suspects counter proves an Identify session is active on a real rough.
     screen.getByText(/SUSPECTS:/);
@@ -91,5 +94,29 @@ describe('Rockhound shell', () => {
   it('shows a cash readout in the shell', () => {
     render(<Rockhound />);
     screen.getByText(/💰/);
+  });
+});
+
+describe('Explore wiring', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('banks a haul onto the bench', () => {
+    render(<Rockhound />);
+    // Hidden Creek is the default locality and is panning-worked.
+    fireEvent.click(screen.getByRole('button', { name: /work the gravel/i }));
+    fireEvent.click(screen.getByRole('button', { name: /bank this haul/i }));
+    // The bench readout is the shell's own, so this proves the dispatch landed.
+    expect(screen.getByText(/Unidentified rough on your bench/i).textContent).toMatch(/1/);
+  });
+
+  it('carries a banked stone through to Identify', () => {
+    render(<Rockhound />);
+    fireEvent.click(screen.getByRole('button', { name: /work the gravel/i }));
+    fireEvent.click(screen.getByRole('button', { name: /bank this haul/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Identify' }));
+    // A depth-1 stone from Hidden Creek can be any of the three shallow
+    // species (quartz, almandine garnet, sapphire), but never the deep-only
+    // topaz (minDepth: 2 in localities.yaml).
+    expect(screen.getByText(/SUSPECTS/).textContent).toMatch(/3/);
   });
 });

@@ -1,6 +1,6 @@
 // src/features/rockhound/components/Rockhound.jsx
 import { useState, useEffect } from 'react';
-import { RockhoundProvider, useRockhound, ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR } from '../RockhoundContext.jsx';
+import { RockhoundProvider, useRockhound, COLLECT_HAUL, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR } from '../RockhoundContext.jsx';
 import { localities, localitiesById } from '../../../loaders/localities.js';
 import { speciesById, species } from '../../../loaders/species.js';
 import { cutTechniques, cutTechniquesById } from '../../../loaders/cutTechniques.js';
@@ -68,8 +68,10 @@ function RockhoundInner() {
           />
           <Explore
             locality={selectedLocality}
+            methodXp={state.exploreMethodXp[selectedLocality.method] ?? 0}
+            setComplete={completedLocalities.includes(selectedLocality.id)}
             roughCount={state.rough.length}
-            onCollect={(specimen) => dispatch({ type: ADD_ROUGH, payload: specimen })}
+            onBank={(payload) => dispatch({ type: COLLECT_HAUL, payload })}
           />
         </div>
       )}
