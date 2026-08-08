@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import LocalityCard from './LocalityCard.jsx';
 import LocalityEntry from './LocalityEntry.jsx';
-import { findPoolView, rarityCeiling, localitySetProgress } from '../logic/localityView.js';
+import { findPoolView, localitySetProgress } from '../logic/localityView.js';
+import { levelForXp } from '../logic/dive.js';
 
 export default function LocalityMap({
-  localities, unlockedIds, selectedId, onSelect, speciesById, gemdex
+  localities, unlockedIds, selectedId, onSelect, speciesById, gemdex, exploreMethodXp
 }) {
   const [infoId, setInfoId] = useState(null);
   const unlocked = new Set(unlockedIds);
@@ -20,7 +21,7 @@ export default function LocalityMap({
               unlocked={unlocked.has(loc.id)}
               selected={loc.id === selectedId}
               pool={findPoolView(loc, speciesById, gemdex)}
-              ceiling={rarityCeiling(loc, speciesById)}
+              methodLevel={levelForXp(exploreMethodXp?.[loc.method] ?? 0)}
               progress={localitySetProgress(loc, gemdex)}
               onSelect={onSelect}
               onOpenInfo={setInfoId}

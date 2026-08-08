@@ -40,6 +40,7 @@ export default function LocalityEntry({
         <Row label="Requirement">
           <span>{requirementText(locality.unlockGate, unlocked)}</span>
         </Row>
+        <Row label="Deposit"><span className="capitalize">{locality.depositType}</span></Row>
         <Row label="Host rock"><span className="capitalize">{locality.hostRock}</span></Row>
         <Row label="Look for">
           {locality.indicatorMinerals.map(titleizeWords).join(' · ')}

@@ -55,7 +55,10 @@ describe('LocalityEntry', () => {
 
   it('shows geology, method, host rock and region', () => {
     renderEntry();
-    screen.getByText(/metamorphic/i);
+    // The header combines deposit type and method in one string; the Access
+    // section's own "Deposit" row also says "metamorphic" alone, so scope
+    // this to the header's distinctive combined text.
+    screen.getByText(/metamorphic · hardrock/i);
     screen.getByText(/Myanmar/);
     screen.getByText('marble');
   });

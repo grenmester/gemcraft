@@ -1,4 +1,6 @@
+import { FaInfoCircle } from 'react-icons/fa';
 import { gemArt } from '../logic/gemArt.js';
+import { rarityColor } from '../logic/rarity.js';
 import { describeGate, describeGateSubject } from '../logic/progression.js';
 
 function requirementText(gate, unlocked) {
@@ -8,14 +10,14 @@ function requirementText(gate, unlocked) {
 }
 
 export default function LocalityCard({
-  locality, unlocked, selected, pool, ceiling, progress, onSelect, onOpenInfo
+  locality, unlocked, selected, pool, methodLevel, progress, onSelect, onOpenInfo
 }) {
   return (
     <div className="relative">
       <button
         type="button"
         disabled={!unlocked}
-        aria-label={`${locality.name}, ${locality.depositType} ${locality.method}, ${progress.found} of ${progress.total} found, up to ${ceiling}`}
+        aria-label={`${locality.name}, ${locality.method}, ${progress.found} of ${progress.total} found`}
         onClick={() => onSelect(locality.id)}
         className={`w-full rounded-lg border p-3 pr-10 text-left ${
           selected ? 'border-yellow-400 bg-slate-700' : 'border-slate-600 bg-slate-800'
@@ -32,16 +34,22 @@ export default function LocalityCard({
             {progress.found} / {progress.total}
           </span>
         </span>
-        <span className="mt-0.5 block text-xs capitalize text-slate-400">
-          {locality.depositType} · {locality.method}
+        <span className="mt-0.5 block text-xs text-slate-400">
+          <span className="capitalize">{locality.method}</span>
+          {methodLevel != null && <span className="text-slate-500"> · level {methodLevel}</span>}
         </span>
         <span className="mt-1 flex items-center gap-1">
           {pool.map((entry) => (
-            <span key={entry.speciesId} className="text-base" aria-hidden="true">
+            <span
+              key={entry.speciesId}
+              data-rarity={entry.rarity ?? 'unknown'}
+              className="flex h-6 w-6 items-center justify-center rounded border-2 text-sm"
+              style={{ borderColor: rarityColor(entry.rarity) }}
+              aria-hidden="true"
+            >
               {entry.discovered ? gemArt(entry.speciesId).glyph : '❔'}
             </span>
           ))}
-          <span className="ml-auto text-xs text-slate-500">up to {ceiling}</span>
         </span>
       </button>
 
@@ -50,9 +58,9 @@ export default function LocalityCard({
         type="button"
         aria-label={`${locality.name} field guide`}
         onClick={() => onOpenInfo(locality.id)}
-        className="absolute right-2 top-2 rounded px-1 text-slate-400 hover:text-white"
+        className="absolute right-2 top-2 rounded p-1 text-slate-500 transition-colors hover:text-yellow-400"
       >
-        ℹ️
+        <FaInfoCircle aria-hidden="true" />
       </button>
 
       {/* Outside the select button so it never leaks into its accessible name. */}

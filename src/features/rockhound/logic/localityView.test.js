@@ -25,6 +25,12 @@ describe('findPoolView', () => {
     expect(view[1]).toMatchObject({ speciesId: 'sapphire', name: null, discovered: false });
   });
 
+  it('withholds rarity the same way it withholds the name (spoiler rule)', () => {
+    const view = findPoolView(CREEK, SPECIES_BY_ID, ['quartz']);
+    expect(view[0]).toMatchObject({ speciesId: 'quartz', rarity: 'Common', discovered: true });
+    expect(view[1]).toMatchObject({ speciesId: 'sapphire', rarity: null, discovered: false });
+  });
+
   it('orders the pool by descending weight', () => {
     const view = findPoolView(CREEK, SPECIES_BY_ID, []);
     expect(view.map((e) => e.speciesId)).toEqual(['quartz', 'sapphire', 'topaz']);

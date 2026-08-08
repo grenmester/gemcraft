@@ -47,6 +47,7 @@ export function findPoolView(locality, speciesById, gemdex, depth = null) {
         speciesId: e.species,
         name: discovered ? (speciesById[e.species]?.name ?? null) : null,
         discovered,
+        rarity: discovered ? (speciesById[e.species]?.rarity ?? null) : null,
         chance: chanceFor(e.effectiveWeight, total)
       };
     });

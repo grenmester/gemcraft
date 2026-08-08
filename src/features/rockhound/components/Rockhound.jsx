@@ -65,6 +65,7 @@ function RockhoundInner() {
             onSelect={setSelectedLocalityId}
             speciesById={speciesById}
             gemdex={state.gemdex}
+            exploreMethodXp={state.exploreMethodXp}
           />
           <Explore
             locality={selectedLocality}

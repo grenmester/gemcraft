@@ -61,12 +61,12 @@ describe('LocalityMap', () => {
     expect(creek.textContent).toMatch(/1 \/ 4/);
   });
 
-  it('carries the set progress and rarity ceiling in the accessible name', () => {
+  it('carries the set progress and collection method in the accessible name', () => {
     renderMap();
     const creek = screen.getByRole('button', { name: /^Hidden Creek,/ });
     const label = creek.getAttribute('aria-label');
     expect(label).toMatch(/1 of 4 found/);
-    expect(label).toMatch(/up to /);
+    expect(label).toMatch(/panning/i);
   });
 
   it('opens the field guide from the info button without selecting', () => {
@@ -92,5 +92,43 @@ describe('LocalityMap', () => {
   it('withholds undiscovered species on the card', () => {
     renderMap();
     expect(screen.queryByText('Sapphire')).toBeNull();
+  });
+});
+
+describe('locality card information design', () => {
+  it('shows the collection method and its level, since that decides the xp track', () => {
+    renderMap({ gemdex: [], exploreMethodXp: { panning: 0, hardrock: 0, geode: 0, surface: 0 } });
+    // Hidden Creek is panning-worked. Level 0 explains why it offers no descent.
+    const card = screen.getByRole('button', { name: /^Hidden Creek,/ }).closest('li');
+    expect(card.textContent).toMatch(/panning/i);
+  });
+
+  it('does not clutter the card with the deposit type', () => {
+    renderMap({ gemdex: [] });
+    const card = screen.getByRole('button', { name: /^Hidden Creek,/ }).closest('li');
+    // Deposit type is teaching payload with no mechanical effect — it belongs
+    // in the field guide, where someone is reading rather than scanning.
+    expect(card.textContent).not.toMatch(/alluvial/i);
+  });
+
+  it('drops the vague rarity ceiling', () => {
+    renderMap({ gemdex: [] });
+    expect(screen.queryByText(/up to Epic/i)).toBeNull();
+  });
+
+  it('rings a discovered species with its rarity colour, and withholds it otherwise', () => {
+    renderMap({ gemdex: ['sapphire'] });
+    const card = screen.getByRole('button', { name: /^Hidden Creek,/ }).closest('li');
+    const slots = card.querySelectorAll('[data-rarity]');
+    const known = [...slots].filter((s) => s.getAttribute('data-rarity') !== 'unknown');
+    expect(known).toHaveLength(1);
+    expect(known[0].getAttribute('data-rarity')).toBe('Epic');
+  });
+
+  it('opens the field guide from a labelled icon button, not a bare emoji', () => {
+    renderMap({ gemdex: [] });
+    const info = screen.getByRole('button', { name: /Hidden Creek field guide/i });
+    expect(info.textContent).not.toMatch(/ℹ/);
+    expect(info.querySelector('svg')).not.toBe(null);
   });
 });
