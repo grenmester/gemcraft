@@ -133,3 +133,27 @@ describe('Explore — banking', () => {
     expect(screen.queryByRole('button', { name: /bank this haul/i })).toBeNull();
   });
 });
+
+describe('Explore — leaving', () => {
+  it('offers a plain way back when no run is in progress', () => {
+    renderExplore();
+    screen.getByRole('button', { name: /back to the map/i });
+  });
+
+  it('warns that the haul is lost when leaving mid-run', () => {
+    // Only bank() preserves a haul, so leaving mid-run genuinely discards it.
+    // The control must say so rather than reading like a harmless back button.
+    renderExplore();
+    fireEvent.click(screen.getByRole('button', { name: /work the gravel/i }));
+    expect(screen.queryByRole('button', { name: /back to the map/i })).toBeNull();
+    const leave = screen.getByRole('button', { name: /leave run/i });
+    expect(leave.textContent).toMatch(/lost/i);
+  });
+
+  it('hands control back to the caller when leaving', () => {
+    const onLeave = vi.fn();
+    renderExplore({ onLeave });
+    fireEvent.click(screen.getByRole('button', { name: /back to the map/i }));
+    expect(onLeave).toHaveBeenCalledTimes(1);
+  });
+});

@@ -29,7 +29,7 @@ function Haul({ stones }) {
   );
 }
 
-export default function Explore({ locality, methodXp, setComplete, roughCount, onBank, onLeave, rng = Math.random }) {
+export default function Explore({ locality, methodXp, setComplete, roughCount, onBank, onLeave = () => {}, rng = Math.random }) {
   const [run, setRun] = useState(null);
 
   const site = siteView(locality, methodXp, setComplete);
