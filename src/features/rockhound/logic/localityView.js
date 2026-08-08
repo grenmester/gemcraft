@@ -1,4 +1,4 @@
-import { RARITY_ENUM } from '../../../schemas/items.js';
+import { RARITY_ENUM } from '../../../schemas/species.js';
 import { localitySetComplete } from './progression.js';
 import { effectivePool } from './rollRough.js';
 

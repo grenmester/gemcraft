@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { RARITY_ENUM } from './items.js';
 
 // A species is a mineral/gem definition carrying the real diagnostic
 // properties that drive Identify (§6) and the craft data that drives Cut (§7).
@@ -7,6 +6,10 @@ import { RARITY_ENUM } from './items.js';
 // until the feature layer migrates onto it.
 
 export const SPECIES_CATEGORY_ENUM = ['Gem', 'Mineral'];
+
+// The five rarity tiers, ascending. Owned here because species are the only
+// things in the game that carry a rarity.
+export const RARITY_ENUM = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 
 // Crystal habit — the shape a crystal grows in (a free Identify observation).
 export const HABIT_ENUM = [

@@ -4,7 +4,7 @@ import { species, speciesById } from '../loaders/species.js';
 import { cutTechniques, cutTechniquesById, cutSuccessAtLevel } from '../loaders/cutTechniques.js';
 import { localities, localitiesById, getFindPoolSpecies } from '../loaders/localities.js';
 
-import { speciesSchema } from '../schemas/species.js';
+import { RARITY_ENUM, speciesSchema } from '../schemas/species.js';
 import { localitySchema, findPoolEntrySchema, gateGroupSchema } from '../schemas/localities.js';
 
 // Walk a gate tree collecting leaf conditions.
@@ -164,5 +164,17 @@ describe('locality depth fields', () => {
     const garnet = creek.findPool.find((e) => e.species === 'almandine_garnet');
     expect(garnet.depthBias).toBe(1);
     expect(garnet.minDepth).toBe(1);
+  });
+});
+
+describe('rarity tiers', () => {
+  it('are owned by the species schema, in ascending order', () => {
+    expect(RARITY_ENUM).toEqual(['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary']);
+  });
+
+  it('cover every species in the roster', () => {
+    for (const s of species) {
+      expect(RARITY_ENUM, `${s.id} rarity`).toContain(s.rarity);
+    }
   });
 });
