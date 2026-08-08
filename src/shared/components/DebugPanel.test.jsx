@@ -12,8 +12,19 @@ function open() {
 describe('DebugPanel', () => {
   beforeEach(() => localStorage.clear());
 
-  it('stays hidden until the shortcut is pressed', () => {
+  it('stays hidden until the shortcut is pressed, then appears', () => {
+    // Both halves matter in one test: asserting only the hidden state would
+    // pass even if the reveal were deleted outright.
     render(<RockhoundProvider><DebugPanel /></RockhoundProvider>);
+    expect(screen.queryByRole('button', { name: /debug mode/i })).toBeNull();
+    fireEvent.keyDown(window, { key: 'D', ctrlKey: true, shiftKey: true });
+    screen.getByRole('button', { name: /debug mode/i });
+  });
+
+  it('hides again when the shortcut is pressed a second time', () => {
+    render(<RockhoundProvider><DebugPanel /></RockhoundProvider>);
+    fireEvent.keyDown(window, { key: 'D', ctrlKey: true, shiftKey: true });
+    fireEvent.keyDown(window, { key: 'D', ctrlKey: true, shiftKey: true });
     expect(screen.queryByRole('button', { name: /debug mode/i })).toBeNull();
   });
 

@@ -7,7 +7,7 @@ import { completedLocalityIds, completedFamilies, earnedGear } from './logic/pro
 import { cutTechniquesById } from '../../loaders/cutTechniques.js';
 import { applyCut, canApplyToSpecimen, specimenScore } from './logic/cut.js';
 import { identifiedValue, stoneValue, gearPrice } from './logic/market.js';
-import { xpThreshold, levelForXp, MAX_METHOD_LEVEL } from './logic/dive.js';
+import { xpThreshold, MAX_METHOD_LEVEL } from './logic/dive.js';
 
 export const ADD_ROUGH = 'ADD_ROUGH';
 export const RECORD_TEST_SCORE = 'RECORD_TEST_SCORE';
