@@ -1,0 +1,46 @@
+import { METHOD_ENUM } from '../../../schemas/localities.js';
+import { methodProgress } from './diveView.js';
+import { reachDepth, xpThreshold, MAX_METHOD_LEVEL } from './dive.js';
+
+// Presentation shape for the status footer. Every number is produced by
+// dive.js / diveView.js — this module chooses what to show, never how to
+// compute it.
+
+/** How far through the current level's xp span this player is, 0-100. */
+function progressPct(level, xp) {
+  const floor = xpThreshold(level);
+  const ceil = xpThreshold(level + 1);
+  if (ceil <= floor) return 100;
+  return Math.round(((xp - floor) / (ceil - floor)) * 100);
+}
+
+/**
+ * The next level that actually increases reach, or null at the cap. Reach
+ * steps every other level, so the level immediately above the current one
+ * frequently buys no depth at all; naming it would promise nothing.
+ */
+function nextDepthLevel(level) {
+  for (let l = level + 1; l <= MAX_METHOD_LEVEL; l++) {
+    if (reachDepth(l) > reachDepth(level)) return l;
+  }
+  return null;
+}
+
+export function methodTracks(exploreMethodXp = {}) {
+  return METHOD_ENUM.map((method) => {
+    const xp = exploreMethodXp[method] ?? 0;
+    const p = methodProgress(xp);
+    return {
+      method,
+      level: p.level,
+      xp,
+      toNext: p.toNext,
+      atCap: p.atCap,
+      // Progress across the CURRENT level's span, not from zero: at level 4
+      // (400xp) heading for level 5 (600xp), 500xp must read 50%, not 83%.
+      pct: p.atCap ? 100 : progressPct(p.level, xp),
+      reach: reachDepth(p.level),
+      nextDepthAt: nextDepthLevel(p.level)
+    };
+  });
+}

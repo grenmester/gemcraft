@@ -104,7 +104,7 @@ describe('Rockhound shell', () => {
 
   it('shows a cash readout in the shell', () => {
     renderRockhound();
-    screen.getByText(/💰/);
+    screen.getByLabelText(/cash/i);
   });
 });
 

@@ -13,6 +13,7 @@ import GemdexV5 from './GemdexV5.jsx';
 import LocalityMap from './LocalityMap.jsx';
 import TrophyCase from './TrophyCase.jsx';
 import CareerPanel from './CareerPanel.jsx';
+import StatusFooter from './StatusFooter.jsx';
 
 const TABS = ['Explore', 'Identify', 'Cut', 'Market', 'Gemdex'];
 const GEMDEX_SUBTABS = ['Species', 'Trophies', 'Career'];
@@ -42,7 +43,6 @@ function RockhoundInner() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end text-lg font-bold text-yellow-400">💰 {state.cash}</div>
       <nav className="flex gap-2 border-b border-slate-700 pb-2">
         {TABS.map((t) => (
           <button
@@ -169,6 +169,16 @@ function RockhoundInner() {
           )}
         </div>
       )}
+
+      <StatusFooter
+        cash={state.cash}
+        roughCount={state.rough.length}
+        identifiedCount={state.identified.length}
+        stoneCount={state.stones.length}
+        gemdexFound={state.gemdex.length}
+        gemdexTotal={species.length}
+        exploreMethodXp={state.exploreMethodXp}
+      />
     </div>
   );
 }
