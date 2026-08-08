@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { stonePrice, roughPrice, bestCutEstimate } from './marketView.js';
 import { stoneValue, identifiedValue } from './market.js';
+import { speciesById } from '../../../loaders/species.js';
+import { cutTechniques } from '../../../loaders/cutTechniques.js';
 
 const RUBY = { id: 'ruby', name: 'Ruby', baseValue: 900, suitableCuts: ['cabochon'], phenomena: [{ type: 'asterism', revealedBy: 'cabochon' }] };
 const AGATE = { id: 'agate', name: 'Agate', baseValue: 15, suitableCuts: [], phenomena: [] };
@@ -74,5 +76,35 @@ describe('bestCutEstimate', () => {
   it('ignores techniques the species cannot take', () => {
     const other = { id: 'fancy', cutQualityRange: [70, 110], yieldRange: [0.5, 0.8] };
     expect(bestCutEstimate(ROUGH, RUBY, [other])).toBeNull();
+  });
+});
+
+describe('bestCutEstimate respects crystal habit', () => {
+  const ruby = speciesById.ruby;
+  const base = { instanceId: 'r1', trueSpeciesId: 'ruby', caratWeight: 4, clarity: 90, colorGrade: 95 };
+
+  it('quotes nothing for a stone that can never be cut', () => {
+    // A matrix specimen is sold as a mineral specimen; the Cut screen refuses
+    // every technique. Advertising a cut value would promise a price the rest
+    // of the game will not honour.
+    expect(bestCutEstimate({ ...base, form: 'matrix' }, ruby, cutTechniques)).toBe(null);
+  });
+
+  it('quotes only the cuts the habit can actually take', () => {
+    // Emerald takes step and round_brilliant, but no cabochon. A nodule takes
+    // ONLY a cabochon. So a nodule emerald can take no cut at all and must
+    // quote nothing, while the same stone as a fragment quotes a real price.
+    // Ruby is the wrong stone for this assertion: its cabochon reveals
+    // asterism, making the cabochon its best cut anyway, so restricting to it
+    // changes no number and the test would pass without the filter working.
+    const emerald = speciesById.emerald;
+    const asNodule = bestCutEstimate({ ...base, trueSpeciesId: 'emerald', form: 'nodule' }, emerald, cutTechniques);
+    const asFragment = bestCutEstimate({ ...base, trueSpeciesId: 'emerald', form: 'fragment' }, emerald, cutTechniques);
+    expect(asNodule).toBe(null);
+    expect(asFragment).toBeGreaterThan(0);
+  });
+
+  it('is unchanged for rough that predates crystal habit', () => {
+    expect(bestCutEstimate(base, ruby, cutTechniques)).toBeGreaterThan(0);
   });
 });

@@ -1,5 +1,5 @@
 import { stoneValue, identifiedValue, gradeFactor, roughGradeFactor, uncutDiscountFor } from './market.js';
-import { scoreBreakdown, specimenScore, canApply } from './cut.js';
+import { scoreBreakdown, specimenScore, canApplyToSpecimen } from './cut.js';
 
 const mid = ([lo, hi]) => (lo + hi) / 2;
 
@@ -35,9 +35,13 @@ export function roughPrice(specimen, species) {
 /**
  * Indicative value if this rough were cut with its best-suited technique at a
  * middling roll. An estimate to inform the sell-or-cut choice, not a promise.
+ *
+ * Gated on the specimen, not just the species: a crystal on matrix can never
+ * be cut, and a nodule takes only a cabochon. Quoting a species-level cut
+ * value here would advertise a price the Cut screen refuses to deliver.
  */
 export function bestCutEstimate(specimen, species, techniques) {
-  const suitable = techniques.filter((t) => canApply(species, t));
+  const suitable = techniques.filter((t) => canApplyToSpecimen(specimen, species, t));
   if (suitable.length === 0) return null;
   return suitable.reduce((best, t) => {
     const cut = {
