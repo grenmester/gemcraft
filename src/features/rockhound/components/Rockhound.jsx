@@ -1,6 +1,6 @@
 // src/features/rockhound/components/Rockhound.jsx
 import { useState, useEffect } from 'react';
-import { RockhoundProvider, useRockhound, COLLECT_HAUL, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR } from '../RockhoundContext.jsx';
+import { useRockhound, COLLECT_HAUL, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR } from '../RockhoundContext.jsx';
 import { localities, localitiesById } from '../../../loaders/localities.js';
 import { speciesById, species } from '../../../loaders/species.js';
 import { cutTechniques, cutTechniquesById } from '../../../loaders/cutTechniques.js';
@@ -174,9 +174,5 @@ function RockhoundInner() {
 }
 
 export default function Rockhound() {
-  return (
-    <RockhoundProvider>
-      <RockhoundInner />
-    </RockhoundProvider>
-  );
+  return <RockhoundInner />;
 }
