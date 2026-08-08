@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import LocalityMap from './LocalityMap.jsx';
 import { localities } from '../../../loaders/localities.js';
 import { speciesById } from '../../../loaders/species.js';
+import { xpThreshold } from '../logic/dive.js';
 
 function renderMap(overrides = {}) {
   const props = {
@@ -97,10 +98,21 @@ describe('LocalityMap', () => {
 
 describe('locality card information design', () => {
   it('shows the collection method and its level, since that decides the xp track', () => {
-    renderMap({ gemdex: [], exploreMethodXp: { panning: 0, hardrock: 0, geode: 0, surface: 0 } });
-    // Hidden Creek is panning-worked. Level 0 explains why it offers no descent.
-    const card = screen.getByRole('button', { name: /^Hidden Creek,/ }).closest('li');
-    expect(card.textContent).toMatch(/panning/i);
+    renderMap({
+      gemdex: [],
+      exploreMethodXp: { panning: xpThreshold(3), hardrock: 0, geode: 0, surface: 0 }
+    });
+    // Asserting only the method would prove nothing — the method was already
+    // on the card before this change. The LEVEL is the new information, and
+    // it is what explains why one site offers a descent and another does not.
+    const creek = screen.getByRole('button', { name: /^Hidden Creek,/ }).closest('li');
+    expect(creek.textContent).toMatch(/panning/i);
+    expect(creek.textContent).toMatch(/level 3/i);
+
+    // A different method reads its own track, not panning's.
+    const vug = screen.getByRole('button', { name: /^Amethyst Vug,/ }).closest('li');
+    expect(vug.textContent).toMatch(/geode/i);
+    expect(vug.textContent).toMatch(/level 0/i);
   });
 
   it('does not clutter the card with the deposit type', () => {
