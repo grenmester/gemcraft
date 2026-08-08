@@ -1,20 +1,133 @@
-import { rollRough } from '../logic/rollRough.js';
+import { useState } from 'react';
+import GemGlyph from './GemGlyph.jsx';
+import { rollHaul } from '../logic/rollRough.js';
+import { breakConsequence, xpForRun, levelForXp } from '../logic/dive.js';
+import { siteView, descentView, methodProgress } from '../logic/diveView.js';
+import { FORM_LABELS } from '../logic/forms.js';
 
-export default function Explore({ locality, roughCount, onCollect, rng = Math.random }) {
+const WORK_VERB = {
+  panning: 'Work',
+  surface: 'Comb',
+  geode: 'Crack',
+  hardrock: 'Break'
+};
+
+function Haul({ stones }) {
+  return (
+    <ul aria-label="Your haul" className="flex flex-col gap-2">
+      {stones.map((s) => (
+        <li key={s.instanceId} className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 p-2">
+          {/* Species stays hidden: what it is, is Identify's question. */}
+          <GemGlyph speciesId={s.trueSpeciesId} variant="row" hidden />
+          <span>
+            <span className="block text-slate-100">{FORM_LABELS[s.form] ?? 'Rough'}</span>
+            <span className="block text-xs text-slate-400">{s.caratWeight} ct · depth {s.foundDepth}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export default function Explore({ locality, methodXp, setComplete, roughCount, onBank, rng = Math.random }) {
+  const [run, setRun] = useState(null);
+
+  const site = siteView(locality, methodXp, setComplete);
+  const progress = methodProgress(methodXp);
+  const level = levelForXp(methodXp);
+  const currentDepth = run ? run.depths[run.depths.length - 1] : 0;
+  const descent = run && !run.broke ? descentView(locality, currentDepth, methodXp, setComplete) : null;
+  const canDescend = site.showDescent && descent?.available;
+
+  const start = () => {
+    setRun({ haul: rollHaul(locality, 1, level, rng), depths: [1], broke: false, lost: [] });
+  };
+
+  const descend = () => {
+    if (rng() < descent.chance) {
+      const { kept, lost } = breakConsequence(run.haul, descent.targetDepth);
+      setRun({ ...run, haul: kept, lost, broke: true });
+      return;
+    }
+    setRun({
+      ...run,
+      haul: [...run.haul, ...rollHaul(locality, descent.targetDepth, level, rng)],
+      depths: [...run.depths, descent.targetDepth]
+    });
+  };
+
+  const bank = () => {
+    onBank({ specimens: run.haul, method: locality.method, xp: xpForRun(run.depths, run.broke) });
+    setRun(null);
+  };
+
+  const verb = WORK_VERB[locality.method] ?? 'Work';
+
   return (
     <section className="flex flex-col gap-4">
       <header>
         <h2 className="text-2xl font-bold text-yellow-400">{locality.name}</h2>
-        <p className="text-slate-400 capitalize">{locality.depositType} · {locality.method}</p>
+        <p className="capitalize text-slate-400">{locality.depositType} · {locality.method}</p>
+        <p className="text-xs text-slate-500">
+          {locality.method} level {progress.level}
+          {progress.atCap ? ' · mastered' : ` · ${progress.toNext} xp to next`}
+          {' · '}reaches depth {site.reach} of {site.bedrock}
+        </p>
       </header>
 
-      <button
-        type="button"
-        onClick={() => onCollect(rollRough(locality, 1, rng))}
-        className="self-start rounded-lg bg-blue-600 hover:bg-blue-500 px-6 py-3 font-bold text-white"
-      >
-        Pan the {locality.hostRock}
-      </button>
+      {!run && (
+        <button
+          type="button"
+          onClick={start}
+          className="self-start rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-500"
+        >
+          {verb} the {locality.hostRock}
+        </button>
+      )}
+
+      {run && (
+        <>
+          <p className="text-sm text-slate-300">
+            Depth {currentDepth} · carrying {run.haul.length} {run.haul.length === 1 ? 'stone' : 'stones'}
+          </p>
+
+          <Haul stones={run.haul} />
+
+          {run.broke && (
+            <p role="alert" className="rounded border border-red-700 bg-red-950 p-3 text-sm text-red-200">
+              The ground gave way. {run.lost.length > 0
+                ? `You lost ${run.lost.length} ${run.lost.length === 1 ? 'stone' : 'stones'} from the deepest stage, and the rest is scuffed.`
+                : 'Everything you were carrying is scuffed.'}
+            </p>
+          )}
+
+          {canDescend && descent.severity === 'real' && (
+            <p role="status" className="rounded border border-amber-700 bg-amber-950 p-3 text-sm text-amber-200">
+              Below this point a collapse does not just scuff the haul — you lose the stones
+              from the deepest stage you worked.
+            </p>
+          )}
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={bank}
+              className="rounded-lg bg-green-600 px-5 py-2 font-bold text-white hover:bg-green-500"
+            >
+              Bank this haul
+            </button>
+            {canDescend && (
+              <button
+                type="button"
+                onClick={descend}
+                className="rounded-lg bg-blue-600 px-5 py-2 font-bold text-white hover:bg-blue-500"
+              >
+                Go deeper — {descent.chanceText} risk
+              </button>
+            )}
+          </div>
+        </>
+      )}
 
       <p className="text-slate-300">Unidentified rough on your bench: <strong>{roughCount}</strong></p>
     </section>
