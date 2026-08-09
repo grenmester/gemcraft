@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RockhoundProvider } from '../../features/rockhound/RockhoundContext.jsx';
 import DebugPanel from './DebugPanel.jsx';
+import { effectiveReach } from '../../features/rockhound/logic/dive.js';
+import { deepestBedrockByMethod } from '../../features/rockhound/logic/localityView.js';
 
 function open() {
   render(<RockhoundProvider><DebugPanel /></RockhoundProvider>);
@@ -35,13 +37,25 @@ describe('DebugPanel', () => {
     }
   });
 
-  it('reports the depth a level actually reaches, not just the level', () => {
+  it('reports the depth a level actually reaches at that method\'s deepest site', () => {
     open();
     const slider = screen.getByRole('slider', { name: /panning level/i });
     fireEvent.change(slider, { target: { value: '6' } });
-    // The number that matters when testing the dive is the depth, so the
-    // panel must state it rather than making the tester derive it.
-    expect(screen.getByTestId('panning-readout').textContent).toMatch(/depth 4/i);
+    // Level 6 gives a raw reach of 4, but every panning site bottoms out at 3,
+    // so quoting 4 would promise a depth that exists nowhere. The readout must
+    // match what the status footer says for the same track.
+    const expected = effectiveReach(6, deepestBedrockByMethod.panning, false);
+    expect(expected).toBe(3);
+    expect(screen.getByTestId('panning-readout').textContent).toMatch(
+      new RegExp(`depth ${expected}`, 'i')
+    );
+  });
+
+  it('quotes a deeper method deeper, so the cap is per-method and not global', () => {
+    open();
+    fireEvent.change(screen.getByRole('slider', { name: /hardrock level/i }), { target: { value: '10' } });
+    // Hardrock reaches the kimberlite pipe at bedrock 5.
+    expect(screen.getByTestId('hardrock-readout').textContent).toMatch(/depth 5/i);
   });
 
   it('clears both save keys, not just the legacy one', () => {

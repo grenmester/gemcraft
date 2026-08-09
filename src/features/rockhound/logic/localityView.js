@@ -1,4 +1,6 @@
 import { RARITY_ENUM } from '../../../schemas/species.js';
+import { METHOD_ENUM } from '../../../schemas/localities.js';
+import { localities } from '../../../loaders/localities.js';
 import { localitySetComplete, describeGate, describeGateSubject } from './progression.js';
 import { effectivePool } from './rollRough.js';
 
@@ -108,3 +110,17 @@ export function titleizeWords(value) {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
+
+/**
+ * The deepest bedrock any locality using each method actually offers. Reach
+ * from experience is locality-agnostic (dive.js), but no site lets a player
+ * descend past its own maxDepth — so any surface quoting "this method reaches
+ * depth N" must clamp to this or it promises a depth that exists nowhere.
+ * Derived from the loader so it tracks localities.yaml.
+ */
+export const deepestBedrockByMethod = Object.fromEntries(
+  METHOD_ENUM.map((method) => [
+    method,
+    Math.max(...localities.filter((l) => l.method === method).map((l) => l.maxDepth))
+  ])
+);

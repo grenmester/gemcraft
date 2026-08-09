@@ -1,24 +1,12 @@
 import { METHOD_ENUM } from '../../../schemas/localities.js';
-import { localities } from '../../../loaders/localities.js';
 import { methodProgress } from './diveView.js';
+import { deepestBedrockByMethod } from './localityView.js';
 import { reachDepth, xpThreshold, effectiveReach, MAX_METHOD_LEVEL } from './dive.js';
 
 // Presentation shape for the status footer. Every number is produced by
 // dive.js / diveView.js — this module chooses what to show, never how to
 // compute it.
 
-/**
- * The deepest bedrock any locality using this method actually offers. Reach
- * is locality-agnostic (dive.js), but no site lets a player descend past its
- * own maxDepth, so the footer must not promise a depth the method can never
- * reach anywhere. Derived from the loader so it tracks localities.yaml.
- */
-const deepestBedrockByMethod = Object.fromEntries(
-  METHOD_ENUM.map((method) => [
-    method,
-    Math.max(...localities.filter((l) => l.method === method).map((l) => l.maxDepth))
-  ])
-);
 
 /** How far through the current level's xp span this player is, 0-100. */
 function progressPct(level, xp) {

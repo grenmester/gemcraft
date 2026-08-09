@@ -2,11 +2,9 @@ import { useState, useEffect } from 'react';
 import { useRockhound, STORAGE_KEY, DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET } from '../../features/rockhound/RockhoundContext.jsx';
 import { METHOD_ENUM } from '../../schemas/localities.js';
 import { levelForXp, MAX_METHOD_LEVEL, effectiveReach } from '../../features/rockhound/logic/dive.js';
-import { localities } from '../../loaders/localities.js';
+import { deepestBedrockByMethod } from '../../features/rockhound/logic/localityView.js';
 
 const LEGACY_STORAGE_KEY = 'gemstone_game_save';
-/** The deepest bedrock in the data — what a level's reach is quoted against. */
-const DEEPEST_BEDROCK = Math.max(...localities.map((l) => l.maxDepth));
 
 const BTN = 'rounded border border-teal-400 bg-slate-700 px-3 py-1.5 text-xs text-white transition-all hover:bg-teal-400 hover:text-slate-900';
 const DANGER = 'rounded border border-red-400 bg-slate-700 px-3 py-1.5 text-xs text-red-400 transition-all hover:bg-red-400 hover:text-white';
@@ -29,7 +27,7 @@ function MethodControl({ method, xp, onSet }) {
         className="flex-1"
       />
       <span data-testid={`${method}-readout`} className="w-28 shrink-0 text-right font-mono text-xs text-slate-400">
-        Lv {level} · depth {effectiveReach(level, DEEPEST_BEDROCK, false)}
+        Lv {level} · depth {effectiveReach(level, deepestBedrockByMethod[method], false)}
       </span>
     </div>
   );
