@@ -34,8 +34,22 @@ describe('idleDepth', () => {
 
   it('goes deeper once damping gear reduces the risk', () => {
     // damping is threaded but always 0 today; this proves the sieve will
-    // follow the risk-free line down when slice 1b lands.
-    expect(idleDepth(0, DEEP, 0.25)).toBe(2);
+    // follow the risk-free line down when slice 1b lands. Asserted against
+    // the undamped baseline as well as an exact value, so it cannot pass by
+    // coincidence if the baseline itself changes.
+    expect(idleDepth(0, DEEP, 0)).toBe(1);
+    expect(idleDepth(0, DEEP, 0.15)).toBe(2);
+    expect(idleDepth(0, DEEP, 0.25)).toBe(3);
+    expect(idleDepth(0, DEEP, 0.25)).toBeGreaterThan(idleDepth(0, DEEP, 0));
+  });
+
+  it('still refuses any stage whose risk exceeds tolerance, damped or not', () => {
+    // The guarantee is about RISK, not about a fixed depth: whatever damping
+    // does, the chosen stage must always sit inside the tolerance.
+    for (const damping of [0, 0.05, 0.15, 0.25]) {
+      const d = idleDepth(0, DEEP, damping);
+      expect(breakChance(d, 0, damping), `damping ${damping}`).toBeLessThanOrEqual(IDLE_RISK_TOLERANCE);
+    }
   });
 });
 
