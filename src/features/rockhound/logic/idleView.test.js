@@ -39,6 +39,13 @@ describe('sieveView', () => {
     expect(sieveView(null, localitiesById, [], zeroXp, [], 0)).toBe(null);
   });
 
+  it('is nothing when the parked locality no longer exists', () => {
+    // A save can name a locality that has since been removed from the data.
+    // Returning a view for it would crash the banner on locality.name.
+    const stale = { localityId: 'sunken_reef', since: 0 };
+    expect(sieveView(stale, localitiesById, ['quartz'], zeroXp, [], 8 * MS_PER_HOUR)).toBe(null);
+  });
+
   it('names where the box is working and what it holds', () => {
     const v = sieveView({ localityId: 'hidden_creek', since: 0 }, localitiesById,
       ['quartz'], zeroXp, [], 3 * MS_PER_HOUR);
