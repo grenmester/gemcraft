@@ -33,6 +33,17 @@ export function effectivePool(findPool, depth) {
     .map((e) => ({ ...e, effectiveWeight: e.weight * Math.pow(e.depthBias ?? 1, depth - 1) }));
 }
 
+/**
+ * The pool a given collector may actually draw from: the depth pool, then
+ * narrowed to an allowed set of species. The idle sieve uses this both to
+ * report what it can catch at a locality and to do the catching, so the
+ * number shown and the number rolled cannot drift apart.
+ */
+export function catchablePool(findPool, depth, allowedSpecies = null) {
+  const pool = effectivePool(findPool, depth);
+  return allowedSpecies ? pool.filter((e) => allowedSpecies.has(e.species)) : pool;
+}
+
 /** Best of `depth` draws — deeper ground gives up better material. */
 export function bestOf(depth, rng) {
   let best = rng();
@@ -40,8 +51,9 @@ export function bestOf(depth, rng) {
   return best;
 }
 
-export function rollRough(locality, depth, rng = Math.random, idFactory = defaultId) {
-  const pool = effectivePool(locality.findPool, depth);
+export function rollRough(locality, depth, rng = Math.random, idFactory = defaultId, allowedSpecies = null) {
+  const pool = catchablePool(locality.findPool, depth, allowedSpecies);
+  if (pool.length === 0) return null;
   const total = pool.reduce((sum, e) => sum + e.effectiveWeight, 0);
   let roll = rng() * total;
   let entry = pool[pool.length - 1];

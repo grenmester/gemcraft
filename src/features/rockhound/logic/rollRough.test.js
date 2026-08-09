@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { numericProperty, fluorescenceKey } from './properties.js';
-import { createRough, rollRough, effectivePool, rollHaul, bestOf } from './rollRough.js';
+import { createRough, rollRough, effectivePool, rollHaul, bestOf, catchablePool } from './rollRough.js';
 import { haulSize } from './dive.js';
 import { speciesById } from '../../../loaders/species.js';
 import { localitiesById, localities } from '../../../loaders/localities.js';
@@ -137,5 +137,44 @@ describe('depth-aware extraction', () => {
   it('gives each stone in a haul its own id', () => {
     const haul = rollHaul(creek, 3, 6, Math.random);
     expect(new Set(haul.map((s) => s.instanceId)).size).toBe(haul.length);
+  });
+});
+
+describe('species filtering', () => {
+  const creek = localities.find((l) => l.id === 'hidden_creek');
+
+  it('keeps only the allowed species in the pool', () => {
+    const pool = catchablePool(creek.findPool, 1, new Set(['quartz']));
+    expect(pool.map((e) => e.species)).toEqual(['quartz']);
+  });
+
+  it('is the whole depth pool when no filter is given', () => {
+    const filtered = catchablePool(creek.findPool, 1, null);
+    const plain = effectivePool(creek.findPool, 1);
+    expect(filtered.map((e) => e.species)).toEqual(plain.map((e) => e.species));
+  });
+
+  it('still honours minDepth inside the filter', () => {
+    // Hidden Creek's topaz is minDepth 2, so allowing it changes nothing at depth 1.
+    expect(catchablePool(creek.findPool, 1, new Set(['topaz']))).toHaveLength(0);
+    expect(catchablePool(creek.findPool, 2, new Set(['topaz']))).toHaveLength(1);
+  });
+
+  it('rolls only species the filter allows, whatever the random stream does', () => {
+    for (let i = 0; i < 50; i++) {
+      const s = rollRough(creek, 1, () => i / 50, undefined, new Set(['sapphire']));
+      expect(s.trueSpeciesId).toBe('sapphire');
+    }
+  });
+
+  it('returns nothing when the filter leaves the pool empty', () => {
+    // A sieve parked where the player has catalogued nothing catches nothing.
+    expect(rollRough(creek, 1, () => 0.5, undefined, new Set())).toBe(null);
+  });
+
+  it('is unchanged for callers that pass no filter', () => {
+    const a = rollRough(creek, 1, () => 0.5, () => 'id-1');
+    const b = rollRough(creek, 1, () => 0.5, () => 'id-1', null);
+    expect(a).toEqual(b);
   });
 });
