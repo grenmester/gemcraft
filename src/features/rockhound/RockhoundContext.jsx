@@ -7,7 +7,11 @@ import { completedLocalityIds, completedFamilies, earnedGear } from './logic/pro
 import { cutTechniquesById } from '../../loaders/cutTechniques.js';
 import { applyCut, canApplyToSpecimen, specimenScore } from './logic/cut.js';
 import { identifiedValue, stoneValue, gearPrice } from './logic/market.js';
-import { xpThreshold, MAX_METHOD_LEVEL } from './logic/dive.js';
+import { xpThreshold, MAX_METHOD_LEVEL, levelForXp } from './logic/dive.js';
+import { idleDepth, pendingCount, MS_PER_HOUR } from './logic/idle.js';
+import { benchFull } from './logic/bench.js';
+import { rollRough } from './logic/rollRough.js';
+import { localitiesById } from '../../loaders/localities.js';
 
 export const ADD_ROUGH = 'ADD_ROUGH';
 export const RECORD_TEST_SCORE = 'RECORD_TEST_SCORE';
@@ -23,11 +27,15 @@ export const COLLECT_HAUL = 'COLLECT_HAUL';
 export const DEBUG_SET_METHOD_LEVEL = 'DEBUG_SET_METHOD_LEVEL';
 export const DEBUG_ADD_CASH = 'DEBUG_ADD_CASH';
 export const DEBUG_RESET = 'DEBUG_RESET';
+export const PARK_SIEVE = 'PARK_SIEVE';
+export const COLLECT_SIEVE = 'COLLECT_SIEVE';
+export const DEBUG_REWIND_SIEVE = 'DEBUG_REWIND_SIEVE';
 
 export const STORAGE_KEY = 'rockhound_save_v1';
 
 export const initialRockhoundState = {
   rough: [],
+  sieve: null, // { localityId, since } — where the rocker box is working
   exploreMethodXp: { panning: 0, hardrock: 0, geode: 0, surface: 0 },
   identified: [],
   gemdex: [],
@@ -52,6 +60,25 @@ function withEarnedGear(gemdex, reputation, currentGear) {
   };
   const merged = [...new Set([...currentGear, ...earnedGear(ctx)])];
   return merged.length === currentGear.length ? currentGear : merged;
+}
+
+/**
+ * What the parked box has caught since it was last emptied. Only species the
+ * player has already catalogued: automation supplies material, never
+ * discovery. Everything comes back unidentified, exactly like an active find.
+ */
+function collectSieve(state, now, rng) {
+  const locality = localitiesById[state.sieve.localityId];
+  if (!locality) return [];
+  const level = levelForXp(state.exploreMethodXp[locality.method] ?? 0);
+  const depth = idleDepth(level, locality.maxDepth);
+  const known = new Set(state.gemdex);
+  const specimens = [];
+  for (let i = 0; i < pendingCount(level, state.sieve.since, now); i++) {
+    const s = rollRough(locality, depth, rng, undefined, known);
+    if (s) specimens.push(s);
+  }
+  return specimens;
 }
 
 export function rockhoundReducer(state, action) {
@@ -207,6 +234,45 @@ export function rockhoundReducer(state, action) {
 
     case DEBUG_RESET:
       return initialRockhoundState;
+
+    case PARK_SIEVE: {
+      const { localityId, now, rng } = action.payload;
+      if (!state.gear.includes('rocker_box')) return state;
+      if (!localitiesById[localityId]) return state;
+
+      // Moving collects first, so a move never destroys a haul. Refuse the
+      // move on a full bench when there IS something pending — otherwise
+      // park-cycling would collect past the cap.
+      // No `?? Math.random` fallback: naming Math.random here would break the
+      // reducer's purity. A caller that can have pending yield must supply rng.
+      const pending = state.sieve ? collectSieve(state, now, rng) : [];
+      if (pending.length > 0 && benchFull(state.rough)) return state;
+
+      return {
+        ...state,
+        rough: [...state.rough, ...pending],
+        sieve: { localityId, since: now }
+      };
+    }
+
+    case COLLECT_SIEVE: {
+      const { now, rng } = action.payload;
+      if (!state.sieve) return state;
+      if (benchFull(state.rough)) return state; // accrued time is kept
+
+      const caught = collectSieve(state, now, rng);
+      return {
+        ...state,
+        rough: [...state.rough, ...caught],
+        sieve: { ...state.sieve, since: now }
+      };
+    }
+
+    case DEBUG_REWIND_SIEVE: {
+      const { hours, now } = action.payload;
+      if (!state.sieve) return state;
+      return { ...state, sieve: { ...state.sieve, since: now - hours * MS_PER_HOUR } };
+    }
 
     default:
       return state;

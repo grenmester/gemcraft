@@ -5,7 +5,8 @@ import {
   ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW,
   UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT,
   SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, COLLECT_HAUL,
-  DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET
+  DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET,
+  PARK_SIEVE, COLLECT_SIEVE, DEBUG_REWIND_SIEVE
 } from './RockhoundContext.jsx';
 import { createRough } from './logic/rollRough.js';
 import { species, speciesById } from '../../loaders/species.js';
@@ -14,6 +15,7 @@ import { METHOD_ENUM } from '../../schemas/localities.js';
 import { cutTechniquesById } from '../../loaders/cutTechniques.js';
 import { stoneValue, identifiedValue, gearPrice } from './logic/market.js';
 import { levelForXp, MAX_METHOD_LEVEL } from './logic/dive.js';
+import { BENCH_CAP } from './logic/bench.js';
 
 const sapphireRough = createRough(
   { trueSpeciesId: 'sapphire', caratWeight: 1, clarity: 80, colorGrade: 80, origin: 'hidden_creek' },
@@ -299,5 +301,115 @@ describe('debug actions', () => {
   it('resets to a genuinely fresh state', () => {
     const dirty = { ...initialRockhoundState, cash: 999, gemdex: ['ruby'], reputation: 50 };
     expect(rockhoundReducer(dirty, { type: DEBUG_RESET })).toEqual(initialRockhoundState);
+  });
+});
+
+describe('the idle sieve', () => {
+  const HOUR = 3600000;
+  const withBox = (over = {}) => ({
+    ...initialRockhoundState,
+    gear: ['rocker_box'],
+    gemdex: ['quartz'],
+    exploreMethodXp: { ...initialRockhoundState.exploreMethodXp, panning: 0 },
+    ...over
+  });
+
+  it('parks the box at a locality and starts its clock', () => {
+    const next = rockhoundReducer(withBox(), {
+      type: PARK_SIEVE, payload: { localityId: 'hidden_creek', now: 1000 }
+    });
+    expect(next.sieve).toEqual({ localityId: 'hidden_creek', since: 1000 });
+  });
+
+  it('refuses to park a box the player does not own', () => {
+    const next = rockhoundReducer({ ...withBox(), gear: [] }, {
+      type: PARK_SIEVE, payload: { localityId: 'hidden_creek', now: 1000 }
+    });
+    expect(next.sieve).toBe(null);
+  });
+
+  it('catches only species already in the gemdex', () => {
+    // THE central rule: automation must never advance discovery. Hidden Creek
+    // pools quartz, garnet and sapphire at depth 1; only quartz is known.
+    const state = withBox({ sieve: { localityId: 'hidden_creek', since: 0 } });
+    const next = rockhoundReducer(state, {
+      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random }
+    });
+    expect(next.rough.length).toBeGreaterThan(0);
+    expect(next.rough.every((r) => r.trueSpeciesId === 'quartz')).toBe(true);
+  });
+
+  it('returns everything unidentified, granting no reputation and no gemdex entry', () => {
+    const state = withBox({ sieve: { localityId: 'hidden_creek', since: 0 } });
+    const next = rockhoundReducer(state, {
+      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random }
+    });
+    expect(next.rough.every((r) => r.stage === 'rough')).toBe(true);
+    expect(next.rough.every((r) => r.identifiedAs === null)).toBe(true);
+    expect(next.reputation).toBe(state.reputation);
+    expect(next.gemdex).toEqual(state.gemdex);
+    expect(next.identified).toEqual([]);
+  });
+
+  it('restarts the clock when collected', () => {
+    const state = withBox({ sieve: { localityId: 'hidden_creek', since: 0 } });
+    const next = rockhoundReducer(state, {
+      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random }
+    });
+    expect(next.sieve.since).toBe(8 * HOUR);
+  });
+
+  it('catches nothing where the player has catalogued nothing', () => {
+    const state = withBox({ gemdex: [], sieve: { localityId: 'hidden_creek', since: 0 } });
+    const next = rockhoundReducer(state, {
+      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random }
+    });
+    expect(next.rough).toEqual([]);
+  });
+
+  it('refuses to collect onto a full bench, and keeps the accrued time', () => {
+    const full = Array.from({ length: BENCH_CAP }, (_, i) => ({ instanceId: `r${i}`, stage: 'rough' }));
+    const state = withBox({ rough: full, sieve: { localityId: 'hidden_creek', since: 0 } });
+    const next = rockhoundReducer(state, {
+      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random }
+    });
+    expect(next.rough).toHaveLength(BENCH_CAP);
+    expect(next.sieve.since).toBe(0); // nothing lost — collect once there is room
+  });
+
+  it('collects what is pending before moving the box', () => {
+    const state = withBox({ sieve: { localityId: 'hidden_creek', since: 0 } });
+    const next = rockhoundReducer(state, {
+      type: PARK_SIEVE, payload: { localityId: 'gravel_bar', now: 8 * HOUR, rng: Math.random }
+    });
+    expect(next.rough.length).toBeGreaterThan(0);
+    expect(next.sieve).toEqual({ localityId: 'gravel_bar', since: 8 * HOUR });
+  });
+
+  it('refuses to move the box on a full bench, so park-cycling cannot beat the cap', () => {
+    const full = Array.from({ length: BENCH_CAP }, (_, i) => ({ instanceId: `r${i}`, stage: 'rough' }));
+    const state = withBox({ rough: full, sieve: { localityId: 'hidden_creek', since: 0 } });
+    const next = rockhoundReducer(state, {
+      type: PARK_SIEVE, payload: { localityId: 'gravel_bar', now: 8 * HOUR, rng: Math.random }
+    });
+    expect(next.sieve.localityId).toBe('hidden_creek');
+    expect(next.rough).toHaveLength(BENCH_CAP);
+  });
+
+  it('allows a first park on a full bench, since nothing is pending', () => {
+    const full = Array.from({ length: BENCH_CAP }, (_, i) => ({ instanceId: `r${i}`, stage: 'rough' }));
+    const next = rockhoundReducer(withBox({ rough: full }), {
+      type: PARK_SIEVE, payload: { localityId: 'hidden_creek', now: 1000 }
+    });
+    expect(next.sieve).toEqual({ localityId: 'hidden_creek', since: 1000 });
+  });
+
+  it('rewinds the clock for testing without touching anything else', () => {
+    const state = withBox({ sieve: { localityId: 'hidden_creek', since: 5 * HOUR } });
+    const next = rockhoundReducer(state, {
+      type: DEBUG_REWIND_SIEVE, payload: { hours: 8, now: 10 * HOUR }
+    });
+    expect(next.sieve.since).toBe(10 * HOUR - 8 * HOUR);
+    expect(next.rough).toEqual(state.rough);
   });
 });

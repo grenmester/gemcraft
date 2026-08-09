@@ -25,7 +25,8 @@ export function identifiedValue(specimen, species) {
 
 export const SHOP_GEAR = [
   { id: 'sieve', name: 'Sieve', price: 120 },
-  { id: 'rock_hammer', name: 'Rock Hammer', price: 300 }
+  { id: 'rock_hammer', name: 'Rock Hammer', price: 300 },
+  { id: 'rocker_box', name: 'Rocker Box', price: 250 }
 ];
 
 export function gearPrice(gearId) {

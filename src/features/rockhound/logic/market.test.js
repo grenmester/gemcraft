@@ -56,6 +56,12 @@ describe('shop', () => {
     expect(gearPrice('sieve')).toBe(120);
     expect(gearPrice('rock_hammer')).toBe(300);
     expect(gearPrice('nonsense')).toBeNull();
-    expect(SHOP_GEAR.map((g) => g.id)).toEqual(['sieve', 'rock_hammer']);
+    expect(SHOP_GEAR.map((g) => g.id)).toEqual(['sieve', 'rock_hammer', 'rocker_box']);
+  });
+
+  it('sells a rocker box to leave working at a locality', () => {
+    const box = SHOP_GEAR.find((g) => g.id === 'rocker_box');
+    expect(box).toBeDefined();
+    expect(gearPrice('rocker_box')).toBe(box.price);
   });
 });
