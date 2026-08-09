@@ -2,6 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { methodTracks } from './footerView.js';
 import { xpThreshold, reachDepth, MAX_METHOD_LEVEL } from './dive.js';
 import { METHOD_ENUM } from '../../../schemas/localities.js';
+import { localities } from '../../../loaders/localities.js';
+
+/** The deepest bedrock any locality using this method actually offers. */
+function deepestBedrockFor(method) {
+  return Math.max(...localities.filter((l) => l.method === method).map((l) => l.maxDepth));
+}
 
 const zeroed = { panning: 0, hardrock: 0, geode: 0, surface: 0 };
 
@@ -50,5 +56,23 @@ describe('methodTracks', () => {
     const t = methodTracks({ ...zeroed, panning: xpThreshold(4) + 100 }).find((x) => x.method === 'panning');
     expect(t.level).toBe(4);
     expect(t.pct).toBe(50);
+  });
+
+  it('clamps a maxed-out panning track to the deepest panning bedrock, not the raw formula', () => {
+    // Raw reachDepth(MAX_METHOD_LEVEL) is 6, but no panning site (hidden_creek,
+    // gravel_bar) goes past 3 — the footer must not promise a depth panning
+    // can never actually reach at any site.
+    const expectedDepth = deepestBedrockFor('panning');
+    const t = methodTracks({ ...zeroed, panning: xpThreshold(MAX_METHOD_LEVEL) })
+      .find((x) => x.method === 'panning');
+    expect(t.reach).toBe(expectedDepth);
+    expect(t.reach).toBeLessThan(reachDepth(MAX_METHOD_LEVEL));
+  });
+
+  it('clamps a maxed-out hardrock track to the deepest hardrock bedrock (kimberlite_pipe)', () => {
+    const expectedDepth = deepestBedrockFor('hardrock');
+    const t = methodTracks({ ...zeroed, hardrock: xpThreshold(MAX_METHOD_LEVEL) })
+      .find((x) => x.method === 'hardrock');
+    expect(t.reach).toBe(expectedDepth);
   });
 });

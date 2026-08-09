@@ -1,68 +1,94 @@
 # AGENTS.md
 
-## Validation Requirements
+## What this repo is
 
-Before considering any task complete, verify:
+A single-page educational gemstone-mining game. The whole app is
+`src/features/rockhound/`, mounted by `src/App.jsx` (via `src/main.jsx`).
+There is no menu, no other feature area, and no legacy "Discover / Process /
+Craft / Inventory" phases — those were retired. `Rockhound.jsx` is the shell
+that switches between the feature's own tabs (Explore, Identify, Cut,
+Market, Gemdex, career/trophy views).
 
-1. **Build passes:** Run `pnpm build` and ensure it succeeds
-2. **Tests pass:** Run `pnpm playwright test` - all relevant tests should pass
-3. **App loads in browser:** Start dev server (`pnpm run dev`), open http://localhost:5173, verify no console errors
-4. **No schema validation errors:** Check that items.yaml validation passes (no "Invalid option" errors)
+State lives in `src/features/rockhound/RockhoundContext.jsx`, a single
+reducer (`rockhoundReducer`) with action constants exported from that file
+(`ADD_ROUGH`, `APPLY_CUT`, `SELL_STONE`, `DEBUG_*`, etc.) and persisted to
+`localStorage` under `STORAGE_KEY = 'rockhound_save_v1'`.
 
-## Common Issues & Resolutions
+## Data and schemas
 
-### Issue: Subagent reports success but files don't exist
-**Symptom:** Subagent reports "Implementation complete" but spec reviewer finds "File does not exist"
-**Resolution:** Always verify files exist before reviewing. If not found, the implementer's commit was likely false. Re-dispatch with explicit file path requirements.
+Game data is YAML under `src/data/`:
 
-### Issue: Immutability violations in GameContext reducer
-**Symptom:** State mutations causing React re-render bugs
-**Resolution:** Always use spread operators and create new objects/arrays. Never mutate `state` directly.
+- `src/data/species.yaml`
+- `src/data/localities.yaml`
+- `src/data/cutTechniques.yaml`
 
-### Issue: CSS import failures
-**Symptom:** Component imports non-existent CSS file
-**Resolution:** Ensure CSS files are created before committing JSX that imports them.
+Each is validated against a Zod schema in `src/schemas/` (`species.js`,
+`localities.js`, `cutTechniques.js`) and loaded through `src/loaders/`
+(`species.js`, `localities.js`, `cutTechniques.js`), which parse the raw
+YAML at import time and throw if it fails validation. Always read data
+through the loaders (`localities`, `getLocality`, `speciesById`, etc.), never
+by re-parsing the YAML elsewhere. `src/data/foundation.test.js` cross-checks
+the data files against each other (e.g. every species appears in at least
+one locality's find pool).
 
-### Issue: String literals vs GAME_PHASES constants
-**Symptom:** Inconsistent phase routing (some use constants, some use strings)
-**Resolution:** Always use GAME_PHASES from constants.js. String literals like 'inventory' or 'gemdex' should be added to GAME_PHASES.
+## Rules modules own formulas; view modules delegate
 
-### Issue: Build succeeds but component not found at runtime
-**Symptom:** `npm run build` passes but app crashes
-**Resolution:** Check import paths match file locations. Vite requires exact path matches.
+This is the core convention in `src/features/rockhound/logic/` and must not
+be violated:
 
-### Context for This Project
+- **Rules modules** own a formula outright and are the only place it is
+  written: `dive.js` (depth, reach, break chance, XP curve), `forms.js`
+  (crystal habit pools), `cut.js` (cut success/yield), `market.js` (pricing),
+  `progression.js` (reputation tiers, familiarity, locality-set completion).
+- **View modules** shape those numbers for display and must call into the
+  rules module rather than recompute anything: `diveView.js`, `localityView.js`,
+  `cutView.js`, `marketView.js`, `footerView.js` (plus `gemdexView.js`,
+  `candidates.js`, `rollRough.js` as supporting derivations).
 
-The game is in `.worktrees/craft/` (feature branch for Craft phase). Current structure:
-- `src/data/items.yaml` - All items (gems, minerals, ores, metals)
-- `src/data/subareas.js` - 15 location tiers with loot tables
-- `src/features/craft/components/Craft.jsx` - Crafting UI
-- `src/features/process/components/ActiveProcessing.jsx` - Process UI with ore refining
-- `src/features/inventory/components/Inventory.jsx` - Inventory with ores/metals tabs
-- `src/context/GameContext.jsx` - Main state management
+If you need a number a rules module already computes, import it — do not
+copy the arithmetic into a component or a view module, even for "just this
+one case." When fixing a view-module bug, check whether the rules module
+already exposes the right primitive (e.g. `effectiveReach` in `dive.js`)
+before adding a new one.
 
-## Design Decisions (User-Approved 2026-03-28)
+Locality bedrock (`maxDepth` in `localities.yaml`) caps how deep any method
+can ever go, regardless of player level — `reachDepth(level)` alone is not
+the truth players experience; `effectiveReach(level, maxDepth, setComplete)`
+is. Anything that reports "how deep can this method reach" must derive its
+ceiling from the loader's locality data, not hard-code a number.
 
-1. **Loot Tables:** Per-location loot objects with rarity tiers
-2. **Discover Tabs:** UI tabs (not separate screens)
-3. **Rewards Summary:** Show earned rewards with names
+## Testing
+
+- Test runner is Vitest (`vitest.config` lives inside `vite.config.js`),
+  environment `jsdom`, setup file `src/setupTests.js`.
+- **Never use `pnpm exec`.** Run the binaries directly:
+  - `./node_modules/.bin/vitest run`
+  - `./node_modules/.bin/vite build`
+- `@testing-library/react` is installed; `@testing-library/jest-dom` is
+  **NOT**. There are no `toHaveAttribute`, `toBeInTheDocument`, or other
+  jest-dom matchers available — if you see one, it's a defect. Use native
+  Vitest matchers and read the DOM directly (`el.getAttribute(...)`,
+  `el.textContent`, `el.disabled`, `screen.getByRole(...)`, etc.).
+- `getByText`/`getByRole` match accessible names built from direct child
+  text, not full `textContent`. Anchor ambiguous queries precisely (e.g.
+  `/^Hidden Creek,/` for a locality card, not a bare `/Hidden Creek/`, which
+  also matches the field-guide button).
+- There is no end-to-end/browser test suite in this repo — everything is
+  Vitest + jsdom. Do not add Playwright or similar; it was deliberately
+  removed because it drove a UI that no longer exists.
+
+## Validation before considering a task complete
+
+1. `./node_modules/.bin/vitest run` — all tests must pass.
+2. `./node_modules/.bin/vite build` — must succeed with no errors.
+3. If you touched `src/data/*.yaml` or `src/schemas/*.js`, re-run the tests
+   above — schema validation runs at module-import time and will surface
+   YAML/schema mismatches as import failures, not as a separate lint step.
 
 ## Notes
 
-- Follow conventional commits style for commit messages
-- Use `pnpm` over `npm`
-- Use `uv python` over `python`
-
-## Testing Commands
-
-```bash
-# Build the project
-pnpm build
-
-# Run Playwright tests
-pnpm playwright test
-
-# Start dev server for manual testing
-pnpm run dev
-# Then open http://localhost:5173
-```
+- Use `pnpm` over `npm` for installing dependencies, but run test/build
+  binaries directly from `node_modules/.bin` as above, not through `pnpm
+  exec` or `pnpm run` wrappers, when investigating failures.
+- Follow conventional commit style for commit messages.
+- Only commit when explicitly asked to.

@@ -1,15 +1,9 @@
 import EntryModal, { Section, Row } from './EntryModal.jsx';
-import { describeGate, describeGateSubject } from '../logic/progression.js';
 import {
-  findPoolView, rarityCeiling, localitySetProgress, localitiesGatedBy, titleizeWords
+  findPoolView, rarityCeiling, localitySetProgress, localitiesGatedBy, titleizeWords,
+  requirementText
 } from '../logic/localityView.js';
 import GemGlyph from './GemGlyph.jsx';
-
-function requirementText(gate, unlocked) {
-  if (!unlocked) return `🔒 ${describeGate(gate)}`;
-  const subject = describeGateSubject(gate);
-  return subject ? `✓ Unlocked with ${subject}` : '✓ Open from the start';
-}
 
 export default function LocalityEntry({
   locality, localities, speciesById, gemdex, unlocked, onClose

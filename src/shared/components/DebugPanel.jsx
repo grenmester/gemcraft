@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react';
 import { useRockhound, STORAGE_KEY, DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET } from '../../features/rockhound/RockhoundContext.jsx';
 import { METHOD_ENUM } from '../../schemas/localities.js';
 import { levelForXp, MAX_METHOD_LEVEL, effectiveReach } from '../../features/rockhound/logic/dive.js';
-
-export const DEBUG_KEY = 'debug_mode';
+import { localities } from '../../loaders/localities.js';
 
 const LEGACY_STORAGE_KEY = 'gemstone_game_save';
 /** The deepest bedrock in the data — what a level's reach is quoted against. */
-const DEEPEST_BEDROCK = 5;
+const DEEPEST_BEDROCK = Math.max(...localities.map((l) => l.maxDepth));
 
 const BTN = 'rounded border border-teal-400 bg-slate-700 px-3 py-1.5 text-xs text-white transition-all hover:bg-teal-400 hover:text-slate-900';
 const DANGER = 'rounded border border-red-400 bg-slate-700 px-3 py-1.5 text-xs text-red-400 transition-all hover:bg-red-400 hover:text-white';

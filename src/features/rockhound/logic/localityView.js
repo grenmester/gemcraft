@@ -1,5 +1,5 @@
 import { RARITY_ENUM } from '../../../schemas/species.js';
-import { localitySetComplete } from './progression.js';
+import { localitySetComplete, describeGate, describeGateSubject } from './progression.js';
 import { effectivePool } from './rollRough.js';
 
 // Read-only derivations for the Explore views. Locality set grouping lives here
@@ -87,6 +87,18 @@ function gateNeedsLocalitySet(gate, localityId) {
  */
 export function localitiesGatedBy(localities, localityId) {
   return localities.filter((l) => gateNeedsLocalitySet(l.unlockGate, localityId));
+}
+
+/**
+ * Access-requirement copy for a locality's unlock gate. Shared by the
+ * locality card and the field guide entry so the two never drift: a locked
+ * card and its own field guide must describe the same requirement in the
+ * same words.
+ */
+export function requirementText(gate, unlocked) {
+  if (!unlocked) return `🔒 ${describeGate(gate)}`;
+  const subject = describeGateSubject(gate);
+  return subject ? `✓ Unlocked with ${subject}` : '✓ Open from the start';
 }
 
 /** 'north_america' -> 'North America' */

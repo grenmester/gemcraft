@@ -1,13 +1,7 @@
 import { FaInfoCircle } from 'react-icons/fa';
 import { gemArt } from '../logic/gemArt.js';
 import { rarityColor } from '../logic/rarity.js';
-import { describeGate, describeGateSubject } from '../logic/progression.js';
-
-function requirementText(gate, unlocked) {
-  if (!unlocked) return `🔒 ${describeGate(gate)}`;
-  const subject = describeGateSubject(gate);
-  return subject ? `✓ Unlocked with ${subject}` : '✓ Open from the start';
-}
+import { requirementText } from '../logic/localityView.js';
 
 export default function LocalityCard({
   locality, unlocked, selected, pool, methodLevel, progress, onSelect, onOpenInfo
@@ -17,7 +11,10 @@ export default function LocalityCard({
       <button
         type="button"
         disabled={!unlocked}
-        aria-label={`${locality.name}, ${locality.method}, ${progress.found} of ${progress.total} found`}
+        aria-label={
+          `${locality.name}, ${locality.method} level ${methodLevel}, ` +
+          `${progress.found} of ${progress.total} found`
+        }
         onClick={() => onSelect(locality.id)}
         className={`w-full rounded-lg border p-3 pr-10 text-left ${
           selected ? 'border-yellow-400 bg-slate-700' : 'border-slate-600 bg-slate-800'
@@ -36,7 +33,7 @@ export default function LocalityCard({
         </span>
         <span className="mt-0.5 block text-xs text-slate-400">
           <span className="capitalize">{locality.method}</span>
-          {methodLevel != null && <span className="text-slate-500"> · level {methodLevel}</span>}
+          <span className="text-slate-500"> · level {methodLevel}</span>
         </span>
         <span className="mt-1 flex items-center gap-1">
           {pool.map((entry) => (

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
-  findPoolView, rarityCeiling, localitySetProgress, localitiesGatedBy, titleizeWords
+  findPoolView, rarityCeiling, localitySetProgress, localitiesGatedBy, titleizeWords,
+  requirementText
 } from './localityView.js';
 
 const SPECIES_BY_ID = {
@@ -115,5 +116,23 @@ describe('titleizeWords', () => {
   it('turns snake_case into title case', () => {
     expect(titleizeWords('north_america')).toBe('North America');
     expect(titleizeWords('pyrope_garnet')).toBe('Pyrope Garnet');
+  });
+});
+
+describe('requirementText', () => {
+  // The locality card and the field guide both render this string; it lives
+  // here, once, so they can never drift from each other.
+  it('names the unmet requirement, locked', () => {
+    const gate = { allOf: [{ type: 'gear', id: 'sieve' }] };
+    expect(requirementText(gate, false)).toBe('🔒 Needs the sieve');
+  });
+
+  it('names the satisfied requirement as a noun phrase, unlocked', () => {
+    const gate = { allOf: [{ type: 'gear', id: 'sieve' }] };
+    expect(requirementText(gate, true)).toBe('✓ Unlocked with the sieve');
+  });
+
+  it('reads as always-open for an empty gate, unlocked', () => {
+    expect(requirementText({}, true)).toBe('✓ Open from the start');
   });
 });
