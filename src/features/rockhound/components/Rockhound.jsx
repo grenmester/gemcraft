@@ -41,6 +41,14 @@ function RockhoundInner() {
   // every mount without a ticker. The reducer never reads the clock itself.
   const now = Date.now();
   const sieve = sieveView(state.sieve, localitiesById, state.gemdex, state.exploreMethodXp, state.rough, now);
+  const benchIsFull = benchFull(state.rough);
+  // Mirrors PARK_SIEVE's own refusal exactly: moving collects the parked
+  // box's pending haul first, and that move is refused only when doing so
+  // would land past the cap. A first park (no box parked yet, sieve === null)
+  // is never refused; nor is parking with a full bench when nothing is
+  // pending. `sieve.pending` comes straight from sieveView — never recompute
+  // it here.
+  const parkBlocked = Boolean(sieve) && sieve.pending > 0 && benchIsFull;
 
   useEffect(() => {
     // Badges clear only once the Species grid is actually looked at — not when
@@ -79,7 +87,8 @@ function RockhoundInner() {
               : null}
             sieveHere={state.sieve?.localityId === selectedLocality.id}
             onPark={() => dispatch({ type: PARK_SIEVE, payload: { localityId: selectedLocality.id, now: Date.now(), rng: Math.random, idFactory: defaultId } })}
-            benchIsFull={benchFull(state.rough)}
+            benchIsFull={benchIsFull}
+            parkBlocked={parkBlocked}
           />
         ) : (
           <>

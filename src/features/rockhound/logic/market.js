@@ -23,6 +23,10 @@ export function identifiedValue(specimen, species) {
   return Math.round(species.baseValue * roughGradeFactor(specimen) * uncutDiscountFor(specimen));
 }
 
+// Note: the `sieve` gear id below is an ordinary shop item, unrelated to the
+// idle "rocker box" device (gear id `rocker_box`). sieveView, SievePanel,
+// PARK_SIEVE and COLLECT_SIEVE all refer to the rocker box, not this item —
+// do not gate idle behaviour on `gear.includes('sieve')`.
 export const SHOP_GEAR = [
   { id: 'sieve', name: 'Sieve', price: 120 },
   { id: 'rock_hammer', name: 'Rock Hammer', price: 300 },

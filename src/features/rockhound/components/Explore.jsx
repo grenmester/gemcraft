@@ -32,7 +32,7 @@ function Haul({ stones }) {
 export default function Explore({
   locality, methodXp, setComplete, roughCount, onBank, onLeave = () => {},
   catch: catchInfo = null, sieveHere = false, onPark = () => {}, benchIsFull = false,
-  rng = Math.random
+  parkBlocked = false, rng = Math.random
 }) {
   const [run, setRun] = useState(null);
 
@@ -162,21 +162,26 @@ export default function Explore({
           <div className="flex flex-col gap-1">
             <button
               type="button"
-              disabled={!catchInfo.canCatch}
+              disabled={!catchInfo.canCatch || parkBlocked}
               onClick={onPark}
               className={`self-start rounded px-4 py-1.5 text-sm ${
-                catchInfo.canCatch
+                catchInfo.canCatch && !parkBlocked
                   ? 'bg-slate-700 text-slate-100 hover:bg-slate-600'
                   : 'cursor-not-allowed bg-slate-800 text-slate-600'
               }`}
             >
               🪣 Leave the rocker box here — catches {catchInfo.catchable} of {catchInfo.total}
             </button>
-            {!catchInfo.canCatch && (
+            {!catchInfo.canCatch ? (
               <p className="text-xs text-amber-400">
                 There is nothing here you have catalogued yet, so the box would catch nothing.
               </p>
-            )}
+            ) : parkBlocked ? (
+              <p className="text-xs text-amber-400">
+                Your bench is full — moving the box would collect its haul past the cap, so it
+                is staying right where it is. Identify or sell some rough, then try again.
+              </p>
+            ) : null}
           </div>
         )
       )}

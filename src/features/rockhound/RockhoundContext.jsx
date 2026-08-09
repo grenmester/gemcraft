@@ -1,7 +1,7 @@
 // src/features/rockhound/RockhoundContext.jsx
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import { species, speciesById } from '../../loaders/species.js';
-import { localities } from '../../loaders/localities.js';
+import { localities, localitiesById } from '../../loaders/localities.js';
 import { identifyReward, commitIdentification } from './logic/identifyResult.js';
 import { completedLocalityIds, completedFamilies, earnedGear } from './logic/progression.js';
 import { cutTechniquesById } from '../../loaders/cutTechniques.js';
@@ -11,7 +11,6 @@ import { xpThreshold, MAX_METHOD_LEVEL, levelForXp } from './logic/dive.js';
 import { idleDepth, pendingCount, MS_PER_HOUR } from './logic/idle.js';
 import { benchFull } from './logic/bench.js';
 import { rollRough } from './logic/rollRough.js';
-import { localitiesById } from '../../loaders/localities.js';
 
 export const ADD_ROUGH = 'ADD_ROUGH';
 export const RECORD_TEST_SCORE = 'RECORD_TEST_SCORE';
@@ -35,7 +34,11 @@ export const STORAGE_KEY = 'rockhound_save_v1';
 
 export const initialRockhoundState = {
   rough: [],
-  sieve: null, // { localityId, since } — where the rocker box is working
+  // { localityId, since } — where the rocker box (the idle device, gear id
+  // `rocker_box`) is working. Unrelated to the `sieve` gear id in
+  // logic/market.js's SHOP_GEAR, which is a different, ordinary shop item —
+  // do not gate idle behaviour on `gear.includes('sieve')`.
+  sieve: null,
   exploreMethodXp: { panning: 0, hardrock: 0, geode: 0, surface: 0 },
   identified: [],
   gemdex: [],

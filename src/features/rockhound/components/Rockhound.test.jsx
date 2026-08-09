@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { RockhoundProvider } from '../RockhoundContext.jsx';
 import Rockhound from './Rockhound.jsx';
 import App from '../../../App.jsx';
+import { BENCH_CAP } from '../logic/bench.js';
 
 // The provider now lives at the app root (src/App.jsx) rather than inside
 // Rockhound itself, so tests mounting the shell in isolation supply their own.
@@ -192,6 +193,50 @@ describe('the rocker box end to end', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Hidden Creek,/ }));
     fireEvent.click(screen.getByRole('button', { name: /leave the rocker box here/i }));
     fireEvent.click(screen.getByRole('button', { name: /back to the map/i }));
-    screen.getByRole('status');
+    // A bare getByRole('status') would pass even with the wrong locality
+    // name or count baked in — pin down what the banner actually says.
+    expect(screen.getByRole('status').textContent).toMatch(/Hidden Creek/);
+  });
+
+  it('blocks moving the box when its pending haul would land past the bench cap', () => {
+    // The shell derives parkBlocked from the live sieve view. Testing only the
+    // component with a prop leaves that derivation unguarded — setting it to a
+    // constant false passed the entire suite — so drive it through real state:
+    // a box parked at Hidden Creek with hours accrued, and a full bench.
+    const stone = (i) => ({
+      instanceId: `fill-${i}`, stage: 'rough', trueSpeciesId: 'quartz', identifiedAs: null,
+      caratWeight: 1, clarity: 50, colorGrade: 50, origin: 'hidden_creek', foundDepth: 1, form: 'waterworn'
+    });
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      // 'sieve' gear unlocks Gravel Bar, giving us a second locality to try to move to.
+      gear: ['rocker_box', 'sieve'],
+      gemdex: ['quartz'],
+      rough: Array.from({ length: BENCH_CAP }, (_, i) => stone(i)),
+      sieve: { localityId: 'hidden_creek', since: 0 }
+    }));
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /^Gravel Bar,/ }));
+    const park = screen.getByRole('button', { name: /leave the rocker box here/i });
+    expect(park.disabled).toBe(true);
+    screen.getByText(/staying right where it is/i);
+  });
+
+  it('allows moving the box when the bench is full but nothing has accrued', () => {
+    // The block must track the reducer's real refusal — pending yield AND a
+    // full bench — not the full bench alone. `since: Date.now()` means nothing
+    // has accrued yet, so the move is legitimate.
+    const stone = (i) => ({
+      instanceId: `fill-${i}`, stage: 'rough', trueSpeciesId: 'quartz', identifiedAs: null,
+      caratWeight: 1, clarity: 50, colorGrade: 50, origin: 'hidden_creek', foundDepth: 1, form: 'waterworn'
+    });
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      gear: ['rocker_box', 'sieve'],
+      gemdex: ['quartz'],
+      rough: Array.from({ length: BENCH_CAP }, (_, i) => stone(i)),
+      sieve: { localityId: 'hidden_creek', since: Date.now() }
+    }));
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /^Gravel Bar,/ }));
+    expect(screen.getByRole('button', { name: /leave the rocker box here/i }).disabled).toBe(false);
   });
 });

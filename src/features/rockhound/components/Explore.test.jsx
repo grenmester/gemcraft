@@ -189,6 +189,35 @@ describe('Explore — the rocker box', () => {
     fireEvent.click(screen.getByRole('button', { name: /leave the rocker box here/i }));
     expect(onPark).toHaveBeenCalledTimes(1);
   });
+
+  it('disables the park control and explains when moving would be refused', () => {
+    // Mirrors PARK_SIEVE's own guard: moving collects the parked box's
+    // pending haul first, and a full bench refuses that move. The control
+    // must say so, and make clear the box stays put, rather than sitting
+    // enabled and silently doing nothing when clicked.
+    renderExplore({ parkBlocked: true });
+    const park = screen.getByRole('button', { name: /leave the rocker box here/i });
+    expect(park.disabled).toBe(true);
+    screen.getByText(/staying right where it is/i);
+  });
+
+  it('still allows parking on a full bench when nothing is pending', () => {
+    // benchIsFull alone must not disable the control — only the reducer's
+    // actual refusal condition (parkBlocked) should. A first park, or a
+    // park with no pending haul to collect, is always allowed.
+    renderExplore({ benchIsFull: true, parkBlocked: false });
+    expect(screen.getByRole('button', { name: /leave the rocker box here/i }).disabled).toBe(false);
+    expect(screen.queryByText(/staying right where it is/i)).toBeNull();
+  });
+
+  it('has no park control at all for a player without a rocker box', () => {
+    // The test helper always supplies a `catch` object; a player who hasn't
+    // bought the box gets `catch: null` from Rockhound.jsx, and the control
+    // must be entirely absent, not merely disabled.
+    renderExplore({ catch: null });
+    expect(screen.queryByRole('button', { name: /leave the rocker box here/i })).toBeNull();
+    expect(screen.queryByText(/rocker box/i)).toBeNull();
+  });
 });
 
 describe('Explore — a full bench', () => {

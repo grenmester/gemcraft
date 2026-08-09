@@ -10,7 +10,3 @@ export const BENCH_CAP = 50;
 export function benchFull(rough) {
   return rough.length >= BENCH_CAP;
 }
-
-export function benchSpace(rough) {
-  return Math.max(0, BENCH_CAP - rough.length);
-}
