@@ -8,6 +8,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="mobile-web-app-capable" content="yes" />
+    <!-- Inline so there is no public/ asset to 404. Without any icon link the
+         browser requests /favicon.ico on every load and logs an error, which
+         buries real console output while debugging. -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%92%8E%3C/text%3E%3C/svg%3E" />
     <title>Rockhound</title>
     <style>
       html, body {
