@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useRockhound, STORAGE_KEY, DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET } from '../../features/rockhound/RockhoundContext.jsx';
+import { useRockhound, STORAGE_KEY, DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET, DEBUG_REWIND_SIEVE } from '../../features/rockhound/RockhoundContext.jsx';
 import { METHOD_ENUM } from '../../schemas/localities.js';
 import { levelForXp, MAX_METHOD_LEVEL, effectiveReach } from '../../features/rockhound/logic/dive.js';
 import { deepestBedrockByMethod } from '../../features/rockhound/logic/localityView.js';
@@ -94,6 +94,25 @@ export default function DebugPanel() {
                 <button key={n} type="button" className={BTN}
                   onClick={() => dispatch({ type: DEBUG_ADD_CASH, payload: { amount: n } })}>
                   +{n.toLocaleString()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-b border-slate-700 pb-3">
+            <h4 className="mb-2 text-xs uppercase tracking-wide text-slate-400">
+              Rocker box {state.sieve ? `— parked at ${state.sieve.localityId}` : '— not parked'}
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {[1, 8].map((h) => (
+                <button
+                  key={h}
+                  type="button"
+                  className={BTN}
+                  disabled={!state.sieve}
+                  onClick={() => dispatch({ type: DEBUG_REWIND_SIEVE, payload: { hours: h, now: Date.now() } })}
+                >
+                  Simulate {h} {h === 1 ? 'hour' : 'hours'}
                 </button>
               ))}
             </div>

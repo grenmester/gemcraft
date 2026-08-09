@@ -174,3 +174,24 @@ describe('Explore map and run are separate screens', () => {
     expect(screen.getByLabelText(/bench/i).textContent).toMatch(/1/);
   });
 });
+
+describe('the rocker box end to end', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('shows no banner until a box is parked', () => {
+    render(<App />);
+    expect(screen.queryByText(/rocker box has been working/i)).toBeNull();
+  });
+
+  it('parks from the run screen and reports it on the map', () => {
+    // Seed a save with the box bought and one species known, then park it.
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      gear: ['rocker_box'], gemdex: ['quartz']
+    }));
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /^Hidden Creek,/ }));
+    fireEvent.click(screen.getByRole('button', { name: /leave the rocker box here/i }));
+    fireEvent.click(screen.getByRole('button', { name: /back to the map/i }));
+    screen.getByRole('status');
+  });
+});

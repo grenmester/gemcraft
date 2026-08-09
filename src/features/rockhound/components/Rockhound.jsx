@@ -1,6 +1,6 @@
 // src/features/rockhound/components/Rockhound.jsx
 import { useState, useEffect } from 'react';
-import { useRockhound, COLLECT_HAUL, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR } from '../RockhoundContext.jsx';
+import { useRockhound, COLLECT_HAUL, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, PARK_SIEVE, COLLECT_SIEVE } from '../RockhoundContext.jsx';
 import { localities, localitiesById } from '../../../loaders/localities.js';
 import { speciesById, species } from '../../../loaders/species.js';
 import { cutTechniques, cutTechniquesById } from '../../../loaders/cutTechniques.js';
@@ -14,6 +14,10 @@ import LocalityMap from './LocalityMap.jsx';
 import TrophyCase from './TrophyCase.jsx';
 import CareerPanel from './CareerPanel.jsx';
 import StatusFooter from './StatusFooter.jsx';
+import SievePanel from './SievePanel.jsx';
+import { sieveView, catchView } from '../logic/idleView.js';
+import { benchFull } from '../logic/bench.js';
+import { defaultId } from '../logic/rollRough.js';
 
 const TABS = ['Explore', 'Identify', 'Cut', 'Market', 'Gemdex'];
 const GEMDEX_SUBTABS = ['Species', 'Trophies', 'Career'];
@@ -32,6 +36,11 @@ function RockhoundInner() {
   const ctx = { reputation: state.reputation, gear: state.gear, completedLocalities, completedFamilies: completedFams };
   const unlockedIds = localities.filter((l) => isLocalityUnlocked(l, ctx)).map((l) => l.id);
   const selectedLocality = localitiesById[exploringId] ?? localitiesById.hidden_creek;
+
+  // `now` is read at render rather than stored, so the banner is current on
+  // every mount without a ticker. The reducer never reads the clock itself.
+  const now = Date.now();
+  const sieve = sieveView(state.sieve, localitiesById, state.gemdex, state.exploreMethodXp, state.rough, now);
 
   useEffect(() => {
     // Badges clear only once the Species grid is actually looked at — not when
@@ -65,17 +74,29 @@ function RockhoundInner() {
             roughCount={state.rough.length}
             onBank={(payload) => dispatch({ type: COLLECT_HAUL, payload })}
             onLeave={() => setExploringId(null)}
+            catch={state.gear.includes('rocker_box')
+              ? catchView(selectedLocality, state.gemdex, state.exploreMethodXp[selectedLocality.method] ?? 0)
+              : null}
+            sieveHere={state.sieve?.localityId === selectedLocality.id}
+            onPark={() => dispatch({ type: PARK_SIEVE, payload: { localityId: selectedLocality.id, now: Date.now(), rng: Math.random, idFactory: defaultId } })}
+            benchIsFull={benchFull(state.rough)}
           />
         ) : (
-          <LocalityMap
-            localities={localities}
-            unlockedIds={unlockedIds}
-            selectedId={null}
-            onSelect={setExploringId}
-            speciesById={speciesById}
-            gemdex={state.gemdex}
-            exploreMethodXp={state.exploreMethodXp}
-          />
+          <>
+            <SievePanel
+              view={sieve}
+              onCollect={() => dispatch({ type: COLLECT_SIEVE, payload: { now: Date.now(), rng: Math.random, idFactory: defaultId } })}
+            />
+            <LocalityMap
+              localities={localities}
+              unlockedIds={unlockedIds}
+              selectedId={null}
+              onSelect={setExploringId}
+              speciesById={speciesById}
+              gemdex={state.gemdex}
+              exploreMethodXp={state.exploreMethodXp}
+            />
+          </>
         )
       )}
 

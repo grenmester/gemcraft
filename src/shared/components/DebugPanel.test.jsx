@@ -66,4 +66,9 @@ describe('DebugPanel', () => {
     expect(localStorage.getItem('rockhound_save_v1')).toBe(null);
     expect(localStorage.getItem('gemstone_game_save')).toBe(null);
   });
+
+  it('offers to rewind the sieve clock for testing', () => {
+    open();
+    screen.getByRole('button', { name: /simulate 8 hours/i });
+  });
 });
