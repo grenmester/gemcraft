@@ -14,6 +14,10 @@ function renderExplore(overrides = {}) {
     roughCount: 0,
     onBank: vi.fn(),
     rng: () => 0.5,
+    catch: { depth: 1, catchable: 3, total: 3, canCatch: true },
+    sieveHere: false,
+    onPark: vi.fn(),
+    benchIsFull: false,
     ...overrides
   };
   render(<Explore {...props} />);
@@ -155,5 +159,48 @@ describe('Explore — leaving', () => {
     renderExplore({ onLeave });
     fireEvent.click(screen.getByRole('button', { name: /back to the map/i }));
     expect(onLeave).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Explore — the rocker box', () => {
+  it('offers to leave the box here, saying what it could catch', () => {
+    renderExplore();
+    const park = screen.getByRole('button', { name: /leave the rocker box here/i });
+    // A box parked where the player knows nothing catches nothing for as long
+    // as it runs, so the control must state the count before they commit.
+    expect(park.textContent).toMatch(/3 of 3/);
+  });
+
+  it('warns rather than promises when it would catch nothing here', () => {
+    renderExplore({ catch: { depth: 1, catchable: 0, total: 3, canCatch: false } });
+    expect(screen.getByRole('button', { name: /leave the rocker box here/i }).disabled).toBe(true);
+    screen.getByText(/nothing here you have catalogued/i);
+  });
+
+  it('says so when the box is already working this locality', () => {
+    renderExplore({ sieveHere: true });
+    screen.getByText(/box is working here/i);
+    expect(screen.queryByRole('button', { name: /leave the rocker box here/i })).toBeNull();
+  });
+
+  it('parks the box when asked', () => {
+    const onPark = vi.fn();
+    renderExplore({ onPark });
+    fireEvent.click(screen.getByRole('button', { name: /leave the rocker box here/i }));
+    expect(onPark).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Explore — a full bench', () => {
+  it('will not start a run, and says why', () => {
+    renderExplore({ benchIsFull: true });
+    const work = screen.getByRole('button', { name: /work the gravel/i });
+    expect(work.disabled).toBe(true);
+    screen.getByText(/identify or sell/i);
+  });
+
+  it('starts normally when there is room', () => {
+    renderExplore({ benchIsFull: false });
+    expect(screen.getByRole('button', { name: /work the gravel/i }).disabled).toBe(false);
   });
 });

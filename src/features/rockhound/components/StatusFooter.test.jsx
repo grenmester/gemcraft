@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import StatusFooter from './StatusFooter.jsx';
 import { xpThreshold } from '../logic/dive.js';
+import { BENCH_CAP } from '../logic/bench.js';
 
 const props = {
   cash: 1234,
@@ -37,5 +38,10 @@ describe('StatusFooter', () => {
     render(<StatusFooter {...props} />);
     expect(screen.getByLabelText(/bench/i).textContent).toMatch(/3/);
     expect(screen.getByLabelText(/gemdex/i).textContent).toMatch(/7/);
+  });
+
+  it('shows the bench against its cap, so the limit is visible before it bites', () => {
+    render(<StatusFooter {...props} />);
+    expect(screen.getByLabelText(/bench/i).textContent).toMatch(new RegExp(`/${BENCH_CAP}`));
   });
 });

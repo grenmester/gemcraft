@@ -29,7 +29,11 @@ function Haul({ stones }) {
   );
 }
 
-export default function Explore({ locality, methodXp, setComplete, roughCount, onBank, onLeave = () => {}, rng = Math.random }) {
+export default function Explore({
+  locality, methodXp, setComplete, roughCount, onBank, onLeave = () => {},
+  catch: catchInfo = null, sieveHere = false, onPark = () => {}, benchIsFull = false,
+  rng = Math.random
+}) {
   const [run, setRun] = useState(null);
 
   const site = siteView(locality, methodXp, setComplete);
@@ -84,13 +88,25 @@ export default function Explore({ locality, methodXp, setComplete, roughCount, o
       </header>
 
       {!run && (
-        <button
-          type="button"
-          onClick={start}
-          className="self-start rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-500"
-        >
-          {verb} the {locality.hostRock}
-        </button>
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            disabled={benchIsFull}
+            onClick={start}
+            className={`self-start rounded-lg px-6 py-3 font-bold ${
+              benchIsFull
+                ? 'cursor-not-allowed bg-slate-700 text-slate-500'
+                : 'bg-blue-600 text-white hover:bg-blue-500'
+            }`}
+          >
+            {verb} the {locality.hostRock}
+          </button>
+          {benchIsFull && (
+            <p className="text-xs text-amber-400">
+              Your bench is full — identify or sell some rough before digging more.
+            </p>
+          )}
+        </div>
       )}
 
       {run && (
@@ -138,6 +154,32 @@ export default function Explore({ locality, methodXp, setComplete, roughCount, o
       )}
 
       <p className="text-slate-300">Unidentified rough on your bench: <strong>{roughCount}</strong></p>
+
+      {catchInfo && (
+        sieveHere ? (
+          <p className="text-xs text-slate-400">🪣 Your rocker box is working here.</p>
+        ) : (
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              disabled={!catchInfo.canCatch}
+              onClick={onPark}
+              className={`self-start rounded px-4 py-1.5 text-sm ${
+                catchInfo.canCatch
+                  ? 'bg-slate-700 text-slate-100 hover:bg-slate-600'
+                  : 'cursor-not-allowed bg-slate-800 text-slate-600'
+              }`}
+            >
+              🪣 Leave the rocker box here — catches {catchInfo.catchable} of {catchInfo.total}
+            </button>
+            {!catchInfo.canCatch && (
+              <p className="text-xs text-amber-400">
+                There is nothing here you have catalogued yet, so the box would catch nothing.
+              </p>
+            )}
+          </div>
+        )
+      )}
     </section>
   );
 }

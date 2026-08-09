@@ -1,4 +1,5 @@
 import { methodTracks } from '../logic/footerView.js';
+import { BENCH_CAP } from '../logic/bench.js';
 
 const METHOD_ICON = { panning: '🥣', hardrock: '⛏️', geode: '🥚', surface: '🔎' };
 
@@ -32,9 +33,9 @@ export default function StatusFooter({
           💰 {cash.toLocaleString()}
         </span>
 
-        <span aria-label={`Bench: ${roughCount} rough, ${identifiedCount} identified, ${stoneCount} cut`}
+        <span aria-label={`Bench: ${roughCount} of ${BENCH_CAP} rough, ${identifiedCount} identified, ${stoneCount} cut`}
               className="text-xs text-slate-400">
-          🪨 {roughCount} · 🔍 {identifiedCount} · 💎 {stoneCount}
+          🪨 {roughCount}/{BENCH_CAP} · 🔍 {identifiedCount} · 💎 {stoneCount}
         </span>
 
         <span aria-label={`Gemdex ${gemdexFound} of ${gemdexTotal}`} className="text-xs text-slate-400">
