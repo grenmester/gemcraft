@@ -313,6 +313,13 @@ describe('the idle sieve', () => {
     exploreMethodXp: { ...initialRockhoundState.exploreMethodXp, panning: 0 },
     ...over
   });
+  // Deterministic stand-in for rollRough's `defaultId`: no Date.now(), no
+  // shared mutable counter across tests. Each call site gets its own factory
+  // so instance ids don't collide between independent tests.
+  const makeIdFactory = () => {
+    let n = 0;
+    return () => `sieve-${++n}`;
+  };
 
   it('parks the box at a locality and starts its clock', () => {
     const next = rockhoundReducer(withBox(), {
@@ -333,7 +340,7 @@ describe('the idle sieve', () => {
     // pools quartz, garnet and sapphire at depth 1; only quartz is known.
     const state = withBox({ sieve: { localityId: 'hidden_creek', since: 0 } });
     const next = rockhoundReducer(state, {
-      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random }
+      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random, idFactory: makeIdFactory() }
     });
     expect(next.rough.length).toBeGreaterThan(0);
     expect(next.rough.every((r) => r.trueSpeciesId === 'quartz')).toBe(true);
@@ -342,7 +349,7 @@ describe('the idle sieve', () => {
   it('returns everything unidentified, granting no reputation and no gemdex entry', () => {
     const state = withBox({ sieve: { localityId: 'hidden_creek', since: 0 } });
     const next = rockhoundReducer(state, {
-      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random }
+      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random, idFactory: makeIdFactory() }
     });
     expect(next.rough.every((r) => r.stage === 'rough')).toBe(true);
     expect(next.rough.every((r) => r.identifiedAs === null)).toBe(true);
@@ -354,7 +361,7 @@ describe('the idle sieve', () => {
   it('restarts the clock when collected', () => {
     const state = withBox({ sieve: { localityId: 'hidden_creek', since: 0 } });
     const next = rockhoundReducer(state, {
-      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random }
+      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random, idFactory: makeIdFactory() }
     });
     expect(next.sieve.since).toBe(8 * HOUR);
   });
@@ -362,7 +369,7 @@ describe('the idle sieve', () => {
   it('catches nothing where the player has catalogued nothing', () => {
     const state = withBox({ gemdex: [], sieve: { localityId: 'hidden_creek', since: 0 } });
     const next = rockhoundReducer(state, {
-      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random }
+      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random, idFactory: makeIdFactory() }
     });
     expect(next.rough).toEqual([]);
   });
@@ -371,7 +378,7 @@ describe('the idle sieve', () => {
     const full = Array.from({ length: BENCH_CAP }, (_, i) => ({ instanceId: `r${i}`, stage: 'rough' }));
     const state = withBox({ rough: full, sieve: { localityId: 'hidden_creek', since: 0 } });
     const next = rockhoundReducer(state, {
-      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random }
+      type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random, idFactory: makeIdFactory() }
     });
     expect(next.rough).toHaveLength(BENCH_CAP);
     expect(next.sieve.since).toBe(0); // nothing lost — collect once there is room
@@ -380,7 +387,8 @@ describe('the idle sieve', () => {
   it('collects what is pending before moving the box', () => {
     const state = withBox({ sieve: { localityId: 'hidden_creek', since: 0 } });
     const next = rockhoundReducer(state, {
-      type: PARK_SIEVE, payload: { localityId: 'gravel_bar', now: 8 * HOUR, rng: Math.random }
+      type: PARK_SIEVE,
+      payload: { localityId: 'gravel_bar', now: 8 * HOUR, rng: Math.random, idFactory: makeIdFactory() }
     });
     expect(next.rough.length).toBeGreaterThan(0);
     expect(next.sieve).toEqual({ localityId: 'gravel_bar', since: 8 * HOUR });
@@ -390,7 +398,8 @@ describe('the idle sieve', () => {
     const full = Array.from({ length: BENCH_CAP }, (_, i) => ({ instanceId: `r${i}`, stage: 'rough' }));
     const state = withBox({ rough: full, sieve: { localityId: 'hidden_creek', since: 0 } });
     const next = rockhoundReducer(state, {
-      type: PARK_SIEVE, payload: { localityId: 'gravel_bar', now: 8 * HOUR, rng: Math.random }
+      type: PARK_SIEVE,
+      payload: { localityId: 'gravel_bar', now: 8 * HOUR, rng: Math.random, idFactory: makeIdFactory() }
     });
     expect(next.sieve.localityId).toBe('hidden_creek');
     expect(next.rough).toHaveLength(BENCH_CAP);
@@ -411,5 +420,51 @@ describe('the idle sieve', () => {
     });
     expect(next.sieve.since).toBe(10 * HOUR - 8 * HOUR);
     expect(next.rough).toEqual(state.rough);
+  });
+
+  describe('reducer purity', () => {
+    it('produces deeply equal output for two calls with the identical (state, action)', () => {
+      // Pins the property that collectSieve's old `rollRough(..., undefined, ...)`
+      // silently broke: Date.now() and a module-level id counter inside the
+      // reducer's call stack meant the same (state, action) pair produced
+      // different output each time. `rng` is a stateless deterministic
+      // function (safe to share), but `idFactory` is a counter closure, so
+      // each call gets its OWN fresh instance — mirroring how a real caller
+      // reconstructs an equivalent action rather than literally sharing one
+      // mutable closure across both invocations. Both actions are equal by
+      // value, which is what "identical action" means for a purity check.
+      const state = withBox({ sieve: { localityId: 'hidden_creek', since: 0 } });
+      const rng = () => 0.42;
+      const makeAction = () => ({
+        type: COLLECT_SIEVE,
+        payload: { now: 8 * HOUR, rng, idFactory: makeIdFactory() }
+      });
+      const first = rockhoundReducer(state, makeAction());
+      const second = rockhoundReducer(state, makeAction());
+      expect(second).toEqual(first);
+    });
+
+    it('COLLECT_SIEVE with a parked box is a no-op when idFactory is missing', () => {
+      const state = withBox({ sieve: { localityId: 'hidden_creek', since: 0 } });
+      const next = rockhoundReducer(state, {
+        type: COLLECT_SIEVE, payload: { now: 8 * HOUR, rng: Math.random }
+      });
+      expect(next).toBe(state);
+    });
+
+    it('COLLECT_SIEVE with a parked box is a no-op when rng is missing', () => {
+      const state = withBox({ sieve: { localityId: 'hidden_creek', since: 0 } });
+      const next = rockhoundReducer(state, {
+        type: COLLECT_SIEVE, payload: { now: 8 * HOUR, idFactory: makeIdFactory() }
+      });
+      expect(next).toBe(state);
+    });
+
+    it('a first park (no box parked yet) still succeeds with neither rng nor idFactory', () => {
+      const next = rockhoundReducer(withBox(), {
+        type: PARK_SIEVE, payload: { localityId: 'hidden_creek', now: 1000 }
+      });
+      expect(next.sieve).toEqual({ localityId: 'hidden_creek', since: 1000 });
+    });
   });
 });

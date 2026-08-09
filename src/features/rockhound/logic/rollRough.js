@@ -4,7 +4,7 @@ import { rollForm } from './forms.js';
 const lerp = ([lo, hi], t) => lo + (hi - lo) * t;
 const round2 = (n) => Math.round(n * 100) / 100;
 let idCounter = 0;
-const defaultId = () => `spec-${Date.now()}-${(++idCounter).toString(36)}`;
+export const defaultId = () => `spec-${Date.now()}-${(++idCounter).toString(36)}`;
 
 export function createRough({ trueSpeciesId, caratWeight, clarity, colorGrade, origin, foundDepth = 1, form = 'fragment' }, idFactory = defaultId) {
   return {
