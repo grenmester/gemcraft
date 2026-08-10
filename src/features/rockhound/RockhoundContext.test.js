@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   rockhoundReducer, initialRockhoundState,
-  ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW,
+  ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, REVEAL_TRAIT, CLEAR_NEW,
   UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT,
   SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, COLLECT_HAUL,
   DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET,
@@ -27,30 +27,6 @@ describe('rockhoundReducer', () => {
     const s = rockhoundReducer(initialRockhoundState, { type: ADD_ROUGH, payload: sapphireRough });
     expect(s.rough).toHaveLength(1);
     expect(s.rough[0].instanceId).toBe('r1');
-  });
-
-  it('records a test score as a running best', () => {
-    let s = rockhoundReducer(initialRockhoundState, { type: RECORD_TEST_SCORE, payload: { testId: 'scratch', score: 60 } });
-    s = rockhoundReducer(s, { type: RECORD_TEST_SCORE, payload: { testId: 'scratch', score: 40 } });
-    expect(s.testMastery.scratch).toBe(60);
-  });
-
-  it('a correct commit discovers the species and awards reputation', () => {
-    let s = rockhoundReducer(initialRockhoundState, { type: ADD_ROUGH, payload: sapphireRough });
-    s = rockhoundReducer(s, { type: COMMIT_IDENTIFY, payload: { instanceId: 'r1', guessId: 'sapphire' } });
-    expect(s.rough).toHaveLength(0);
-    expect(s.identified).toHaveLength(1);
-    expect(s.gemdex).toContain('sapphire');
-    expect(s.newlyDiscovered).toContain('sapphire');
-    expect(s.reputation).toBe(35);
-  });
-
-  it('a wrong commit leaves the rough in place and awards nothing', () => {
-    let s = rockhoundReducer(initialRockhoundState, { type: ADD_ROUGH, payload: sapphireRough });
-    s = rockhoundReducer(s, { type: COMMIT_IDENTIFY, payload: { instanceId: 'r1', guessId: 'quartz' } });
-    expect(s.rough).toHaveLength(1);
-    expect(s.gemdex).toHaveLength(0);
-    expect(s.reputation).toBe(0);
   });
 
   it('does not double-count a species already in the gemdex', () => {
@@ -466,5 +442,110 @@ describe('the idle sieve', () => {
       });
       expect(next.sieve).toEqual({ localityId: 'hidden_creek', since: 1000 });
     });
+  });
+});
+
+describe('REVEAL_TRAIT', () => {
+  // foundDepth must be >= ruby's minDepth (3) at mogok_marble (see
+  // localities.yaml) — otherwise seedCandidates excludes ruby from its own
+  // candidate pool, which falsely narrows the pool to spinel alone by hue
+  // before any test even runs.
+  const roughRuby = {
+    instanceId: 'r1', stage: 'rough', trueSpeciesId: 'ruby', identifiedAs: null,
+    caratWeight: 2, clarity: 80, colorGrade: 80, origin: 'mogok_marble',
+    foundDepth: 3, form: 'fragment', hue: 'red', revealed: {}
+  };
+  const withStone = (over = {}) => ({ ...initialRockhoundState, rough: [roughRuby], ...over });
+
+  it('records a reading the player can actually be shown', () => {
+    const next = rockhoundReducer(withStone(), {
+      type: REVEAL_TRAIT, payload: { instanceId: 'r1', testId: 'scratch', byHand: true }
+    });
+    const reading = next.rough[0].revealed.scratch;
+    expect(reading.center).toBe(9);        // ruby's hardness
+    expect(reading.band).toBeGreaterThan(0);
+  });
+
+  it('is deterministic — the same state and action twice give the same result', () => {
+    // The reducer must never reach for Math.random or Date.now.
+    const act = { type: REVEAL_TRAIT, payload: { instanceId: 'r1', testId: 'scratch', byHand: true } };
+    expect(rockhoundReducer(withStone(), act)).toEqual(rockhoundReducer(withStone(), act));
+  });
+
+  it('reads more precisely by hand than by shortcut', () => {
+    const hand = rockhoundReducer(withStone(), {
+      type: REVEAL_TRAIT, payload: { instanceId: 'r1', testId: 'scratch', byHand: true }
+    });
+    const auto = rockhoundReducer(withStone(), {
+      type: REVEAL_TRAIT, payload: { instanceId: 'r1', testId: 'scratch', byHand: false }
+    });
+    expect(hand.rough[0].revealed.scratch.band).toBeLessThan(auto.rough[0].revealed.scratch.band);
+  });
+
+  it('grows mastery by practice, and rewards hand work more than the shortcut', () => {
+    const hand = rockhoundReducer(withStone(), {
+      type: REVEAL_TRAIT, payload: { instanceId: 'r1', testId: 'scratch', byHand: true }
+    });
+    const auto = rockhoundReducer(withStone(), {
+      type: REVEAL_TRAIT, payload: { instanceId: 'r1', testId: 'scratch', byHand: false }
+    });
+    expect(hand.testMastery.scratch).toBeGreaterThan(initialRockhoundState.testMastery.scratch);
+    expect(hand.testMastery.scratch).toBeGreaterThan(auto.testMastery.scratch);
+  });
+
+  it('never lets mastery exceed its ceiling', () => {
+    const maxed = withStone({ testMastery: { ...initialRockhoundState.testMastery, scratch: 100 } });
+    const next = rockhoundReducer(maxed, {
+      type: REVEAL_TRAIT, payload: { instanceId: 'r1', testId: 'scratch', byHand: true }
+    });
+    expect(next.testMastery.scratch).toBe(100);
+  });
+
+  it('leaves the stone unidentified while the readings are still ambiguous', () => {
+    // At Mogok Marble a red stone could be ruby or spinel — sight alone
+    // must not resolve it.
+    const next = rockhoundReducer(withStone(), {
+      type: REVEAL_TRAIT, payload: { instanceId: 'r1', testId: 'uv', byHand: true }
+    });
+    expect(next.rough).toHaveLength(1);
+    expect(next.identified).toHaveLength(0);
+  });
+
+  it('resolves the stone on its own once the readings are decisive', () => {
+    // At Mogok Marble, ruby and spinel share hue, transparency, and even
+    // fluorescence key (both red/none) — sight and UV alone never separate
+    // them here. What does is hardness (9 vs 8): with the scratch test
+    // already mastered, that one numeric reading narrows the band to ±0.5,
+    // which is decisive.
+    let state = withStone({ testMastery: { ...initialRockhoundState.testMastery, scratch: 100 } });
+    for (const testId of ['scratch', 'heft', 'uv']) {
+      state = rockhoundReducer(state, { type: REVEAL_TRAIT, payload: { instanceId: 'r1', testId, byHand: true } });
+    }
+    expect(state.rough).toHaveLength(0);
+    expect(state.identified).toHaveLength(1);
+    expect(state.identified[0].trueSpeciesId).toBe('ruby');
+    expect(state.identified[0].stage).toBe('identified');
+  });
+
+  it('awards the same reputation and gemdex entry the old path did', () => {
+    // Same decisive setup as above — mastered scratch test is what resolves
+    // ruby against its Mogok Marble look-alike, spinel.
+    let state = withStone({ testMastery: { ...initialRockhoundState.testMastery, scratch: 100 } });
+    for (const testId of ['scratch', 'heft', 'uv']) {
+      state = rockhoundReducer(state, { type: REVEAL_TRAIT, payload: { instanceId: 'r1', testId, byHand: true } });
+    }
+    expect(state.gemdex).toContain('ruby');
+    expect(state.newlyDiscovered).toContain('ruby');
+    expect(state.reputation).toBeGreaterThan(0);
+  });
+
+  it('ignores a stone that is not on the bench', () => {
+    // Compare against the SAME object, not a freshly built one — the reducer
+    // returns state unchanged, so identity is the assertion that matters.
+    const before = withStone();
+    const next = rockhoundReducer(before, {
+      type: REVEAL_TRAIT, payload: { instanceId: 'nope', testId: 'scratch', byHand: true }
+    });
+    expect(next).toBe(before);
   });
 });

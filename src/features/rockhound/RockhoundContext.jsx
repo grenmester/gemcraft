@@ -3,7 +3,7 @@ import { createContext, useContext, useReducer, useEffect } from 'react';
 import { species, speciesById } from '../../loaders/species.js';
 import { localities, localitiesById } from '../../loaders/localities.js';
 import { identifyReward, commitIdentification } from './logic/identifyResult.js';
-import { completedLocalityIds, completedFamilies, earnedGear } from './logic/progression.js';
+import { completedLocalityIds, completedFamilies, earnedGear, familiarityFactor } from './logic/progression.js';
 import { cutTechniquesById } from '../../loaders/cutTechniques.js';
 import { applyCut, canApplyToSpecimen, specimenScore } from './logic/cut.js';
 import { identifiedValue, stoneValue, gearPrice } from './logic/market.js';
@@ -11,10 +11,15 @@ import { xpThreshold, MAX_METHOD_LEVEL, levelForXp } from './logic/dive.js';
 import { idleDepth, pendingCount, MS_PER_HOUR } from './logic/idle.js';
 import { benchFull } from './logic/bench.js';
 import { rollRough } from './logic/rollRough.js';
+import { runTest, consistentSpecies } from './logic/tests.js';
+import { mergeReading, revealedReadings } from './logic/traits.js';
+import { seedCandidates } from './logic/candidates.js';
+import { HAND_LIVE_PLAY, AUTO_LIVE_PLAY } from './logic/precision.js';
 
 export const ADD_ROUGH = 'ADD_ROUGH';
 export const RECORD_TEST_SCORE = 'RECORD_TEST_SCORE';
 export const COMMIT_IDENTIFY = 'COMMIT_IDENTIFY';
+export const REVEAL_TRAIT = 'REVEAL_TRAIT';
 export const CLEAR_NEW = 'CLEAR_NEW';
 export const UNLOCK_TECHNIQUE = 'UNLOCK_TECHNIQUE';
 export const LEVEL_TECHNIQUE = 'LEVEL_TECHNIQUE';
@@ -31,6 +36,10 @@ export const COLLECT_SIEVE = 'COLLECT_SIEVE';
 export const DEBUG_REWIND_SIEVE = 'DEBUG_REWIND_SIEVE';
 
 export const STORAGE_KEY = 'rockhound_save_v1';
+
+const MASTERY_CEILING = 100;
+const MASTERY_PER_HAND_RUN = 8;
+const MASTERY_PER_AUTO_RUN = 2;
 
 export const initialRockhoundState = {
   rough: [],
@@ -63,6 +72,27 @@ function withEarnedGear(gemdex, reputation, currentGear) {
   };
   const merged = [...new Set([...currentGear, ...earnedGear(ctx)])];
   return merged.length === currentGear.length ? currentGear : merged;
+}
+
+/**
+ * The stone's identity has become certain, so move it to the bench of
+ * identified specimens. Byte-identical to what committing a correct guess
+ * used to do — only the trigger changed.
+ */
+function resolveSpecimen(state, specimen) {
+  const speciesId = specimen.trueSpeciesId;
+  const isNew = !state.gemdex.includes(speciesId);
+  const newGemdex = isNew ? [...state.gemdex, speciesId] : state.gemdex;
+  const newReputation = state.reputation + identifyReward(speciesById[speciesId]);
+  return {
+    ...state,
+    rough: state.rough.filter((r) => r.instanceId !== specimen.instanceId),
+    identified: [...state.identified, { ...specimen, stage: 'identified', identifiedAs: speciesId }],
+    gemdex: newGemdex,
+    newlyDiscovered: isNew ? [...state.newlyDiscovered, speciesId] : state.newlyDiscovered,
+    reputation: newReputation,
+    gear: withEarnedGear(newGemdex, newReputation, state.gear)
+  };
 }
 
 /**
@@ -136,6 +166,37 @@ export function rockhoundReducer(state, action) {
         reputation: newReputation,
         gear: withEarnedGear(newGemdex, newReputation, state.gear)
       };
+    }
+
+    case REVEAL_TRAIT: {
+      const { instanceId, testId, byHand } = action.payload;
+      const specimen = state.rough.find((r) => r.instanceId === instanceId);
+      if (!specimen) return state;
+
+      const trueSpecies = speciesById[specimen.trueSpeciesId];
+      const livePlay = byHand ? HAND_LIVE_PLAY : AUTO_LIVE_PLAY;
+      const reading = runTest(testId, trueSpecies, {
+        mastery: state.testMastery[testId] ?? 0,
+        livePlay,
+        familiarity: familiarityFactor(trueSpecies.family, completedFamilies(species, state.gemdex))
+      });
+
+      const updated = { ...specimen, revealed: mergeReading(specimen.revealed, reading) };
+      const gain = byHand ? MASTERY_PER_HAND_RUN : MASTERY_PER_AUTO_RUN;
+      const withReading = {
+        ...state,
+        rough: state.rough.map((r) => (r.instanceId === instanceId ? updated : r)),
+        testMastery: {
+          ...state.testMastery,
+          [testId]: Math.min(MASTERY_CEILING, (state.testMastery[testId] ?? 0) + gain)
+        }
+      };
+
+      // Identity emerges: nothing is guessed, and nothing is clicked.
+      const locality = localitiesById[specimen.origin];
+      const pool = locality ? seedCandidates(locality, specimen.foundDepth) : [specimen.trueSpeciesId];
+      const survivors = consistentSpecies(pool, speciesById, revealedReadings(updated, trueSpecies));
+      return survivors.length === 1 ? resolveSpecimen(withReading, updated) : withReading;
     }
 
     case CLEAR_NEW:
