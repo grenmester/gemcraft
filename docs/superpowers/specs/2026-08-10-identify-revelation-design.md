@@ -172,13 +172,25 @@ the instruments pointless — fails loudly instead of hollowing out the mechanic
 
 ## 8. Scope — this slice and the four after it
 
-| Slice | Ships | Status |
+**Order revised after slice 1 shipped.** The Lab Assistant moves to last, so
+active play can be judged on its own before any of it is automated. That is also
+better on dependency grounds: the assistant's cap is defined against the final
+trait set, so building it after instruments means designing against something
+settled rather than a moving target.
+
+| Order | Slice | Ships |
 | --- | --- | --- |
-| **1. Revelation** | this document | **now** |
-| 2. Lab Assistant | idle counterpart: names catalogued species, never documents fully, flags what needs your eye | next |
-| 3. Instruments & property knowledge | Market sells instruments that unlock *which traits you can measure at all*; the origin rung; the disclosure schedule | later |
-| 4. Quality spread | colour splits into hue/tone/saturation; prized = percentile profile; Trophy Case becomes profile-hunting | later, isolated |
-| 5. Contradiction & synthetics | readings fitting no species flag a fake or a treatment | later, needs new data |
+| **done** | **1. Revelation** | this document |
+| next | 3. Instruments & property knowledge | Market sells instruments that unlock *which traits you can measure at all*; the origin rung; the disclosure schedule |
+| then | 4. Quality spread | colour splits into hue/tone/saturation; prized = percentile profile; Trophy Case becomes profile-hunting |
+| then | 5. Contradiction & synthetics | readings fitting no species flag a fake or a treatment; needs new data |
+| **last** | 2. Lab Assistant | idle counterpart: names catalogued species, never documents fully, flags what needs your eye |
+
+**Not a slice, and the gap that matters most for feel:** no instrument minigame
+exists. `livePlay` is a live socket holding a constant (hand 1.0, shortcut 0.6).
+Until something fills it, pressing *Test* is still pressing a button — the blind
+tedium is gone, but the skill is not yet in the player's hands. None of slices
+3–5 changes that.
 
 **Deliberately out of scope here:** any change to reputation, value, cutting, the
 Gemdex or the Trophy Case. This slice changes only how a stone gets from rough to
