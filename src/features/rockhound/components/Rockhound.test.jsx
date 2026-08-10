@@ -133,13 +133,20 @@ describe('Explore wiring', () => {
     fireEvent.click(screen.getByRole('button', { name: /work the gravel/i }));
     fireEvent.click(screen.getByRole('button', { name: /bank this haul/i }));
     fireEvent.click(screen.getByRole('button', { name: 'Identify' }));
-    // A depth-1 stone from Hidden Creek can be one of three shallow species
-    // (quartz, almandine garnet, sapphire) but never the deep-only topaz
-    // (minDepth: 2 in localities.yaml). The exact "still consistent with"
-    // count now also depends on the specimen's randomly-rolled hue (a free
-    // observation folded in immediately), so it can be narrower than 3 — but
-    // it must never include the depth-unreachable topaz.
-    expect(screen.getByLabelText(/still consistent/i).textContent).not.toMatch(/Topaz/);
+    // Hidden Creek at depth 1 pools quartz, almandine garnet and sapphire;
+    // topaz is minDepth 2 and unreachable. The free hue observation is folded
+    // in immediately, and the hue sets are NOT disjoint — quartz and sapphire
+    // both include 'colorless' — so the count lands on 1 or 2 depending on
+    // what was rolled, never 3 and never 0.
+    const readout = screen.getByLabelText(/still consistent/i).textContent;
+    // Never the depth-unreachable species.
+    expect(readout).not.toMatch(/Topaz/);
+    // Never empty: an empty list means the consistency check wrongly excluded
+    // the stone's own species, which would make it permanently unidentifiable.
+    // This is the assertion that actually catches a broken reading.
+    const named = ['Clear Quartz', 'Almandine Garnet', 'Sapphire'].filter((n) => readout.includes(n));
+    expect(named.length).toBeGreaterThan(0);
+    expect(named.length).toBeLessThan(3);
   });
 });
 
