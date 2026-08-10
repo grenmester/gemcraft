@@ -23,22 +23,32 @@ have something concrete to read. Nothing is ever pressed blind.
 
 ## 1. Traits
 
-A specimen carries four observable traits in this slice.
+A specimen carries five observable traits in this slice — two free, three tested.
 
 | Trait | How it is observed | Cost |
 | --- | --- | --- |
 | **Hue** | you look at it | free, revealed on arrival |
+| **Transparency** | you hold it to the light | free, revealed on arrival |
 | **Hardness** | scratch test | a test |
 | **Specific gravity** | heft in water | a test |
 | **Fluorescence** | UV lamp | a test |
+
+**Transparency is not decoration — it rescues the design from a dead end.** Without
+it, a black or colourless **opal is indistinguishable from obsidian** at Opal Flats
+even at maximum mastery with every test run: ΔSG 0.25 and Δhardness 0.50 both sit
+inside the base error bands, and both are inert under UV. That stone could never be
+identified, cut, or sold at full value. Opal is `translucent` and obsidian is
+`opaque`, so diaphaneity separates them instantly — and noting diaphaneity is one
+of the first things a gemologist actually does. With it, **zero stones are
+unresolvable at best precision.**
 
 **Colour is free because looking is free** — but what you see is a *hue*, not a
 species descriptor. A specimen shows one coarse hue (`red`, `blue`, `green`…),
 rolled at extraction from its species' colour list and mapped through a shared hue
 table. This distinction is load-bearing, and I measured it: matching against a
 species' full colour list would let sight alone resolve **89%** of stones and make
-the instruments nearly pointless. One coarse hue per specimen resolves **28%** —
-leaving 72% genuinely needing instruments.
+the instruments nearly pointless. One coarse hue per specimen, with transparency,
+resolves **40%** — leaving **60%** genuinely needing instruments.
 
 It also produces exactly the right confusions, which are the textbook ones:
 **ruby and spinel both appear red** (the Black Prince's Ruby is famously a spinel),
@@ -66,6 +76,7 @@ fits it:
 - numeric — `|species.value − center| ≤ band`
 - categorical — exact match
 - hue — the specimen's observed hue is among the hues that species can show
+- transparency — exact match
 
 Tighter bands admit fewer species. So precision is visible as progress: a sharp
 reading collapses the field, a sloppy one barely narrows it.
@@ -123,6 +134,7 @@ The suspect list is replaced by a **trait panel**:
 
 ```
 Hue               red                     (observed — free)
+Transparency      transparent             (observed — free)
 Hardness          9.0 ± 0.5               [Test]
 Specific gravity  — not measured          [Test]
 Fluorescence      — not measured          [Test]
@@ -146,12 +158,17 @@ indistinguishable by the available tests.** That turns the design's viability fr
 a lucky fact into a tested invariant, and it will fail loudly the day someone adds
 a locality that breaks it.
 
-**A second guard must pin the sight-resolution rate.** The whole slice rests on
-most stones needing instruments; measured today that is 72% ambiguous / 28%
-sight-resolvable. A test should assert the ambiguous share stays within a sane band
-(60–85%), so a future colour or find-pool edit that quietly makes sight too
-powerful — and the instruments pointless — fails loudly instead of silently
-hollowing out the mechanic.
+**A second guard must assert that no stone is ever unresolvable.** For every
+species in every pool, and every hue it can show, the full set of observations at
+best precision must leave exactly one consistent species. This is the guard that
+would have caught the opal/obsidian dead end, and it protects against any future
+data edit that strands a stone permanently.
+
+**A third guard must pin the sight-resolution rate.** The slice rests on most
+stones needing instruments; measured today that is 40% sight-resolvable / 60%
+needing instruments. A test should assert the sight share stays within 25–55%, so a
+future colour or find-pool edit that quietly makes inspection too powerful — and
+the instruments pointless — fails loudly instead of hollowing out the mechanic.
 
 ## 8. Scope — this slice and the four after it
 
@@ -178,7 +195,7 @@ Rules modules own formulas; view modules delegate and never restate one.
 | `logic/traits.js` *(new)* | the revealed-trait record on a specimen; merging a new reading with an existing one (narrower wins) |
 | `logic/identifyView.js` *(new)* | the trait panel's shape — delegates every number |
 | `logic/hues.js` *(new)* | the coarse hue table: maps the 32 colour words in `species.yaml` onto ~12 hues, and the hue set each species can show |
-| `logic/rollRough.js` | extended: roll one observed `hue` for the specimen, mirroring how `form` was added |
+| `logic/rollRough.js` | extended: roll one observed `hue` for the specimen, mirroring how `form` was added. Transparency is a species constant, read directly — not rolled |
 | `RockhoundContext.jsx` | `REVEAL_TRAIT` replaces `RECORD_TEST_SCORE`'s luck-based mastery; resolution fires the existing identify transition |
 | `components/Identify.jsx` | rewritten as the trait panel |
 
@@ -196,7 +213,10 @@ Rules modules own formulas; view modules delegate and never restate one.
   available tests** (§7).
 - Guard: every colour word in `species.yaml` maps to a hue — an unmapped word would
   silently make a species unobservable.
-- Guard: the sight-resolvable share of stones stays within 15–40% (§7).
+- Guard: no stone is unresolvable — every (species, hue) case in every pool resolves
+  to exactly one species at best precision (§7).
+- Guard: the sight-resolvable share of stones stays within 25–55% (§7).
+- Guard: every species declares a `transparency`.
 - Component: every unmeasured trait shows its test button; a measured trait shows
   its reading and uncertainty; the consistent-with list shrinks as traits are
   revealed; run-all measures everything left.
@@ -213,7 +233,7 @@ The reducer must stay pure: `now` and `rng` arrive in action payloads.
 visibly narrows the field. The tedium of *blind* clicking is gone; the *joy* of a
 skilful reading arrives with slice 3's instruments and the minigames after them.
 
-**Sight resolves about a quarter of stones outright, and that is uneven by design.**
+**Sight resolves about 40% of stones outright, and that is uneven by design.**
 Basalt Mesa is only 30% ambiguous — obsidian, peridot and agate look nothing alike,
 and a beginner *should* identify them at a glance. The deep localities are where
 instruments earn their keep: Old Quarry 96%, Muzo Vein 88%, Mogok Marble 86%. So
