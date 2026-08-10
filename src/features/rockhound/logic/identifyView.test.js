@@ -81,6 +81,8 @@ describe('traitPanel', () => {
   it('falls back to the stone\'s own species when the locality is unknown', () => {
     // A stale save could name a locality that no longer exists.
     const p = traitPanel(stone(), speciesById.ruby, speciesById, undefined);
-    expect(p.consistent).toContain('ruby');
+    // toEqual, not toContain: a fallback that seeded the whole roster would
+    // still contain ruby and pass, so containment proves nothing here.
+    expect(p.consistent).toEqual(['ruby']);
   });
 });
