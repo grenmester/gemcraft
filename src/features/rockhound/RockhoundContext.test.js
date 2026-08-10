@@ -565,3 +565,66 @@ describe('REVEAL_TRAIT', () => {
     expect(next).toBe(before);
   });
 });
+
+describe('a dug stone settles at extraction when sight alone is enough', () => {
+  const dug = (over = {}) => ({
+    instanceId: 'd1', stage: 'rough', trueSpeciesId: 'almandine_garnet', identifiedAs: null,
+    caratWeight: 1, clarity: 60, colorGrade: 60, origin: 'hidden_creek',
+    foundDepth: 1, form: 'waterworn', hue: 'red', revealed: {}, ...over
+  });
+
+  it('never reaches the bench when the free observations already settle it', () => {
+    // Almandine garnet is the only red species reachable at Hidden Creek depth 1,
+    // so you knew what it was the moment you picked it up. Making the player
+    // press a test to confirm that would be a click that tells them nothing.
+    const next = rockhoundReducer(initialRockhoundState, { type: ADD_ROUGH, payload: dug() });
+    expect(next.rough).toHaveLength(0);
+    expect(next.identified).toHaveLength(1);
+    expect(next.identified[0].trueSpeciesId).toBe('almandine_garnet');
+    expect(next.gemdex).toContain('almandine_garnet');
+    expect(next.reputation).toBeGreaterThan(0);
+  });
+
+  it('still queues a stone sight cannot settle', () => {
+    // Colorless at Hidden Creek could be quartz or sapphire — both include that
+    // hue — so this one genuinely needs instruments and belongs on the bench.
+    const next = rockhoundReducer(initialRockhoundState, {
+      type: ADD_ROUGH, payload: dug({ trueSpeciesId: 'quartz', hue: 'colorless' })
+    });
+    expect(next.rough).toHaveLength(1);
+    expect(next.identified).toHaveLength(0);
+    expect(next.reputation).toBe(initialRockhoundState.reputation);
+  });
+
+  it('settles every obvious stone in a whole banked haul', () => {
+    const next = rockhoundReducer(initialRockhoundState, {
+      type: COLLECT_HAUL,
+      payload: {
+        specimens: [dug({ instanceId: 'a' }), dug({ instanceId: 'b' }),
+                    dug({ instanceId: 'c', trueSpeciesId: 'quartz', hue: 'colorless' })],
+        method: 'panning', xp: 10
+      }
+    });
+    expect(next.identified).toHaveLength(2);
+    expect(next.rough).toHaveLength(1);
+  });
+
+  it('leaves an idle-caught stone unresolved even when it is obvious', () => {
+    // The boundary that keeps reputation off the idle path: reputation gates
+    // seven of the ten localities, so it must never accrue while away. The
+    // sieve hands you material; only you identify it.
+    const state = {
+      ...initialRockhoundState,
+      gear: ['rocker_box'],
+      gemdex: ['almandine_garnet'],
+      sieve: { localityId: 'hidden_creek', since: 0 }
+    };
+    const next = rockhoundReducer(state, {
+      type: COLLECT_SIEVE,
+      payload: { now: 8 * 3600000, rng: () => 0.5, idFactory: () => 'idle-1' }
+    });
+    expect(next.rough.length).toBeGreaterThan(0);
+    expect(next.identified).toHaveLength(0);
+    expect(next.reputation).toBe(state.reputation);
+  });
+});

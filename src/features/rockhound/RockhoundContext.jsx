@@ -76,6 +76,37 @@ function withEarnedGear(gemdex, reputation, currentGear) {
  * The stone's identity has become certain, so move it to the bench of
  * identified specimens.
  */
+/**
+ * Everything observed about a stone so far, and what still fits it. Shared by
+ * the two places that need to ask "is this settled yet?" — admitting a new
+ * stone, and revealing a trait on one already on the bench.
+ */
+function stillConsistent(state, specimen) {
+  const trueSpecies = speciesById[specimen.trueSpeciesId];
+  const locality = localitiesById[specimen.origin];
+  const pool = locality ? seedCandidates(locality, specimen.foundDepth) : [specimen.trueSpeciesId];
+  return consistentSpecies(pool, speciesById, revealedReadings(specimen, trueSpecies));
+}
+
+/**
+ * Take stones the player just dug. Any stone the FREE observations alone
+ * already settle never reaches the bench — you knew what it was the moment you
+ * picked it up, so making the player press a test to confirm it would be a
+ * click that tells them nothing.
+ *
+ * Deliberately used only for stones the player dug themselves. Idle-caught
+ * stones are admitted unresolved even when obvious, because resolving them
+ * here would award reputation while the player was away — and reputation gates
+ * seven of the ten localities.
+ */
+function admitDugSpecimens(state, specimens) {
+  const withAll = { ...state, rough: [...state.rough, ...specimens] };
+  return specimens.reduce(
+    (acc, specimen) => (stillConsistent(acc, specimen).length === 1 ? resolveSpecimen(acc, specimen) : acc),
+    withAll
+  );
+}
+
 function resolveSpecimen(state, specimen) {
   const speciesId = specimen.trueSpeciesId;
   const isNew = !state.gemdex.includes(speciesId);
@@ -118,18 +149,18 @@ function collectSieve(state, now, rng, idFactory) {
 export function rockhoundReducer(state, action) {
   switch (action.type) {
     case ADD_ROUGH:
-      return { ...state, rough: [...state.rough, action.payload] };
+      return admitDugSpecimens(state, [action.payload]);
 
     case COLLECT_HAUL: {
       const { specimens, method, xp } = action.payload;
       const known = Object.prototype.hasOwnProperty.call(state.exploreMethodXp, method);
-      return {
+      const withXp = {
         ...state,
-        rough: [...state.rough, ...specimens],
         exploreMethodXp: known
           ? { ...state.exploreMethodXp, [method]: state.exploreMethodXp[method] + xp }
           : state.exploreMethodXp
       };
+      return admitDugSpecimens(withXp, specimens);
     }
 
     case REVEAL_TRAIT: {
@@ -157,10 +188,9 @@ export function rockhoundReducer(state, action) {
       };
 
       // Identity emerges: nothing is guessed, and nothing is clicked.
-      const locality = localitiesById[specimen.origin];
-      const pool = locality ? seedCandidates(locality, specimen.foundDepth) : [specimen.trueSpeciesId];
-      const survivors = consistentSpecies(pool, speciesById, revealedReadings(updated, trueSpecies));
-      return survivors.length === 1 ? resolveSpecimen(withReading, updated) : withReading;
+      return stillConsistent(withReading, updated).length === 1
+        ? resolveSpecimen(withReading, updated)
+        : withReading;
     }
 
     case CLEAR_NEW:
