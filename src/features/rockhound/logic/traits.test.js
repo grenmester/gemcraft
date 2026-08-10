@@ -25,6 +25,22 @@ describe('mergeReading', () => {
     mergeReading(before, wide);
     expect(before.scratch.band).toBe(0.3);
   });
+
+  it('replaces a categorical reading, which has no band to compare', () => {
+    // A categorical reading is exact — there is no "narrower" version of it, so
+    // re-measuring simply replaces it. Without this the band comparison would
+    // have to cope with undefined on both sides.
+    const inert = { testId: 'uv', kind: 'categorical', property: 'fluorescence', key: 'inert' };
+    const red = { testId: 'uv', kind: 'categorical', property: 'fluorescence', key: 'red/none' };
+    expect(mergeReading({ uv: inert }, red).uv.key).toBe('red/none');
+  });
+
+  it('keeps a numeric reading recorded under a different trait untouched', () => {
+    // Merging one trait must never disturb another.
+    const merged = mergeReading({ scratch: tight }, { testId: 'uv', kind: 'categorical', key: 'inert' });
+    expect(merged.scratch).toBe(tight);
+    expect(merged.uv.key).toBe('inert');
+  });
 });
 
 describe('revealedReadings', () => {
