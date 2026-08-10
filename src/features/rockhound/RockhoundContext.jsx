@@ -2,7 +2,7 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import { species, speciesById } from '../../loaders/species.js';
 import { localities, localitiesById } from '../../loaders/localities.js';
-import { identifyReward, commitIdentification } from './logic/identifyResult.js';
+import { identifyReward } from './logic/identifyResult.js';
 import { completedLocalityIds, completedFamilies, earnedGear, familiarityFactor } from './logic/progression.js';
 import { cutTechniquesById } from '../../loaders/cutTechniques.js';
 import { applyCut, canApplyToSpecimen, specimenScore } from './logic/cut.js';
@@ -17,8 +17,6 @@ import { seedCandidates } from './logic/candidates.js';
 import { HAND_LIVE_PLAY, AUTO_LIVE_PLAY } from './logic/precision.js';
 
 export const ADD_ROUGH = 'ADD_ROUGH';
-export const RECORD_TEST_SCORE = 'RECORD_TEST_SCORE';
-export const COMMIT_IDENTIFY = 'COMMIT_IDENTIFY';
 export const REVEAL_TRAIT = 'REVEAL_TRAIT';
 export const CLEAR_NEW = 'CLEAR_NEW';
 export const UNLOCK_TECHNIQUE = 'UNLOCK_TECHNIQUE';
@@ -76,8 +74,7 @@ function withEarnedGear(gemdex, reputation, currentGear) {
 
 /**
  * The stone's identity has become certain, so move it to the bench of
- * identified specimens. Byte-identical to what committing a correct guess
- * used to do — only the trigger changed.
+ * identified specimens.
  */
 function resolveSpecimen(state, specimen) {
   const speciesId = specimen.trueSpeciesId;
@@ -132,39 +129,6 @@ export function rockhoundReducer(state, action) {
         exploreMethodXp: known
           ? { ...state.exploreMethodXp, [method]: state.exploreMethodXp[method] + xp }
           : state.exploreMethodXp
-      };
-    }
-
-    case RECORD_TEST_SCORE: {
-      const { testId, score } = action.payload;
-      return {
-        ...state,
-        testMastery: {
-          ...state.testMastery,
-          [testId]: Math.max(state.testMastery[testId] ?? 0, score)
-        }
-      };
-    }
-
-    case COMMIT_IDENTIFY: {
-      const { instanceId, guessId } = action.payload;
-      const specimen = state.rough.find((r) => r.instanceId === instanceId);
-      if (!specimen) return state;
-      const { correct, specimen: updated } = commitIdentification(specimen, guessId);
-      if (!correct) return state;
-
-      const speciesId = updated.trueSpeciesId;
-      const isNew = !state.gemdex.includes(speciesId);
-      const newGemdex = isNew ? [...state.gemdex, speciesId] : state.gemdex;
-      const newReputation = state.reputation + identifyReward(speciesById[speciesId]);
-      return {
-        ...state,
-        rough: state.rough.filter((r) => r.instanceId !== instanceId),
-        identified: [...state.identified, updated],
-        gemdex: newGemdex,
-        newlyDiscovered: isNew ? [...state.newlyDiscovered, speciesId] : state.newlyDiscovered,
-        reputation: newReputation,
-        gear: withEarnedGear(newGemdex, newReputation, state.gear)
       };
     }
 

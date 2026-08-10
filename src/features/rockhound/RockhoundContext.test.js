@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   rockhoundReducer, initialRockhoundState,
-  ADD_ROUGH, RECORD_TEST_SCORE, COMMIT_IDENTIFY, REVEAL_TRAIT, CLEAR_NEW,
+  ADD_ROUGH, REVEAL_TRAIT, CLEAR_NEW,
   UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT,
   SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, COLLECT_HAUL,
   DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET,
@@ -29,19 +29,25 @@ describe('rockhoundReducer', () => {
     expect(s.rough[0].instanceId).toBe('r1');
   });
 
+  // sapphireRough is dug at depth 1 (createRough's default), so its own
+  // candidate pool is already narrowed to quartz/almandine_garnet/sapphire
+  // (topaz needs minDepth 2) — a single maxed-out scratch test (hardness 9,
+  // band ±0.5) is decisive on its own, resolving the stone without a guess.
+  const withScratchMastered = { ...initialRockhoundState, testMastery: { ...initialRockhoundState.testMastery, scratch: 100 } };
+
   it('does not double-count a species already in the gemdex', () => {
     const second = { ...sapphireRough, instanceId: 'r2' };
-    let s = rockhoundReducer(initialRockhoundState, { type: ADD_ROUGH, payload: sapphireRough });
+    let s = rockhoundReducer(withScratchMastered, { type: ADD_ROUGH, payload: sapphireRough });
     s = rockhoundReducer(s, { type: ADD_ROUGH, payload: second });
-    s = rockhoundReducer(s, { type: COMMIT_IDENTIFY, payload: { instanceId: 'r1', guessId: 'sapphire' } });
-    s = rockhoundReducer(s, { type: COMMIT_IDENTIFY, payload: { instanceId: 'r2', guessId: 'sapphire' } });
+    s = rockhoundReducer(s, { type: REVEAL_TRAIT, payload: { instanceId: 'r1', testId: 'scratch', byHand: true } });
+    s = rockhoundReducer(s, { type: REVEAL_TRAIT, payload: { instanceId: 'r2', testId: 'scratch', byHand: true } });
     expect(s.gemdex).toEqual(['sapphire']);
     expect(s.reputation).toBe(70); // reputation still awarded per correct ID
   });
 
   it('clears newly-discovered flags', () => {
-    let s = rockhoundReducer(initialRockhoundState, { type: ADD_ROUGH, payload: sapphireRough });
-    s = rockhoundReducer(s, { type: COMMIT_IDENTIFY, payload: { instanceId: 'r1', guessId: 'sapphire' } });
+    let s = rockhoundReducer(withScratchMastered, { type: ADD_ROUGH, payload: sapphireRough });
+    s = rockhoundReducer(s, { type: REVEAL_TRAIT, payload: { instanceId: 'r1', testId: 'scratch', byHand: true } });
     s = rockhoundReducer(s, { type: CLEAR_NEW });
     expect(s.newlyDiscovered).toEqual([]);
   });
@@ -51,13 +57,23 @@ describe('rockhoundReducer', () => {
   });
 
   it('grants rock_hammer once the hidden_creek set is complete', () => {
-    // discover every hidden_creek species via correct commits
+    // Discover every hidden_creek species by measuring it to resolution
+    // rather than guessing it. No foundDepth is set, so each specimen's own
+    // candidate pool is the whole find pool (quartz, almandine_garnet,
+    // sapphire, topaz). At maxed mastery, hardness (±0.5) alone resolves
+    // sapphire and topaz outright; quartz and almandine_garnet sit only
+    // 0.25 apart on hardness, so specific gravity (±0.3) is needed to tell
+    // them apart. Running both tests unconditionally resolves every species
+    // in the pool; REVEAL_TRAIT is a no-op once a specimen has already left
+    // the bench, so the second test is harmless for the ones hardness alone
+    // already resolved.
     const creekSpecies = localitiesById.hidden_creek.findPool.map((e) => e.species);
-    let s = initialRockhoundState;
+    let s = { ...initialRockhoundState, testMastery: { ...initialRockhoundState.testMastery, scratch: 100, heft: 100 } };
     creekSpecies.forEach((speciesId, i) => {
       const rough = { instanceId: `r${i}`, stage: 'rough', trueSpeciesId: speciesId, identifiedAs: null, caratWeight: 1, clarity: 50, colorGrade: 50, origin: 'hidden_creek' };
       s = rockhoundReducer(s, { type: ADD_ROUGH, payload: rough });
-      s = rockhoundReducer(s, { type: COMMIT_IDENTIFY, payload: { instanceId: `r${i}`, guessId: speciesId } });
+      s = rockhoundReducer(s, { type: REVEAL_TRAIT, payload: { instanceId: `r${i}`, testId: 'scratch', byHand: true } });
+      s = rockhoundReducer(s, { type: REVEAL_TRAIT, payload: { instanceId: `r${i}`, testId: 'heft', byHand: true } });
     });
     expect(s.gemdex.sort()).toEqual([...creekSpecies].sort());
     expect(s.gear).toContain('rock_hammer'); // creek set complete

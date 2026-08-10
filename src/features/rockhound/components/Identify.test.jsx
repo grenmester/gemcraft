@@ -1,95 +1,117 @@
-// src/features/rockhound/components/Identify.test.jsx
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Identify from './Identify.jsx';
 import { speciesById } from '../../../loaders/species.js';
 import { localitiesById } from '../../../loaders/localities.js';
-import { createRough } from '../logic/rollRough.js';
 
-const mastery = { scratch: 100, heft: 100, uv: 100 };
+// foundDepth: 3, not 1 as the brief originally specified — ruby's minDepth at
+// mogok_marble is 3 (see localities.yaml), so a foundDepth: 1 ruby cannot
+// exist: seedCandidates would exclude ruby from its own candidate pool,
+// falsely narrowing "still consistent with" to spinel alone before any test
+// even runs. RockhoundContext.test.js's REVEAL_TRAIT fixture already carries
+// the same fix with the same comment.
+const RUBY = {
+  instanceId: 'r1', trueSpeciesId: 'ruby', origin: 'mogok_marble',
+  foundDepth: 3, hue: 'red', revealed: {}
+};
 
-function renderSapphire(overrides = {}) {
-  // foundDepth is explicitly null here (not the createRough default of 1):
-  // these tests exercise test-elimination logic against the whole find
-  // pool, independent of the depth-narrowing feature, so the specimen
-  // models a depth-unknown stone the way a pre-Dive save would.
-  const specimen = createRough(
-    { trueSpeciesId: 'sapphire', caratWeight: 1, clarity: 80, colorGrade: 80, origin: 'hidden_creek', foundDepth: null },
-    () => 'r1'
-  );
+function renderIdentify(over = {}) {
   const props = {
-    specimen,
-    locality: localitiesById.hidden_creek,
+    specimen: RUBY,
+    locality: localitiesById.mogok_marble,
     speciesById,
-    testMastery: mastery,
-    onRunTest: vi.fn(),
-    onCommit: vi.fn(),
-    rng: () => 1, // perfect live-play → sharp bands
-    ...overrides
+    onReveal: vi.fn(),
+    ...over
   };
   render(<Identify {...props} />);
   return props;
 }
 
 describe('Identify', () => {
-  // foundDepth: null tests below legitimately cover the backward-compatibility
-  // path (pre-Dive saves with no recorded depth) — kept as-is.
-  it('starts with all find-pool candidates as suspects', () => {
-    renderSapphire();
-    screen.getByText(/SUSPECTS: 4/);
+  it('shows what each test will tell you before you press it', () => {
+    // The whole point: no button is ever pressed blind.
+    renderIdentify();
+    screen.getByText(/Scratch Test/i);
+    screen.getByText(/Heft in Water/i);
+    screen.getByText(/UV Light/i);
   });
 
-  it('narrows the suspect list to the depth-reachable pool for a real dive specimen', () => {
-    // hidden_creek find pool has 4 species, but topaz has minDepth: 2, so a
-    // specimen genuinely dug at depth 1 can only be one of the other 3:
-    // quartz, almandine_garnet, sapphire.
-    const specimen = createRough(
-      { trueSpeciesId: 'sapphire', caratWeight: 1, clarity: 80, colorGrade: 80, origin: 'hidden_creek', foundDepth: 1 },
-      () => 'r-depth1'
-    );
-    render(
-      <Identify
-        specimen={specimen}
-        locality={localitiesById.hidden_creek}
-        speciesById={speciesById}
-        testMastery={mastery}
-        onRunTest={vi.fn()}
-        onCommit={vi.fn()}
-        rng={() => 1}
-      />
-    );
-    screen.getByText(/SUSPECTS: 3/);
+  it('marks unmeasured traits as unmeasured', () => {
+    renderIdentify();
+    expect(screen.getAllByText(/not measured/i).length).toBeGreaterThan(0);
   });
 
-  it('a sharp scratch test narrows the four colorless-pool candidates toward sapphire', () => {
-    renderSapphire();
-    fireEvent.click(screen.getByRole('button', { name: /Scratch Test/i }));
-    // hidden_creek pool = quartz(7), almandine_garnet(7.25), sapphire(9), topaz(8)
-    // sharp band (~0.5) around 9 keeps only sapphire
-    screen.getByText(/SUSPECTS: 1/);
-    screen.getByText('Sapphire');
+  it('shows the free observations without a test button', () => {
+    renderIdentify();
+    expect(screen.getByLabelText(/^Hue/i).textContent).toMatch(/red/i);
+    expect(screen.queryByRole('button', { name: /measure hue/i })).toBeNull();
   });
 
-  it('records the test score when a test is run', () => {
-    const props = renderSapphire();
-    fireEvent.click(screen.getByRole('button', { name: /Scratch Test/i }));
-    expect(props.onRunTest).toHaveBeenCalledWith('scratch', 100);
+  it('shows a measured reading with its value and uncertainty', () => {
+    renderIdentify({
+      specimen: { ...RUBY, revealed: { scratch: { testId: 'scratch', kind: 'numeric', property: 'hardness', center: 9, band: 0.5 } } }
+    });
+    expect(screen.getByLabelText(/^Scratch Test/i).textContent).toMatch(/9/);
+    expect(screen.getByLabelText(/^Scratch Test/i).textContent).toMatch(/0\.5/);
   });
 
-  it('committing a candidate reports the guess', () => {
-    const props = renderSapphire();
-    fireEvent.click(screen.getByRole('button', { name: /Scratch Test/i }));
-    fireEvent.click(screen.getByRole('button', { name: /This is it/i }));
-    expect(props.onCommit).toHaveBeenCalledWith('r1', 'sapphire');
+  it('names who is still in the running', () => {
+    renderIdentify();
+    const running = screen.getByLabelText(/still consistent/i).textContent;
+    expect(running).toMatch(/Ruby/);
+    expect(running).toMatch(/Spinel/);
   });
 
-  it('passes familiarity through so a completed family sharpens the read', () => {
-    // mastery 30, rng 0.5 → livePlay 0.8. Without familiarity the hardness band spans the
-    // whole 4-species pool; the corundum familiarity boost (×1.3) narrows it to 2 suspects
-    // (topaz + sapphire) without eliminating sapphire (corundum) itself.
-    renderSapphire({ testMastery: { scratch: 30, heft: 30, uv: 30 }, completedFamilies: ['corundum'], rng: () => 0.5 });
-    fireEvent.click(screen.getByRole('button', { name: /Scratch Test/i }));
-    screen.getByText(/SUSPECTS: 2/);
-    screen.getByText('Sapphire');
+  it('reveals a trait by hand when its test is pressed', () => {
+    const { onReveal } = renderIdentify();
+    fireEvent.click(screen.getByRole('button', { name: /measure scratch test/i }));
+    expect(onReveal).toHaveBeenCalledWith('scratch', true);
+  });
+
+  it('runs every remaining test at once, at reduced precision', () => {
+    const { onReveal } = renderIdentify();
+    fireEvent.click(screen.getByRole('button', { name: /run all tests/i }));
+    expect(onReveal).toHaveBeenCalledTimes(3);
+    // byHand false — the shortcut trades precision for speed.
+    expect(onReveal.mock.calls.every((c) => c[1] === false)).toBe(true);
+  });
+
+  it('does not offer to re-run a test that has nothing left to measure', () => {
+    const all = {
+      scratch: { testId: 'scratch', kind: 'numeric', property: 'hardness', center: 9, band: 0.5 },
+      heft: { testId: 'heft', kind: 'numeric', property: 'specificGravity', center: 4, band: 0.3 },
+      uv: { testId: 'uv', kind: 'categorical', property: 'fluorescence', key: 'red/none' }
+    };
+    const { onReveal } = renderIdentify({ specimen: { ...RUBY, revealed: all } });
+    fireEvent.click(screen.getByRole('button', { name: /run all tests/i }));
+    expect(onReveal).not.toHaveBeenCalled();
+  });
+
+  it('explains a fully measured stone that still has not resolved', () => {
+    // 23% of stones cannot resolve at low mastery even with everything
+    // measured, because a beginner's bands are ten times too wide. Without
+    // this message the player measures everything, sees nothing happen, and
+    // concludes the game is broken.
+    const all = {
+      scratch: { testId: 'scratch', kind: 'numeric', property: 'hardness', center: 9, band: 5 },
+      heft: { testId: 'heft', kind: 'numeric', property: 'specificGravity', center: 4, band: 3 },
+      uv: { testId: 'uv', kind: 'categorical', property: 'fluorescence', key: 'inert' }
+    };
+    renderIdentify({ specimen: { ...RUBY, hue: 'red', revealed: all } });
+    screen.getByText(/too imprecise to separate/i);
+  });
+
+  it('says nothing about imprecision while tests remain unrun', () => {
+    // The message must mean "your readings are too wide", not "you have not
+    // finished" — otherwise it fires on every fresh stone and means nothing.
+    renderIdentify();
+    expect(screen.queryByText(/too imprecise to separate/i)).toBeNull();
+  });
+
+  it('still offers a single test again, since a sharper reading is worth taking', () => {
+    renderIdentify({
+      specimen: { ...RUBY, revealed: { scratch: { testId: 'scratch', kind: 'numeric', property: 'hardness', center: 9, band: 0.5 } } }
+    });
+    screen.getByRole('button', { name: /measure scratch test/i });
   });
 });

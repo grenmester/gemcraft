@@ -1,6 +1,6 @@
 // src/features/rockhound/components/Rockhound.jsx
 import { useState, useEffect } from 'react';
-import { useRockhound, COLLECT_HAUL, RECORD_TEST_SCORE, COMMIT_IDENTIFY, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, PARK_SIEVE, COLLECT_SIEVE } from '../RockhoundContext.jsx';
+import { useRockhound, COLLECT_HAUL, REVEAL_TRAIT, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, PARK_SIEVE, COLLECT_SIEVE } from '../RockhoundContext.jsx';
 import { localities, localitiesById } from '../../../loaders/localities.js';
 import { speciesById, species } from '../../../loaders/species.js';
 import { cutTechniques, cutTechniquesById } from '../../../loaders/cutTechniques.js';
@@ -116,10 +116,9 @@ function RockhoundInner() {
             specimen={activeRough}
             locality={localitiesById[activeRough.origin] ?? localitiesById.hidden_creek}
             speciesById={speciesById}
-            testMastery={state.testMastery}
-            completedFamilies={completedFams}
-            onRunTest={(testId, score) => dispatch({ type: RECORD_TEST_SCORE, payload: { testId, score } })}
-            onCommit={(instanceId, guessId) => dispatch({ type: COMMIT_IDENTIFY, payload: { instanceId, guessId } })}
+            onReveal={(testId, byHand) =>
+              dispatch({ type: REVEAL_TRAIT, payload: { instanceId: activeRough.instanceId, testId, byHand } })
+            }
           />
         ) : (
           <p className="text-slate-400">Your bench has no rough — pan a locality in Explore first.</p>

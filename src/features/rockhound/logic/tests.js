@@ -22,17 +22,6 @@ export function runTest(testId, trueSpecies, { mastery, livePlay, familiarity = 
   return { testId, kind: 'categorical', property: def.property, key: fluorescenceKey(trueSpecies) };
 }
 
-export function survivesReading(candidate, reading) {
-  if (reading.kind === 'numeric') {
-    return Math.abs(numericProperty(candidate, reading.property) - reading.center) <= reading.band;
-  }
-  return fluorescenceKey(candidate) === reading.key;
-}
-
-export function eliminate(candidateIds, speciesById, reading) {
-  return candidateIds.filter((id) => survivesReading(speciesById[id], reading));
-}
-
 /** The two traits a player observes for free, just by looking at the stone. */
 export const OBSERVED_TRAITS = {
   hue: { id: 'hue', name: 'Hue', kind: 'hue' },
@@ -40,9 +29,9 @@ export const OBSERVED_TRAITS = {
 };
 
 /**
- * Whether this species could have produced this reading. The inverse of the
- * old `survivesReading` framing: the player is shown the reading, and the
- * species list is derived from it rather than mutated by it.
+ * Whether this species could have produced this reading. The player is shown
+ * the reading, and the species list is derived from it rather than mutated
+ * by it.
  */
 export function consistentWithSpecies(species, reading) {
   switch (reading.kind) {

@@ -36,8 +36,8 @@ describe('Rockhound shell', () => {
     fireEvent.click(screen.getByRole('button', { name: /work the gravel/i }));
     fireEvent.click(screen.getByRole('button', { name: /bank this haul/i }));
     fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
-    // A suspects counter proves an Identify session is active on a real rough.
-    screen.getByText(/SUSPECTS:/);
+    // The consistent-with readout proves an Identify session is active on a real rough.
+    screen.getByLabelText(/still consistent/i);
   });
 
   it('shows an empty-bench prompt in Identify when there is no rough', () => {
@@ -133,10 +133,13 @@ describe('Explore wiring', () => {
     fireEvent.click(screen.getByRole('button', { name: /work the gravel/i }));
     fireEvent.click(screen.getByRole('button', { name: /bank this haul/i }));
     fireEvent.click(screen.getByRole('button', { name: 'Identify' }));
-    // A depth-1 stone from Hidden Creek can be any of the three shallow
-    // species (quartz, almandine garnet, sapphire), but never the deep-only
-    // topaz (minDepth: 2 in localities.yaml).
-    expect(screen.getByText(/SUSPECTS/).textContent).toMatch(/3/);
+    // A depth-1 stone from Hidden Creek can be one of three shallow species
+    // (quartz, almandine garnet, sapphire) but never the deep-only topaz
+    // (minDepth: 2 in localities.yaml). The exact "still consistent with"
+    // count now also depends on the specimen's randomly-rolled hue (a free
+    // observation folded in immediately), so it can be narrower than 3 — but
+    // it must never include the depth-unreachable topaz.
+    expect(screen.getByLabelText(/still consistent/i).textContent).not.toMatch(/Topaz/);
   });
 });
 

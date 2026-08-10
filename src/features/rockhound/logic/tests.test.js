@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { bandWidth, BASE_ERROR, HAND_LIVE_PLAY, AUTO_LIVE_PLAY } from './precision.js';
-import { runTest, survivesReading, eliminate, TEST_DEFS, consistentWithSpecies, consistentSpecies } from './tests.js';
+import { runTest, TEST_DEFS, consistentWithSpecies, consistentSpecies } from './tests.js';
 import { speciesById } from '../../../loaders/species.js';
 import { familiarityFactor } from './progression.js';
 
@@ -13,29 +13,29 @@ describe('precision', () => {
   });
 });
 
-describe('runTest + elimination', () => {
+describe('runTest + consistency', () => {
   const ids = ['quartz', 'topaz', 'sapphire']; // colorless look-alikes: 7 / 8 / 9
 
-  it('a sharp scratch test on sapphire eliminates quartz and topaz', () => {
+  it('a sharp scratch test on sapphire narrows the pool to sapphire alone', () => {
     const reading = runTest('scratch', speciesById.sapphire, { mastery: 100, livePlay: 1.0 });
-    const survivors = eliminate(ids, speciesById, reading);
+    const survivors = consistentSpecies(ids, speciesById, [reading]);
     expect(survivors).toEqual(['sapphire']);
   });
 
-  it('a fuzzy scratch test eliminates nothing', () => {
+  it('a fuzzy scratch test narrows nothing', () => {
     const reading = runTest('scratch', speciesById.sapphire, { mastery: 10, livePlay: 0.6 });
-    const survivors = eliminate(ids, speciesById, reading);
+    const survivors = consistentSpecies(ids, speciesById, [reading]);
     expect(survivors).toEqual(ids);
   });
 
-  it('the true species always survives its own reading', () => {
+  it('the true species always stays consistent with its own reading', () => {
     const reading = runTest('heft', speciesById.topaz, { mastery: 100, livePlay: 1.0 });
-    expect(survivesReading(speciesById.topaz, reading)).toBe(true);
+    expect(consistentWithSpecies(speciesById.topaz, reading)).toBe(true);
   });
 
   it('UV is categorical: fluorite (fluorescent) is separated from inert quartz', () => {
     const reading = runTest('uv', speciesById.fluorite, { mastery: 50, livePlay: 0.8 });
-    const survivors = eliminate(['quartz', 'amethyst', 'fluorite'], speciesById, reading);
+    const survivors = consistentSpecies(['quartz', 'amethyst', 'fluorite'], speciesById, [reading]);
     expect(survivors).toEqual(['fluorite']);
   });
 
@@ -45,14 +45,14 @@ describe('runTest + elimination', () => {
 });
 
 describe('runTest familiarity', () => {
-  it('a familiar family narrows the band (eliminates more) than an unfamiliar one', () => {
+  it('a familiar family narrows the band (and the surviving pool) more than an unfamiliar one', () => {
     // topaz(8) vs sapphire(9): at mastery 40, livePlay 0.8, familiarity sharpens the band
     const ids = ['topaz', 'sapphire'];
     const plain = runTest('scratch', speciesById.sapphire, { mastery: 40, livePlay: 0.8, familiarity: 1 });
     const familiar = runTest('scratch', speciesById.sapphire, { mastery: 40, livePlay: 0.8, familiarity: familiarityFactor('corundum', ['corundum']) });
     expect(familiar.band).toBeLessThan(plain.band);
-    // the sharper familiar reading eliminates topaz; assert it is at least as discriminating
-    expect(eliminate(ids, speciesById, familiar).length).toBeLessThanOrEqual(eliminate(ids, speciesById, plain).length);
+    // the sharper familiar reading narrows out topaz; assert it is at least as discriminating
+    expect(consistentSpecies(ids, speciesById, [familiar]).length).toBeLessThanOrEqual(consistentSpecies(ids, speciesById, [plain]).length);
   });
 });
 
