@@ -1,12 +1,14 @@
 import { haulSize } from './dive.js';
 import { rollForm } from './forms.js';
+import { huesForSpecies } from './hues.js';
+import { speciesById } from '../../../loaders/species.js';
 
 const lerp = ([lo, hi], t) => lo + (hi - lo) * t;
 const round2 = (n) => Math.round(n * 100) / 100;
 let idCounter = 0;
 export const defaultId = () => `spec-${Date.now()}-${(++idCounter).toString(36)}`;
 
-export function createRough({ trueSpeciesId, caratWeight, clarity, colorGrade, origin, foundDepth = 1, form = 'fragment' }, idFactory = defaultId) {
+export function createRough({ trueSpeciesId, caratWeight, clarity, colorGrade, origin, foundDepth = 1, form = 'fragment', hue = 'unknown' }, idFactory = defaultId) {
   return {
     instanceId: idFactory(),
     stage: 'rough',
@@ -17,7 +19,8 @@ export function createRough({ trueSpeciesId, caratWeight, clarity, colorGrade, o
     colorGrade,
     origin,
     foundDepth,
-    form
+    form,
+    hue
   };
 }
 
@@ -51,6 +54,13 @@ export function bestOf(depth, rng) {
   return best;
 }
 
+/** The one hue THIS stone shows, drawn from the hues its species can take. */
+function rollHue(speciesId, rng) {
+  const hues = huesForSpecies(speciesById[speciesId]);
+  if (hues.length === 0) return 'unknown';
+  return hues[Math.min(Math.floor(rng() * hues.length), hues.length - 1)];
+}
+
 export function rollRough(locality, depth, rng = Math.random, idFactory = defaultId, allowedSpecies = null) {
   const pool = catchablePool(locality.findPool, depth, allowedSpecies);
   if (pool.length === 0) return null;
@@ -68,7 +78,8 @@ export function rollRough(locality, depth, rng = Math.random, idFactory = defaul
     colorGrade: Math.round(lerp(entry.colorRange, bestOf(depth, rng))),
     origin: locality.id,
     foundDepth: depth,
-    form: rollForm(locality.method, depth, rng)
+    form: rollForm(locality.method, depth, rng),
+    hue: rollHue(entry.species, rng)
   }, idFactory);
 }
 

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { numericProperty, fluorescenceKey } from './properties.js';
 import { createRough, rollRough, effectivePool, rollHaul, bestOf, catchablePool } from './rollRough.js';
 import { haulSize } from './dive.js';
+import { huesForSpecies } from './hues.js';
 import { speciesById } from '../../../loaders/species.js';
 import { localitiesById, localities } from '../../../loaders/localities.js';
 
@@ -22,10 +23,10 @@ describe('properties', () => {
 });
 
 describe('rollRough', () => {
-  // rng is called in order: [speciesPick, carat, clarity, color, form].
+  // rng is called in order: [speciesPick, carat, clarity, color, form, hue].
   // carat/clarity/color are each `bestOf(depth, rng)`, which consumes one
   // draw per level of depth, so at depth 1 the full sequence is exactly
-  // five draws: speciesPick, carat, clarity, color, form. `stubRng` throws
+  // six draws: speciesPick, carat, clarity, color, form, hue. `stubRng` throws
   // if asked for a value it wasn't given, so an under-supplied array fails
   // loudly instead of silently returning `undefined`.
   const stubRng = (values) => {
@@ -44,7 +45,7 @@ describe('rollRough', () => {
     // A form roll of 0 genuinely lands on the first entry (waterworn) via the
     // weighted loop; the old fallback-on-exhaustion bug always produced the
     // *last* entry (crystal), so this assertion would catch a regression.
-    const spec = rollRough(loc, 1, stubRng([0, 0, 0, 0, 0]), () => 'id-1');
+    const spec = rollRough(loc, 1, stubRng([0, 0, 0, 0, 0, 0]), () => 'id-1');
     expect(spec.trueSpeciesId).toBe('quartz');
     expect(spec.origin).toBe('hidden_creek');
     expect(spec.stage).toBe('rough');
@@ -60,7 +61,7 @@ describe('rollRough', () => {
     // crystal here would agree with the last-entry value a running-dry stub
     // coincidentally produces, and the assertion could not tell a working
     // weighted loop from a broken one.
-    const spec = rollRough(loc, 1, stubRng([0, 1, 1, 1, 0.8]), () => 'id-2');
+    const spec = rollRough(loc, 1, stubRng([0, 1, 1, 1, 0.8, 0]), () => 'id-2');
     // quartz entry: caratRange [0.5,4.0], clarityRange [40,90], colorRange [30,70]
     expect(spec.caratWeight).toBeGreaterThanOrEqual(0.5);
     expect(spec.caratWeight).toBeLessThanOrEqual(4.0);
@@ -176,5 +177,41 @@ describe('species filtering', () => {
     const a = rollRough(creek, 1, () => 0.5, () => 'id-1');
     const b = rollRough(creek, 1, () => 0.5, () => 'id-1', null);
     expect(a).toEqual(b);
+  });
+});
+
+describe('observed hue', () => {
+  const creek = localities.find((l) => l.id === 'hidden_creek');
+
+  it('gives every stone exactly one observed hue', () => {
+    const s = rollRough(creek, 1, () => 0.5);
+    expect(typeof s.hue).toBe('string');
+    expect(s.hue.length).toBeGreaterThan(0);
+  });
+
+  it('only ever shows a hue its species can actually appear in', () => {
+    for (let i = 0; i < 100; i++) {
+      const s = rollRough(creek, 1, () => i / 100);
+      expect(huesForSpecies(speciesById[s.trueSpeciesId]), s.trueSpeciesId).toContain(s.hue);
+    }
+  });
+
+  it('shows different hues for a species with several, across many rolls', () => {
+    // Sapphire is blue, colorless, yellow or pink. One specimen shows ONE of
+    // them — if every specimen showed the same one, sight would be far more
+    // diagnostic than intended.
+    const mogok = localities.find((l) => l.id === 'mogok_marble');
+    const seen = new Set();
+    for (let i = 0; i < 400; i++) {
+      const s = rollRough(mogok, 1, () => i / 400);
+      if (s.trueSpeciesId === 'sapphire') seen.add(s.hue);
+    }
+    expect(seen.size).toBeGreaterThan(1);
+  });
+
+  it('defaults to an unknown hue for specimens that predate the field', () => {
+    // Saves written before this change carry no hue.
+    const s = createRough({ trueSpeciesId: 'quartz', caratWeight: 1, clarity: 50, colorGrade: 50, origin: 'x' }, () => 'z');
+    expect(s.hue).toBe('unknown');
   });
 });
