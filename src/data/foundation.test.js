@@ -7,6 +7,11 @@ import { localities, localitiesById, getFindPoolSpecies } from '../loaders/local
 import { RARITY_ENUM, speciesSchema } from '../schemas/species.js';
 import { localitySchema, findPoolEntrySchema, gateGroupSchema } from '../schemas/localities.js';
 
+import { huesForSpecies } from '../features/rockhound/logic/hues.js';
+import { consistentSpecies } from '../features/rockhound/logic/tests.js';
+import { BASE_ERROR } from '../features/rockhound/logic/precision.js';
+import { fluorescenceKey } from '../features/rockhound/logic/properties.js';
+
 // Walk a gate tree collecting leaf conditions.
 function collectGateConditions(group, acc = []) {
   for (const key of ['allOf', 'anyOf']) {
@@ -176,5 +181,106 @@ describe('rarity tiers', () => {
     for (const s of species) {
       expect(RARITY_ENUM, `${s.id} rarity`).toContain(s.rarity);
     }
+  });
+});
+
+describe('identification is always possible', () => {
+  // The narrowest band the model can ever produce, so this is the best case.
+  const best = (species, property) => ({
+    kind: 'numeric', property,
+    center: Array.isArray(species[property])
+      ? (species[property][0] + species[property][1]) / 2
+      : species[property],
+    band: BASE_ERROR[property]
+  });
+
+  const everything = (species, hue) => [
+    { kind: 'hue', value: hue },
+    { kind: 'transparency', value: species.transparency },
+    best(species, 'hardness'),
+    best(species, 'specificGravity'),
+    { kind: 'categorical', property: 'fluorescence', key: fluorescenceKey(species) }
+  ];
+
+  it('every species declares a transparency', () => {
+    // Without it, opal and obsidian are indistinguishable forever.
+    for (const s of species) {
+      expect(s.transparency, `${s.id} transparency`).toBeTruthy();
+    }
+  });
+
+  it('no stone is unresolvable, at any locality, in any hue it can show', () => {
+    // THE guard. A stone that never resolves can never be identified, cut or
+    // sold at full value — a permanent dead end for the player.
+    for (const loc of localities) {
+      const pool = [...new Set(loc.findPool.map((e) => e.species))];
+      for (const id of pool) {
+        for (const hue of huesForSpecies(speciesById[id])) {
+          const survivors = consistentSpecies(pool, speciesById, everything(speciesById[id], hue));
+          expect(survivors, `${loc.id}: a ${hue} ${id}`).toEqual([id]);
+        }
+      }
+    }
+  });
+
+  it('lets a beginner resolve most stones, so nobody is stonewalled at the start', () => {
+    // bandWidth clamps mastery at a floor of 0.1, so a beginner's numeric
+    // readings are ten times wider than an expert's and contribute almost
+    // nothing. Measured: 77% still resolve at mastery 0, on hue, transparency
+    // and fluorescence alone. If a data change pushed this down, new players
+    // would measure everything and watch nothing happen.
+    const beginnerBand = (property) => BASE_ERROR[property] / 0.1;
+    const beginner = (species, hue) => [
+      { kind: 'hue', value: hue },
+      { kind: 'transparency', value: species.transparency },
+      { kind: 'numeric', property: 'hardness',
+        center: Array.isArray(species.hardness) ? (species.hardness[0] + species.hardness[1]) / 2 : species.hardness,
+        band: beginnerBand('hardness') },
+      { kind: 'numeric', property: 'specificGravity', center: species.specificGravity, band: beginnerBand('specificGravity') },
+      { kind: 'categorical', property: 'fluorescence', key: fluorescenceKey(species) }
+    ];
+    let total = 0;
+    let resolved = 0;
+    for (const loc of localities) {
+      const pool = [...new Set(loc.findPool.map((e) => e.species))];
+      for (const entry of loc.findPool) {
+        const hues = huesForSpecies(speciesById[entry.species]);
+        const share = entry.weight / hues.length;
+        for (const hue of hues) {
+          total += share;
+          if (consistentSpecies(pool, speciesById, beginner(speciesById[entry.species], hue)).length === 1) {
+            resolved += share;
+          }
+        }
+      }
+    }
+    const pct = (resolved / total) * 100;
+    expect(pct, `beginner-resolvable ${pct.toFixed(1)}%`).toBeGreaterThan(60);
+  });
+
+  it('keeps sight useful but not sufficient', () => {
+    // The slice rests on most stones needing instruments. Measured at design
+    // time: 40% sight-resolvable. A colour or find-pool edit that pushed this
+    // far up would quietly make the instruments pointless.
+    let total = 0;
+    let resolved = 0;
+    for (const loc of localities) {
+      const pool = [...new Set(loc.findPool.map((e) => e.species))];
+      for (const entry of loc.findPool) {
+        const hues = huesForSpecies(speciesById[entry.species]);
+        const share = entry.weight / hues.length;
+        for (const hue of hues) {
+          total += share;
+          const sightOnly = [
+            { kind: 'hue', value: hue },
+            { kind: 'transparency', value: speciesById[entry.species].transparency }
+          ];
+          if (consistentSpecies(pool, speciesById, sightOnly).length === 1) resolved += share;
+        }
+      }
+    }
+    const pct = (resolved / total) * 100;
+    expect(pct, `sight-resolvable ${pct.toFixed(1)}%`).toBeGreaterThan(25);
+    expect(pct, `sight-resolvable ${pct.toFixed(1)}%`).toBeLessThan(55);
   });
 });
