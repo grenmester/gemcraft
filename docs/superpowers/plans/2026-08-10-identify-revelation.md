@@ -407,7 +407,7 @@ export const HAND_LIVE_PLAY = 1.0;
 export const AUTO_LIVE_PLAY = 0.6;
 ```
 
-`livePlayFromRng` is the source of today's defect — mastery is currently the running maximum of a random number — and its only caller is `Identify.jsx`, which Task 6 rewrites. Grep to confirm before deleting: `grep -rn "livePlayFromRng" src/`.
+`livePlayFromRng` is the source of today's defect — mastery is currently the running maximum of a random number. **Do not delete it yet.** Its only caller is `Identify.jsx`, which Task 8 rewrites; deleting it here would leave the suite red for five tasks, and this plan requires green at every commit. Add a comment marking it dead and leave it. Task 8 removes it together with its last caller. Grep to confirm the caller: `grep -rn "livePlayFromRng" src/`.
 
 - [ ] **Step 4: Implement consistency in `tests.js`**
 
@@ -972,7 +972,11 @@ Add `import { familiarityFactor, completedFamilies } from './logic/progression.j
 - [ ] **Step 4: Run the full suite**
 
 Run: `./node_modules/.bin/vitest run`
-Expected: FAIL — existing tests still reference `COMMIT_IDENTIFY` and `RECORD_TEST_SCORE`, and `Identify.jsx` still dispatches them. Delete the tests for the two retired actions (their behaviour is now covered by the `REVEAL_TRAIT` resolution tests), and leave `Identify.jsx` broken until Task 8 — note it in your report rather than patching it here.
+Expected: FAIL — existing tests still reference `COMMIT_IDENTIFY` and `RECORD_TEST_SCORE`.
+
+**The suite must be green when you commit.** Two things follow:
+- Delete the tests for the two retired actions; their behaviour is now covered by the `REVEAL_TRAIT` resolution tests above.
+- `Identify.jsx` still dispatches the retired actions, so **keep both action constants and both reducer cases in place** alongside the new `REVEAL_TRAIT`. They become dead code for exactly one task. Task 8 rewrites `Identify.jsx` and removes them together with their last caller.
 
 If any *other* test breaks, that is a real regression: report it.
 
@@ -1378,9 +1382,16 @@ In `src/features/rockhound/components/Rockhound.jsx`, replace `RECORD_TEST_SCORE
           />
 ```
 
-- [ ] **Step 5: Delete the dead elimination helpers**
+- [ ] **Step 5: Delete everything the old path used**
 
-`survivesReading` and `eliminate` in `src/features/rockhound/logic/tests.js` now have no production caller. Grep to confirm — `grep -rn "survivesReading\|eliminate(" src/` — then delete both, and their tests.
+These now have no production caller. Grep to confirm each, then delete it with its tests:
+
+- `survivesReading` and `eliminate` in `logic/tests.js`
+- `livePlayFromRng` in `logic/precision.js`
+- the `COMMIT_IDENTIFY` and `RECORD_TEST_SCORE` action constants and reducer cases in `RockhoundContext.jsx`
+- `commitIdentification` in `logic/identifyResult.js`, if nothing else calls it — check, because `identifyReward` in the same file is still used
+
+Run `grep -rn "survivesReading\|eliminate(\|livePlayFromRng\|COMMIT_IDENTIFY\|RECORD_TEST_SCORE\|commitIdentification" src/` and confirm it returns nothing but the deletions you are making.
 
 - [ ] **Step 6: Run the full suite and the build**
 
