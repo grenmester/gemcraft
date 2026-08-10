@@ -70,6 +70,29 @@ describe('Rockhound shell', () => {
     screen.getByText(/no rough/i);
   });
 
+  it('falls back to the specimen\'s own species, not Hidden Creek, when its locality is gone', () => {
+    // Regression for Finding 2: the shell used to substitute Hidden Creek
+    // whenever a saved locality lookup came back empty. Ruby is not in
+    // Hidden Creek's find pool at all, but red + transparent DOES match
+    // Hidden Creek's almandine garnet — so the old substitution would show
+    // "Almandine Garnet" here, while the reducer (whose own fallback is
+    // [trueSpeciesId]) already treats the stone as settled on ruby. Passing
+    // the real (missing) locality through makes the view agree with the
+    // reducer: just ruby.
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      rough: [{
+        instanceId: 'stale-1', stage: 'rough', trueSpeciesId: 'ruby', identifiedAs: null,
+        caratWeight: 1, clarity: 80, colorGrade: 80, origin: 'a_deleted_locality',
+        foundDepth: 3, form: 'fragment', hue: 'red', revealed: {}
+      }]
+    }));
+    renderRockhound();
+    fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
+    const readout = screen.getByLabelText(/still consistent/i).textContent;
+    expect(readout).toMatch(/Ruby/);
+    expect(readout).not.toMatch(/Garnet/);
+  });
+
   it('clears NEW badges once the Gemdex tab is viewed', () => {
     localStorage.setItem('rockhound_save_v1', JSON.stringify({
       rough: [], identified: [],

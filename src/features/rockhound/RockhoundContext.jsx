@@ -12,8 +12,9 @@ import { idleDepth, pendingCount, MS_PER_HOUR } from './logic/idle.js';
 import { benchFull } from './logic/bench.js';
 import { rollRough } from './logic/rollRough.js';
 import { runTest, consistentSpecies } from './logic/tests.js';
-import { mergeReading, revealedReadings } from './logic/traits.js';
+import { mergeReading, revealedReadings, UNKNOWN_HUE } from './logic/traits.js';
 import { seedCandidates } from './logic/candidates.js';
+import { huesForSpecies } from './logic/hues.js';
 import { HAND_LIVE_PLAY, AUTO_LIVE_PLAY } from './logic/precision.js';
 
 export const ADD_ROUGH = 'ADD_ROUGH';
@@ -81,7 +82,7 @@ function withEarnedGear(gemdex, reputation, currentGear) {
  * the two places that need to ask "is this settled yet?" — admitting a new
  * stone, and revealing a trait on one already on the bench.
  */
-function stillConsistent(state, specimen) {
+function stillConsistent(specimen) {
   const trueSpecies = speciesById[specimen.trueSpeciesId];
   const locality = localitiesById[specimen.origin];
   const pool = locality ? seedCandidates(locality, specimen.foundDepth) : [specimen.trueSpeciesId];
@@ -102,7 +103,7 @@ function stillConsistent(state, specimen) {
 function admitDugSpecimens(state, specimens) {
   const withAll = { ...state, rough: [...state.rough, ...specimens] };
   return specimens.reduce(
-    (acc, specimen) => (stillConsistent(acc, specimen).length === 1 ? resolveSpecimen(acc, specimen) : acc),
+    (acc, specimen) => (stillConsistent(specimen).length === 1 ? resolveSpecimen(acc, specimen) : acc),
     withAll
   );
 }
@@ -188,7 +189,7 @@ export function rockhoundReducer(state, action) {
       };
 
       // Identity emerges: nothing is guessed, and nothing is clicked.
-      return stillConsistent(withReading, updated).length === 1
+      return stillConsistent(updated).length === 1
         ? resolveSpecimen(withReading, updated)
         : withReading;
     }
@@ -347,12 +348,39 @@ export function rockhoundReducer(state, action) {
   }
 }
 
+/**
+ * Give a hue to rough that predates the hue field, or was saved with
+ * UNKNOWN_HUE — rolled from the stone's own species with huesForSpecies, the
+ * same draw rollRough itself makes, so a backfilled stone is indistinguishable
+ * from a freshly dug one. Hue is the only thing that separates varieties
+ * within a mineral family (see traits.js), so a rough that never gets one can
+ * never resolve — see the guard in src/data/foundation.test.js.
+ *
+ * Also defaults `revealed` to {} on any rough that lacks it, for the same
+ * "specimens saved before this shape existed" reason.
+ *
+ * Impure (Math.random) exactly like loadInitialState, which is the only
+ * caller — never the reducer.
+ */
+export function backfillRough(rough) {
+  const revealed = rough.revealed ?? {};
+  if (rough.hue && rough.hue !== UNKNOWN_HUE) return { ...rough, revealed };
+  const hues = huesForSpecies(speciesById[rough.trueSpeciesId]);
+  const hue = hues.length > 0 ? hues[Math.min(Math.floor(Math.random() * hues.length), hues.length - 1)] : UNKNOWN_HUE;
+  return { ...rough, hue, revealed };
+}
+
 function loadInitialState() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const merged = { ...initialRockhoundState, ...JSON.parse(saved) };
-      return { ...merged, gear: withEarnedGear(merged.gemdex, merged.reputation, merged.gear), lastCutResult: null };
+      return {
+        ...merged,
+        rough: merged.rough.map(backfillRough),
+        gear: withEarnedGear(merged.gemdex, merged.reputation, merged.gear),
+        lastCutResult: null
+      };
     }
   } catch (e) {
     console.error('Failed to load rockhound save:', e);

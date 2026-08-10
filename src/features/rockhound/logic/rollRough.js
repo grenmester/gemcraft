@@ -1,6 +1,7 @@
 import { haulSize } from './dive.js';
 import { rollForm } from './forms.js';
 import { huesForSpecies } from './hues.js';
+import { UNKNOWN_HUE } from './traits.js';
 import { speciesById } from '../../../loaders/species.js';
 
 const lerp = ([lo, hi], t) => lo + (hi - lo) * t;
@@ -8,7 +9,7 @@ const round2 = (n) => Math.round(n * 100) / 100;
 let idCounter = 0;
 export const defaultId = () => `spec-${Date.now()}-${(++idCounter).toString(36)}`;
 
-export function createRough({ trueSpeciesId, caratWeight, clarity, colorGrade, origin, foundDepth = 1, form = 'fragment', hue = 'unknown' }, idFactory = defaultId) {
+export function createRough({ trueSpeciesId, caratWeight, clarity, colorGrade, origin, foundDepth = 1, form = 'fragment', hue = UNKNOWN_HUE }, idFactory = defaultId) {
   return {
     instanceId: idFactory(),
     stage: 'rough',
@@ -57,7 +58,7 @@ export function bestOf(depth, rng) {
 /** The one hue THIS stone shows, drawn from the hues its species can take. */
 function rollHue(speciesId, rng) {
   const hues = huesForSpecies(speciesById[speciesId]);
-  if (hues.length === 0) return 'unknown';
+  if (hues.length === 0) return UNKNOWN_HUE;
   return hues[Math.min(Math.floor(rng() * hues.length), hues.length - 1)];
 }
 

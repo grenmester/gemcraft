@@ -9,8 +9,10 @@ import { localitySchema, findPoolEntrySchema, gateGroupSchema } from '../schemas
 
 import { huesForSpecies } from '../features/rockhound/logic/hues.js';
 import { consistentSpecies } from '../features/rockhound/logic/tests.js';
-import { BASE_ERROR } from '../features/rockhound/logic/precision.js';
-import { fluorescenceKey } from '../features/rockhound/logic/properties.js';
+import { bandWidth, HAND_LIVE_PLAY } from '../features/rockhound/logic/precision.js';
+import { numericProperty, fluorescenceKey } from '../features/rockhound/logic/properties.js';
+import { backfillRough } from '../features/rockhound/RockhoundContext.jsx';
+import { UNKNOWN_HUE } from '../features/rockhound/logic/traits.js';
 
 // Walk a gate tree collecting leaf conditions.
 function collectGateConditions(group, acc = []) {
@@ -185,13 +187,13 @@ describe('rarity tiers', () => {
 });
 
 describe('identification is always possible', () => {
-  // The narrowest band the model can ever produce, so this is the best case.
+  // The narrowest band the model can ever produce, so this is the best case:
+  // mastery 100 and hand-quality live play, delegated to bandWidth itself so
+  // this guard can never silently drift from the rules it is guarding.
   const best = (species, property) => ({
     kind: 'numeric', property,
-    center: Array.isArray(species[property])
-      ? (species[property][0] + species[property][1]) / 2
-      : species[property],
-    band: BASE_ERROR[property]
+    center: numericProperty(species, property),
+    band: bandWidth({ property, mastery: 100, livePlay: HAND_LIVE_PLAY })
   });
 
   const everything = (species, hue) => [
@@ -223,20 +225,40 @@ describe('identification is always possible', () => {
     }
   });
 
+  it('backfill leaves nothing hueless, for every species in the roster', () => {
+    // This guard always fed `everything()` a hue reading, so it never tested
+    // the shape a pre-hue save actually has and could not have caught Finding
+    // 1: a rough saved with no hue at all. Without a hue, several groups
+    // never separate on the rest of the readings alone — e.g. a hueless ruby
+    // stays [sapphire, ruby] even at maximum mastery with every test run —
+    // so a rough that stays hueless is a permanent dead end exactly like the
+    // guard above. The fix is to guarantee loadInitialState's backfill always
+    // produces a real hue; this calls that backfill directly, against every
+    // species, so it fails if the backfill is ever removed or broken.
+    for (const s of species) {
+      const legacy = { trueSpeciesId: s.id }; // no hue, no revealed — a pre-hue save
+      const backfilled = backfillRough(legacy);
+      expect(backfilled.hue, `${s.id} backfilled hue`).toBeTruthy();
+      expect(backfilled.hue, `${s.id} backfilled hue`).not.toBe(UNKNOWN_HUE);
+      expect(huesForSpecies(s), `${s.id} backfilled hue`).toContain(backfilled.hue);
+      expect(backfilled.revealed, `${s.id} backfilled revealed`).toEqual({});
+    }
+  });
+
   it('lets a beginner resolve most stones, so nobody is stonewalled at the start', () => {
     // bandWidth clamps mastery at a floor of 0.1, so a beginner's numeric
     // readings are ten times wider than an expert's and contribute almost
     // nothing. Measured: 77% still resolve at mastery 0, on hue, transparency
     // and fluorescence alone. If a data change pushed this down, new players
     // would measure everything and watch nothing happen.
-    const beginnerBand = (property) => BASE_ERROR[property] / 0.1;
+    const beginnerBand = (property) => bandWidth({ property, mastery: 0, livePlay: HAND_LIVE_PLAY });
     const beginner = (species, hue) => [
       { kind: 'hue', value: hue },
       { kind: 'transparency', value: species.transparency },
       { kind: 'numeric', property: 'hardness',
-        center: Array.isArray(species.hardness) ? (species.hardness[0] + species.hardness[1]) / 2 : species.hardness,
+        center: numericProperty(species, 'hardness'),
         band: beginnerBand('hardness') },
-      { kind: 'numeric', property: 'specificGravity', center: species.specificGravity, band: beginnerBand('specificGravity') },
+      { kind: 'numeric', property: 'specificGravity', center: numericProperty(species, 'specificGravity'), band: beginnerBand('specificGravity') },
       { kind: 'categorical', property: 'fluorescence', key: fluorescenceKey(species) }
     ];
     let total = 0;

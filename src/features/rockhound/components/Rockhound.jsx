@@ -114,7 +114,7 @@ function RockhoundInner() {
           <Identify
             key={activeRough.instanceId}
             specimen={activeRough}
-            locality={localitiesById[activeRough.origin] ?? localitiesById.hidden_creek}
+            locality={localitiesById[activeRough.origin]}
             speciesById={speciesById}
             onReveal={(testId, byHand) =>
               dispatch({ type: REVEAL_TRAIT, payload: { instanceId: activeRough.instanceId, testId, byHand } })
