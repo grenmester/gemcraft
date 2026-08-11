@@ -67,7 +67,7 @@ describe('Rockhound shell', () => {
   it('shows an empty-bench prompt in Identify when there is no rough', () => {
     renderRockhound();
     fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
-    screen.getByText(/no rough/i);
+    screen.getByText(/nothing on your bench/i);
   });
 
   it('falls back to the specimen\'s own species, not Hidden Creek, when its locality is gone', () => {
@@ -309,5 +309,61 @@ describe('the rocker box end to end', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /^Gravel Bar,/ }));
     expect(screen.getByRole('button', { name: /leave the rocker box here/i }).disabled).toBe(false);
+  });
+});
+
+describe('the bench', () => {
+  const stone = (over = {}) => ({
+    instanceId: 'x', stage: 'rough', trueSpeciesId: 'quartz', identifiedAs: null,
+    caratWeight: 1, clarity: 60, colorGrade: 60, origin: 'hidden_creek',
+    foundDepth: 1, form: 'waterworn', hue: 'colorless', revealed: {}, ...over
+  });
+
+  it('lets the player choose between stones', () => {
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      rough: [stone({ instanceId: 'x1' }), stone({ instanceId: 'x2', hue: 'colorless' })]
+    }));
+    renderRockhound();
+    fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
+    const bench = screen.getByLabelText(/stones on your bench/i);
+    expect(bench.querySelectorAll('button')).toHaveLength(2);
+  });
+
+  it('keeps an identified but ungraded stone on the bench so it can be graded', () => {
+    // An identified stone has left state.rough, so without this it would be
+    // impossible to grade anything.
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      rough: [],
+      identified: [stone({ instanceId: 'y1', stage: 'identified', identifiedAs: 'quartz' })]
+    }));
+    renderRockhound();
+    fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
+    screen.getByRole('button', { name: /Clear Quartz, Identified/i });
+  });
+
+  it('drops a fully graded stone off the bench', () => {
+    const graded = {
+      weigh: { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 1 },
+      colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 60, band: 5 },
+      clarity: { testId: 'clarity', axis: 'quality', kind: 'quality-band', property: 'clarity', center: 60, band: 5 }
+    };
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      rough: [],
+      identified: [stone({ instanceId: 'y2', stage: 'identified', identifiedAs: 'quartz', revealed: graded })]
+    }));
+    renderRockhound();
+    fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
+    screen.getByText(/nothing on your bench/i);
+  });
+
+  it('announces a stone that has just been identified', () => {
+    // The playtest saw stones teleport to Cut with no explanation.
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      rough: [stone({ instanceId: 'z1', trueSpeciesId: 'almandine_garnet', hue: 'red' })]
+    }));
+    renderRockhound();
+    fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /measure scratch test/i }));
+    expect(screen.getByRole('status').textContent).toMatch(/Almandine Garnet/);
   });
 });

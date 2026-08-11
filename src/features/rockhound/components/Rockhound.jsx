@@ -7,6 +7,9 @@ import { cutTechniques, cutTechniquesById } from '../../../loaders/cutTechniques
 import { completedLocalityIds, completedFamilies, isLocalityUnlocked } from '../logic/progression.js';
 import Explore from './Explore.jsx';
 import Identify from './Identify.jsx';
+import BenchStrip from './BenchStrip.jsx';
+import { benchStrip } from '../logic/identifyView.js';
+import { isGraded } from '../logic/grading.js';
 import Cut from './Cut.jsx';
 import Market from './Market.jsx';
 import GemdexV5 from './GemdexV5.jsx';
@@ -28,8 +31,13 @@ function RockhoundInner() {
   const [exploringId, setExploringId] = useState(null);
   const [selectedCutId, setSelectedCutId] = useState(null);
   const [gemdexSub, setGemdexSub] = useState('Species');
+  const [benchId, setBenchId] = useState(null);
+  const [justResolved, setJustResolved] = useState(null);
 
-  const activeRough = state.rough[0] ?? null;
+  // The bench holds every stone not yet fully known: unidentified rough, and
+  // identified stones still missing a grade. A stone drops off once Graded.
+  const benchStones = [...state.rough, ...state.identified.filter((s) => !isGraded(s))];
+  const activeRough = benchStones.find((s) => s.instanceId === benchId) ?? benchStones[0] ?? null;
 
   const completedLocalities = completedLocalityIds(localities, state.gemdex);
   const completedFams = completedFamilies(species, state.gemdex);
@@ -57,6 +65,15 @@ function RockhoundInner() {
       dispatch({ type: CLEAR_NEW });
     }
   }, [tab, gemdexSub, state.newlyDiscovered.length, dispatch]);
+
+  useEffect(() => {
+    // A stone the player was working on has left the rough pile: it resolved.
+    if (benchId && state.identified.some((s) => s.instanceId === benchId)
+        && !state.rough.some((s) => s.instanceId === benchId)) {
+      const s = state.identified.find((x) => x.instanceId === benchId);
+      setJustResolved(s.trueSpeciesId);
+    }
+  }, [state.rough, state.identified, benchId]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -111,17 +128,31 @@ function RockhoundInner() {
 
       {tab === 'Identify' && (
         activeRough ? (
-          <Identify
-            key={activeRough.instanceId}
-            specimen={activeRough}
-            locality={localitiesById[activeRough.origin]}
-            speciesById={speciesById}
-            onReveal={(testId, byHand) =>
-              dispatch({ type: REVEAL_TRAIT, payload: { instanceId: activeRough.instanceId, testId, byHand } })
-            }
-          />
+          <div className="flex flex-col gap-4">
+            <BenchStrip
+              entries={benchStrip(benchStones, speciesById)}
+              selectedId={activeRough.instanceId}
+              onSelect={(id) => { setBenchId(id); setJustResolved(null); }}
+            />
+            {justResolved && (
+              <p role="status" className="rounded border border-green-700 bg-green-950 p-3 text-sm text-green-200">
+                That settles it — {speciesById[justResolved].name}. It is on your bench, ready to grade.
+              </p>
+            )}
+            <Identify
+              key={activeRough.instanceId}
+              specimen={activeRough}
+              locality={localitiesById[activeRough.origin]}
+              speciesById={speciesById}
+              identified={Boolean(activeRough.identifiedAs)}
+              onReveal={(testId, byHand) => {
+                setBenchId(activeRough.instanceId);
+                dispatch({ type: REVEAL_TRAIT, payload: { instanceId: activeRough.instanceId, testId, byHand } });
+              }}
+            />
+          </div>
         ) : (
-          <p className="text-slate-400">Your bench has no rough — pan a locality in Explore first.</p>
+          <p className="text-slate-400">Nothing on your bench — dig at a locality first.</p>
         )
       )}
 
