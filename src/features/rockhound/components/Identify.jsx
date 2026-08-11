@@ -58,18 +58,18 @@ export default function Identify({ specimen, locality, speciesById, identified =
       </header>
 
       <p className="text-sm text-slate-400">
-        One kind of trait says what it is; the other says what it is worth.
+        One kind of trait says what a stone is; the other says what it sells for.
       </p>
 
       <Section
-        title="Diagnostics"
+        title="What it is"
         blurb="Every stone of this mineral reads the same. These say what you are holding."
         rows={panel.diagnostics}
         onReveal={onReveal}
       />
 
       <Section
-        title="Qualities"
+        title="What it's worth"
         blurb="These belong to this stone alone. A buyer assumes the worst until you measure them."
         rows={panel.qualities}
         onReveal={onReveal}

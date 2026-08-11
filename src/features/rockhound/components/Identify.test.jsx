@@ -19,12 +19,16 @@ function renderIdentify(over = {}) {
 }
 
 describe('the stone sheet', () => {
-  it('says what each section is for', () => {
+  it('says what each section is for, in plain language', () => {
     // The answer to "why don't Cut's stats match the tests": one kind of trait
     // identifies a stone, the other prices it.
     renderIdentify();
-    screen.getByText(/what it is/i);
-    screen.getByText(/what it is worth/i);
+    // Plain language, not jargon: this labelling is the answer a playtester
+    // wanted when they asked why Cut's stats did not match these tests.
+    // Queried by heading role: the intro sentence above them explains the same
+    // distinction in prose, so a bare getByText would match two elements.
+    screen.getByRole('heading', { name: /what it is/i });
+    screen.getByRole('heading', { name: /what it's worth/i });
   });
 
   it('offers every diagnostic test and every grading observation', () => {
