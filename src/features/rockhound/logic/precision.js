@@ -1,4 +1,13 @@
-export const BASE_ERROR = { hardness: 0.5, specificGravity: 0.3 };
+// Hardness and specific gravity are instrument readings on small scales.
+// Colour and clarity are eye judgments on a 0-100 grade, so 5 points is a
+// sharp grade and — divided by the 0.1 mastery floor — 50 points is a
+// novice's, which is as good as no opinion at all.
+export const BASE_ERROR = {
+  hardness: 0.5,
+  specificGravity: 0.3,
+  colorGrade: 5,
+  clarity: 5
+};
 
 const clamp = (x, lo, hi) => Math.min(Math.max(x, lo), hi);
 

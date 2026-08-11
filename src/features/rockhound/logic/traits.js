@@ -30,10 +30,10 @@ export function mergeReading(revealed, reading) {
 export function revealedReadings(specimen, species) {
   const free = [];
   if (specimen.hue && specimen.hue !== UNKNOWN_HUE) {
-    free.push({ testId: 'hue', kind: 'hue', value: specimen.hue });
+    free.push({ testId: 'hue', axis: 'diagnostic', kind: 'hue', value: specimen.hue });
   }
   if (species?.transparency) {
-    free.push({ testId: 'transparency', kind: 'transparency', value: species.transparency });
+    free.push({ testId: 'transparency', axis: 'diagnostic', kind: 'transparency', value: species.transparency });
   }
   return [...free, ...Object.values(specimen.revealed ?? {})];
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { bandWidth, BASE_ERROR, HAND_LIVE_PLAY, AUTO_LIVE_PLAY } from './precision.js';
-import { runTest, TEST_DEFS, consistentWithSpecies, consistentSpecies } from './tests.js';
+import { runTest, TEST_DEFS, consistentWithSpecies, consistentSpecies, GRADE_DEFS, runGrading } from './tests.js';
 import { speciesById } from '../../../loaders/species.js';
 import { familiarityFactor } from './progression.js';
 
@@ -124,5 +124,57 @@ describe('precision constants', () => {
     const byHand = bandWidth({ property: 'hardness', mastery: 50, livePlay: HAND_LIVE_PLAY });
     const auto = bandWidth({ property: 'hardness', mastery: 50, livePlay: AUTO_LIVE_PLAY });
     expect(byHand).toBeLessThan(auto);
+  });
+});
+
+describe('grading observations', () => {
+  const stone = { caratWeight: 1.52, colorGrade: 78, clarity: 64 };
+
+  it('weighs carat exactly, because a scale is exact', () => {
+    const r = runGrading('weigh', stone, { mastery: 0, livePlay: 0.6 });
+    expect(r.value).toBe(1.52);
+    expect(r.band).toBeUndefined();
+  });
+
+  it('grades colour and clarity with uncertainty, because they are judgment calls', () => {
+    const c = runGrading('colour', stone, { mastery: 50, livePlay: 1 });
+    expect(c.center).toBe(78);
+    expect(c.band).toBeGreaterThan(0);
+  });
+
+  it('grades more precisely as mastery rises', () => {
+    const novice = runGrading('colour', stone, { mastery: 0, livePlay: 1 });
+    const expert = runGrading('colour', stone, { mastery: 100, livePlay: 1 });
+    expect(expert.band).toBeLessThan(novice.band);
+  });
+
+  it('reads the specimen, not the species', () => {
+    // Every corundum has the same specific gravity, but this stone's carat is
+    // its own — that is the whole difference between the two axes.
+    const heavy = runGrading('weigh', { ...stone, caratWeight: 4.1 }, { mastery: 0, livePlay: 1 });
+    expect(heavy.value).toBe(4.1);
+  });
+
+  it('tags every reading with the axis it belongs to', () => {
+    expect(runGrading('weigh', stone, { mastery: 0, livePlay: 1 }).axis).toBe('quality');
+    expect(runTest('scratch', speciesById.ruby, { mastery: 0, livePlay: 1 }).axis).toBe('diagnostic');
+  });
+});
+
+describe('only diagnostics narrow the species list', () => {
+  it('ignores a quality reading when deciding what a stone could be', () => {
+    // A heavy stone is not a different mineral. If grading narrowed the list,
+    // measuring carat would appear to identify things.
+    const pool = ['ruby', 'sapphire', 'spinel'];
+    const quality = [{ testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 4.1 }];
+    expect(consistentSpecies(pool, speciesById, quality).sort()).toEqual([...pool].sort());
+  });
+
+  it('still narrows on a diagnostic reading alongside a quality one', () => {
+    const mixed = [
+      { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 4.1 },
+      { testId: 'hue', axis: 'diagnostic', kind: 'hue', value: 'red' }
+    ];
+    expect(consistentSpecies(['ruby', 'aquamarine'], speciesById, mixed)).toEqual(['ruby']);
   });
 });
