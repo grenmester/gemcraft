@@ -647,6 +647,8 @@ git commit -m "feat(identify): grade any stone, on the bench or already identifi
 
 **Constraint:** this is a view module. Every number comes from `tests.js`, `traits.js`, `grading.js` or `rungs.js`. Seven violations of that boundary have been caught here; a reviewer will look for a restated formula.
 
+**`Identify.jsx` already reads `panel.rows`**, so renaming it outright breaks the screen and 14 tests — and this plan requires a green suite at every commit. Keep a `rows` alias returning **`diagnostics` only**, so the current screen behaves exactly as it does today. Including qualities in the alias would half-introduce grading into a screen that cannot label or explain it. Task 6 deletes the alias together with its last consumer.
+
 - [ ] **Step 1: Write the failing test**
 
 Append to `src/features/rockhound/logic/identifyView.test.js`:
@@ -980,9 +982,9 @@ describe('the stone sheet', () => {
 Run: `./node_modules/.bin/vitest run src/features/rockhound/components/Identify.test.jsx`
 Expected: FAIL — the current component renders one flat list and no rung.
 
-- [ ] **Step 3: Implement**
+- [ ] **Step 3: Implement, and delete the alias**
 
-Replace `src/features/rockhound/components/Identify.jsx` entirely:
+Replace `src/features/rockhound/components/Identify.jsx` entirely. Once it no longer reads `panel.rows`, **remove the `rows` alias from `identifyView.js`** — grep first to confirm nothing else reads it: `grep -rn "panel.rows\|\.rows" src/`.
 
 ```jsx
 import { traitPanel } from '../logic/identifyView.js';
