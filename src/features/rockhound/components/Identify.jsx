@@ -29,18 +29,56 @@ function TraitRow({ row, onReveal }) {
   );
 }
 
-export default function Identify({ specimen, locality, speciesById, onReveal }) {
+function Section({ title, blurb, rows, onReveal }) {
+  return (
+    <div>
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">{title}</h3>
+      <p className="mb-1 text-xs text-slate-500">{blurb}</p>
+      <ul className="flex flex-col">
+        {rows.map((row) => (
+          <TraitRow key={row.id} row={row} onReveal={onReveal} />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default function Identify({ specimen, locality, speciesById, identified = false, onReveal }) {
   const species = speciesById[specimen.trueSpeciesId];
-  const panel = traitPanel(specimen, species, speciesById, locality);
-  const unmeasured = panel.rows.filter((r) => !r.free && !r.measured);
+  const panel = traitPanel(specimen, species, speciesById, locality, identified);
+  const unmeasured = [...panel.diagnostics, ...panel.qualities].filter((r) => !r.free && !r.measured);
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex flex-col gap-5">
       <header className="flex items-baseline justify-between">
-        <h2 className="text-2xl font-bold text-yellow-400">Identify the rough</h2>
+        <h2 className="text-2xl font-bold text-yellow-400">The stone sheet</h2>
+        <span aria-label={`Rung: ${panel.rungLabel}`} className="rounded bg-slate-800 px-3 py-1 text-xs uppercase tracking-wide text-slate-300">
+          {panel.rungLabel}
+        </span>
+      </header>
+
+      <p className="text-sm text-slate-400">
+        One kind of trait says what it is; the other says what it is worth.
+      </p>
+
+      <Section
+        title="Diagnostics"
+        blurb="Every stone of this mineral reads the same. These say what you are holding."
+        rows={panel.diagnostics}
+        onReveal={onReveal}
+      />
+
+      <Section
+        title="Qualities"
+        blurb="These belong to this stone alone. A buyer assumes the worst until you measure them."
+        rows={panel.qualities}
+        onReveal={onReveal}
+      />
+
+      <div className="flex items-center gap-3">
         <button
           type="button"
-          aria-label="Run all tests"
+          aria-label="Measure everything"
           disabled={unmeasured.length === 0}
           onClick={() => unmeasured.forEach((r) => onReveal(r.id, false))}
           className={`rounded px-4 py-1.5 text-sm ${
@@ -49,30 +87,16 @@ export default function Identify({ specimen, locality, speciesById, onReveal }) 
               : 'bg-slate-700 text-slate-100 hover:bg-slate-600'
           }`}
         >
-          Run all tests
+          Measure everything
         </button>
-      </header>
-
-      <ul className="flex flex-col">
-        {panel.rows.map((row) => (
-          <TraitRow key={row.id} row={row} onReveal={onReveal} />
-        ))}
-      </ul>
+        <span className="text-xs text-slate-600">
+          Measuring by hand reads more precisely than measuring everything at once — and teaches you more.
+        </span>
+      </div>
 
       <p aria-label="Still consistent with" className="text-sm text-slate-400">
         <span className="text-slate-500">Consistent with: </span>
         {panel.consistent.map((id) => speciesById[id].name).join(', ')}
-      </p>
-
-      {unmeasured.length === 0 && !panel.resolved && (
-        <p className="rounded border border-amber-700 bg-amber-950 p-3 text-sm text-amber-200">
-          Your readings are still too imprecise to separate these. Measure again — each
-          careful measurement sharpens your eye, and a narrower reading replaces a wider one.
-        </p>
-      )}
-
-      <p className="text-xs text-slate-600">
-        Measuring by hand reads more precisely than running everything at once — and teaches you more.
       </p>
     </section>
   );
