@@ -11,6 +11,11 @@ export const WORST_CASE = 0;
 const readingValue = (reading) =>
   reading.kind === 'quality-exact' ? reading.value : reading.center;
 
+/** Whether the player has actually measured one quality trait. */
+export function isMeasured(specimen, gradeId) {
+  return Boolean((specimen.revealed ?? {})[gradeId]);
+}
+
 /**
  * Each quality trait as the market sees it: the measured value where one
  * exists, the worst case where none does. Never reads the specimen's true
@@ -21,14 +26,13 @@ export function measuredQuality(specimen) {
   return Object.fromEntries(
     Object.values(GRADE_DEFS).map((def) => [
       def.property,
-      revealed[def.id] ? readingValue(revealed[def.id]) : WORST_CASE
+      isMeasured(specimen, def.id) ? readingValue(revealed[def.id]) : WORST_CASE
     ])
   );
 }
 
 export function gradedCount(specimen) {
-  const revealed = specimen.revealed ?? {};
-  return Object.values(GRADE_DEFS).filter((def) => revealed[def.id]).length;
+  return Object.values(GRADE_DEFS).filter((def) => isMeasured(specimen, def.id)).length;
 }
 
 export function isGraded(specimen) {

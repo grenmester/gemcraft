@@ -38,10 +38,30 @@ describe('Cut', () => {
   });
 
   it('shows the selected stone measurements so the choice is informed', () => {
-    renderCut();
-    expect(screen.getByText('Carat').closest('div').textContent).toMatch(/1\.8 ct/);
+    // Meters only ever show what has actually been measured, so this fixture
+    // needs a full revealed record — a stone the player has fully graded —
+    // rather than relying on the true (unmeasured) values Cut used to trust.
+    const graded = {
+      ...RUBY_ROUGH,
+      revealed: {
+        weigh: { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 1.8 },
+        colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 91, band: 5 },
+        clarity: { testId: 'clarity', axis: 'quality', kind: 'quality-band', property: 'clarity', center: 82, band: 5 }
+      }
+    };
+    renderCut({ identified: [graded, TOPAZ_ROUGH] });
+    expect(screen.getByText('Weigh').closest('div').textContent).toMatch(/1\.8 ct/);
     expect(screen.getByText('Colour').closest('div').textContent).toMatch(/91/);
     expect(screen.getByText('Clarity').closest('div').textContent).toMatch(/82/);
+  });
+
+  it('does not show a quality the player has never measured', () => {
+    // The playtest asked why Cut's stats did not match the tests run in
+    // Identify. They must never appear as though they were known.
+    // RUBY_ROUGH and TOPAZ_ROUGH carry no revealed, so every quality trait
+    // reads as unmeasured here.
+    renderCut();
+    expect(screen.getAllByText(/not measured, so a buyer assumes the worst/i).length).toBeGreaterThan(0);
   });
 
   it('shows the TRUE success odds, not the technique base rate', () => {

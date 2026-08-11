@@ -1,3 +1,5 @@
+import { measuredQuality } from './grading.js';
+
 export const UNCUT_DISCOUNT = 0.5;
 
 export const gradeFactor = (score) => 0.5 + (score ?? 0) / 100;
@@ -6,8 +8,23 @@ export function stoneValue(stone, species) {
   return Math.round(species.baseValue * gradeFactor(stone.score));
 }
 
+/** A carat saturates the scale at five, matching specimenScore's treatment. */
+const CARAT_SATURATION = 5;
+const QUALITY_AXES = 3;
+
+/**
+ * How much a stone's own qualities are worth to a buyer — using what the
+ * player has MEASURED, not what the stone truly is. An unmeasured trait counts
+ * as its worst case, because a buyer cannot verify it. That substitution is
+ * the entire ungraded discount; there is no separate constant.
+ *
+ * Carat is included here. Rough value used to ignore it while cut value
+ * weighted it, which was a long-standing inconsistency.
+ */
 export function roughGradeFactor(specimen) {
-  return 0.5 + ((specimen.colorGrade + specimen.clarity) / 2) / 100;
+  const q = measuredQuality(specimen);
+  const caratNorm = Math.min(q.caratWeight / CARAT_SATURATION, 1) * 100;
+  return 0.5 + ((caratNorm + q.colorGrade + q.clarity) / QUALITY_AXES) / 100;
 }
 
 /**

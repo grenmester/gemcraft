@@ -3,6 +3,8 @@ import GemGlyph from './GemGlyph.jsx';
 import TechniqueCard from './TechniqueCard.jsx';
 import TechniqueGuide from './TechniqueGuide.jsx';
 import { techniqueView } from '../logic/cutView.js';
+import { isMeasured, measuredQuality } from '../logic/grading.js';
+import { GRADE_DEFS } from '../logic/tests.js';
 
 function Meter({ label, value, max = 100, unit = '' }) {
   return (
@@ -68,9 +70,23 @@ export default function Cut({
                 {' · '}cleavage <span className="capitalize">{species.cleavage}</span>
                 {' · '}difficulty {'●'.repeat(species.cutDifficulty)}{'○'.repeat(5 - species.cutDifficulty)}
               </p>
-              <Meter label="Carat" value={selected.caratWeight} max={5} unit=" ct" />
-              <Meter label="Colour" value={selected.colorGrade} />
-              <Meter label="Clarity" value={selected.clarity} />
+              {Object.values(GRADE_DEFS).map((def) => {
+                const measured = isMeasured(selected, def.id);
+                const value = measuredQuality(selected)[def.property];
+                return measured ? (
+                  <Meter
+                    key={def.id}
+                    label={def.name.replace(/^Grade /, '')}
+                    value={value}
+                    max={def.property === 'caratWeight' ? 5 : 100}
+                    unit={def.property === 'caratWeight' ? ' ct' : ''}
+                  />
+                ) : (
+                  <p key={def.id} className="text-xs text-amber-400">
+                    {def.name.replace(/^Grade /, '')} — not measured, so a buyer assumes the worst.
+                  </p>
+                );
+              })}
             </div>
           </div>
         )}

@@ -9,7 +9,17 @@ const AGATE = { id: 'agate', name: 'Agate', baseValue: 15, suitableCuts: [], phe
 const CABOCHON = { id: 'cabochon', cutQualityRange: [50, 100], yieldRange: [0.7, 0.9] };
 
 const STONE = { trueSpeciesId: 'ruby', caratRetained: 1.4, cutQuality: 88, colorGrade: 91, clarity: 82, phenomena: ['asterism'], score: 88 };
-const ROUGH = { trueSpeciesId: 'ruby', caratWeight: 1.8, colorGrade: 91, clarity: 82 };
+// Value now follows what was MEASURED, so an ungraded ROUGH would price at
+// the floor and defeat every test below that exercises a real colour/clarity
+// multiplier. Carry a full revealed record matching its true values.
+const ROUGH = {
+  trueSpeciesId: 'ruby', caratWeight: 1.8, colorGrade: 91, clarity: 82,
+  revealed: {
+    weigh: { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 1.8 },
+    colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 91, band: 5 },
+    clarity: { testId: 'clarity', axis: 'quality', kind: 'quality-band', property: 'clarity', center: 82, band: 5 }
+  }
+};
 
 describe('stonePrice', () => {
   it('agrees with the value rule it explains', () => {
@@ -48,9 +58,10 @@ describe('roughPrice', () => {
     expect(roughPrice(ROUGH, RUBY).uncutDiscount).toBe(0.5);
   });
 
-  it('exposes the grade multiplier the colour and clarity produce', () => {
-    // (91 + 82) / 2 = 86.5 -> 0.5 + 0.865
-    expect(roughPrice(ROUGH, RUBY).multiplier).toBeCloseTo(1.365, 10);
+  it('exposes the grade multiplier the colour, clarity and carat produce', () => {
+    // carat 1.8/5 * 100 = 36 (of the 5-ct saturation); (36 + 91 + 82) / 3 =
+    // 69.667 -> 0.5 + 0.69667 = 1.19667
+    expect(roughPrice(ROUGH, RUBY).multiplier).toBeCloseTo(0.5 + (36 + 91 + 82) / 3 / 100, 10);
   });
 
   it('shows arithmetic that reconciles to the price it explains', () => {

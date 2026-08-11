@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { measuredQuality, isGraded, gradedCount, WORST_CASE } from './grading.js';
+import { measuredQuality, isGraded, gradedCount, isMeasured, WORST_CASE } from './grading.js';
 
 const weighed = { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 2.4 };
 const colour = { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 78, band: 5 };
@@ -64,5 +64,25 @@ describe('gradedCount', () => {
   it('counts how many quality traits are measured', () => {
     expect(gradedCount(stone())).toBe(0);
     expect(gradedCount(stone({ weigh: weighed, colour }))).toBe(2);
+  });
+});
+
+describe('isMeasured', () => {
+  it('is false for a trait that has never been measured', () => {
+    expect(isMeasured(stone(), 'colour')).toBe(false);
+  });
+
+  it('is true once that trait has a reading', () => {
+    expect(isMeasured(stone({ colour }), 'colour')).toBe(true);
+  });
+
+  it('checks only the requested trait, not the whole specimen', () => {
+    const s = stone({ colour });
+    expect(isMeasured(s, 'clarity')).toBe(false);
+    expect(isMeasured(s, 'weigh')).toBe(false);
+  });
+
+  it('treats a specimen with no revealed record at all as unmeasured', () => {
+    expect(isMeasured({ caratWeight: 2.4, colorGrade: 78, clarity: 64 }, 'colour')).toBe(false);
   });
 });

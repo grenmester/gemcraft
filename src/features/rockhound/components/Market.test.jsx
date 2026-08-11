@@ -5,7 +5,17 @@ import { speciesById } from '../../../loaders/species.js';
 import { cutTechniques } from '../../../loaders/cutTechniques.js';
 import { identifiedValue, stoneValue } from '../logic/market.js';
 
-const ROUGH = { instanceId: 'i1', trueSpeciesId: 'ruby', caratWeight: 1.8, clarity: 82, colorGrade: 91 };
+// Value now follows what was MEASURED: an ungraded rough prices at the
+// floor, which would defeat the tests below that exercise a real multiplier.
+// Carry a full revealed record matching this fixture's true values.
+const ROUGH = {
+  instanceId: 'i1', trueSpeciesId: 'ruby', caratWeight: 1.8, clarity: 82, colorGrade: 91,
+  revealed: {
+    weigh: { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 1.8 },
+    colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 91, band: 5 },
+    clarity: { testId: 'clarity', axis: 'quality', kind: 'quality-band', property: 'clarity', center: 82, band: 5 }
+  }
+};
 const STONE = { instanceId: 's1', trueSpeciesId: 'ruby', cut: 'cabochon', cutQuality: 88, caratRetained: 1.4, clarity: 82, colorGrade: 91, phenomena: ['asterism'], score: 88 };
 
 function renderMarket(overrides = {}) {
@@ -118,10 +128,11 @@ describe('Market', () => {
   it('shows a rough multiplier precise enough to reconcile with the total', () => {
     renderMarket();
     fireEvent.click(screen.getByRole('button', { name: /Why this price for rough Ruby/i }));
-    // ROUGH has colorGrade 91, clarity 82: 0.5 + ((91 + 82) / 2) / 100 = 1.365.
-    // toFixed(2) would round this to 1.36, which no longer multiplies back
-    // to the shown total — the whole point of this modal.
-    expect(screen.getByRole('dialog').textContent).toMatch(/1\.365/);
+    // ROUGH is fully graded: caratWeight 1.8/5*100 = 36, colorGrade 91,
+    // clarity 82: 0.5 + ((36 + 91 + 82) / 3) / 100 = 1.19667 (toFixed(3):
+    // "1.197"). toFixed(2) would round this to 1.20, which no longer
+    // multiplies back to the shown total — the whole point of this modal.
+    expect(screen.getByRole('dialog').textContent).toMatch(/1\.197/);
   });
 
   it('says what each piece of gear opens, and marks what is owned', () => {

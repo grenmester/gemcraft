@@ -1,5 +1,6 @@
 import { stoneValue, identifiedValue, gradeFactor, roughGradeFactor, uncutDiscountFor } from './market.js';
 import { scoreBreakdown, specimenScore, canApplyToSpecimen, formYield } from './cut.js';
+import { measuredQuality, isMeasured } from './grading.js';
 
 const mid = ([lo, hi]) => (lo + hi) / 2;
 
@@ -20,13 +21,20 @@ export function stonePrice(stone, species) {
   };
 }
 
-/** An uncut stone's price, including the penalty for selling it rough. */
+/**
+ * An uncut stone's price, including the penalty for selling it rough. Quality
+ * fields report what the player has MEASURED, not what the stone truly is —
+ * `null` means "not measured", so the modal never leaks a number the player
+ * never earned.
+ */
 export function roughPrice(specimen, species) {
+  const q = measuredQuality(specimen);
   return {
     total: identifiedValue(specimen, species),
     base: species.baseValue,
-    colorGrade: specimen.colorGrade,
-    clarity: specimen.clarity,
+    caratWeight: isMeasured(specimen, 'weigh') ? q.caratWeight : null,
+    colorGrade: isMeasured(specimen, 'colour') ? q.colorGrade : null,
+    clarity: isMeasured(specimen, 'clarity') ? q.clarity : null,
     multiplier: roughGradeFactor(specimen),
     uncutDiscount: uncutDiscountFor(specimen)
   };

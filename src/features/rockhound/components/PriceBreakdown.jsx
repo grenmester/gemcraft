@@ -19,8 +19,9 @@ export default function PriceBreakdown({ title, price, kind, onClose }) {
           </>
         ) : (
           <>
-            <Row label="Colour">{price.colorGrade}</Row>
-            <Row label="Clarity">{price.clarity}</Row>
+            <Row label="Carat">{price.caratWeight ?? 'not measured'}</Row>
+            <Row label="Colour">{price.colorGrade ?? 'not measured'}</Row>
+            <Row label="Clarity">{price.clarity ?? 'not measured'}</Row>
             <Row label="Multiplier">×{price.multiplier.toFixed(3)}</Row>
             <Row label="Uncut penalty">×{price.uncutDiscount}</Row>
           </>
@@ -57,6 +58,11 @@ export default function PriceBreakdown({ title, price, kind, onClose }) {
           <p className="text-sm text-slate-300">
             Uncut stones sell at {price.uncutDiscount * 100}% — a buyer takes on the risk of cutting it.
           </p>
+          {(price.caratWeight == null || price.colorGrade == null || price.clarity == null) && (
+            <p className="text-sm text-slate-300">
+              Ungraded traits are priced at their worst case — grading this stone will raise the offer.
+            </p>
+          )}
         </Section>
       )}
     </EntryModal>
