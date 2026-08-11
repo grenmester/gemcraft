@@ -320,13 +320,27 @@ describe('the bench', () => {
   });
 
   it('lets the player choose between stones', () => {
+    // Make the two stones distinguishable by hue (colorless quartz vs. red
+    // almandine garnet) so clicking the second one is provable, not just
+    // that two buttons rendered — a no-op onSelect would also pass that.
+    // Both species sit in Hidden Creek's depth-1 find pool with no minimum
+    // depth, and merely selecting a stone does not commit its resolution,
+    // so the red garnet's sheet stays visible even though sight alone
+    // would otherwise settle it.
     localStorage.setItem('rockhound_save_v1', JSON.stringify({
-      rough: [stone({ instanceId: 'x1' }), stone({ instanceId: 'x2', hue: 'colorless' })]
+      rough: [
+        stone({ instanceId: 'x1', trueSpeciesId: 'quartz', hue: 'colorless' }),
+        stone({ instanceId: 'x2', trueSpeciesId: 'almandine_garnet', hue: 'red' })
+      ]
     }));
     renderRockhound();
     fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
     const bench = screen.getByLabelText(/stones on your bench/i);
-    expect(bench.querySelectorAll('button')).toHaveLength(2);
+    const buttons = bench.querySelectorAll('button');
+    expect(buttons).toHaveLength(2);
+    expect(screen.getByLabelText(/^Hue:/).textContent).toMatch(/colorless/);
+    fireEvent.click(buttons[1]);
+    expect(screen.getByLabelText(/^Hue:/).textContent).toMatch(/red/);
   });
 
   it('keeps an identified but ungraded stone on the bench so it can be graded', () => {
@@ -354,6 +368,22 @@ describe('the bench', () => {
     renderRockhound();
     fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
     screen.getByText(/nothing on your bench/i);
+  });
+
+  it('does not re-announce a stone that was identified in a previous session', () => {
+    // Regression for Finding 1: the announcement used to be derived from
+    // current membership (identified but not rough), which stays true
+    // forever. Selecting an already-identified-but-ungraded stone from the
+    // bench must not re-announce "That settles it" for a stone resolved
+    // long ago — only the measurement that just resolved it should.
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      rough: [],
+      identified: [stone({ instanceId: 'y1', stage: 'identified', identifiedAs: 'quartz' })]
+    }));
+    renderRockhound();
+    fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Clear Quartz, Identified/i }));
+    expect(screen.queryByRole('status')).toBe(null);
   });
 
   it('announces a stone that has just been identified', () => {

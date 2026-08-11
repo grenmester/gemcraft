@@ -1,5 +1,5 @@
 // src/features/rockhound/components/Rockhound.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRockhound, COLLECT_HAUL, REVEAL_TRAIT, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, PARK_SIEVE, COLLECT_SIEVE } from '../RockhoundContext.jsx';
 import { localities, localitiesById } from '../../../loaders/localities.js';
 import { speciesById, species } from '../../../loaders/species.js';
@@ -33,6 +33,7 @@ function RockhoundInner() {
   const [gemdexSub, setGemdexSub] = useState('Species');
   const [benchId, setBenchId] = useState(null);
   const [justResolved, setJustResolved] = useState(null);
+  const awaitingResolution = useRef(null);
 
   // The bench holds every stone not yet fully known: unidentified rough, and
   // identified stones still missing a grade. A stone drops off once Graded.
@@ -67,13 +68,17 @@ function RockhoundInner() {
   }, [tab, gemdexSub, state.newlyDiscovered.length, dispatch]);
 
   useEffect(() => {
-    // A stone the player was working on has left the rough pile: it resolved.
-    if (benchId && state.identified.some((s) => s.instanceId === benchId)
-        && !state.rough.some((s) => s.instanceId === benchId)) {
-      const s = state.identified.find((x) => x.instanceId === benchId);
-      setJustResolved(s.trueSpeciesId);
+    // Announce only the stone the player just measured, and only on the
+    // measurement that resolved it — otherwise reselecting an
+    // already-identified stone would re-announce it as fresh news.
+    const id = awaitingResolution.current;
+    if (!id) return;
+    const resolved = state.identified.find((s) => s.instanceId === id);
+    if (resolved && !state.rough.some((s) => s.instanceId === id)) {
+      awaitingResolution.current = null;
+      setJustResolved(resolved.trueSpeciesId);
     }
-  }, [state.rough, state.identified, benchId]);
+  }, [state.rough, state.identified]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -147,6 +152,7 @@ function RockhoundInner() {
               identified={Boolean(activeRough.identifiedAs)}
               onReveal={(testId, byHand) => {
                 setBenchId(activeRough.instanceId);
+                awaitingResolution.current = activeRough.instanceId;
                 dispatch({ type: REVEAL_TRAIT, payload: { instanceId: activeRough.instanceId, testId, byHand } });
               }}
             />
