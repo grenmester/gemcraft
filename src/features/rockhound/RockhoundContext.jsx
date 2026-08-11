@@ -11,7 +11,7 @@ import { xpThreshold, MAX_METHOD_LEVEL, levelForXp } from './logic/dive.js';
 import { idleDepth, pendingCount, MS_PER_HOUR } from './logic/idle.js';
 import { benchFull } from './logic/bench.js';
 import { rollRough } from './logic/rollRough.js';
-import { runTest, consistentSpecies } from './logic/tests.js';
+import { runTest, consistentSpecies, GRADE_DEFS, runGrading } from './logic/tests.js';
 import { mergeReading, revealedReadings, UNKNOWN_HUE } from './logic/traits.js';
 import { seedCandidates } from './logic/candidates.js';
 import { huesForSpecies } from './logic/hues.js';
@@ -166,29 +166,39 @@ export function rockhoundReducer(state, action) {
 
     case REVEAL_TRAIT: {
       const { instanceId, testId, byHand } = action.payload;
-      const specimen = state.rough.find((r) => r.instanceId === instanceId);
+      // Grading reaches identified stones too: you grade a stone before
+      // selling or cutting it, and by then it has left the rough pile.
+      const onBench = state.rough.find((r) => r.instanceId === instanceId);
+      const specimen = onBench ?? state.identified.find((r) => r.instanceId === instanceId);
       if (!specimen) return state;
 
       const trueSpecies = speciesById[specimen.trueSpeciesId];
       const livePlay = byHand ? HAND_LIVE_PLAY : AUTO_LIVE_PLAY;
-      const reading = runTest(testId, trueSpecies, {
-        mastery: state.testMastery[testId] ?? 0,
-        livePlay,
-        familiarity: familiarityFactor(trueSpecies.family, completedFamilies(species, state.gemdex))
-      });
+      const mastery = state.testMastery[testId] ?? 0;
+      const reading = GRADE_DEFS[testId]
+        ? runGrading(testId, specimen, { mastery, livePlay })
+        : runTest(testId, trueSpecies, {
+            mastery,
+            livePlay,
+            familiarity: familiarityFactor(trueSpecies.family, completedFamilies(species, state.gemdex))
+          });
 
       const updated = { ...specimen, revealed: mergeReading(specimen.revealed, reading) };
       const gain = byHand ? MASTERY_PER_HAND_RUN : MASTERY_PER_AUTO_RUN;
+      const swap = (list) => list.map((r) => (r.instanceId === instanceId ? updated : r));
       const withReading = {
         ...state,
-        rough: state.rough.map((r) => (r.instanceId === instanceId ? updated : r)),
+        rough: onBench ? swap(state.rough) : state.rough,
+        identified: onBench ? state.identified : swap(state.identified),
         testMastery: {
           ...state.testMastery,
-          [testId]: Math.min(MASTERY_CEILING, (state.testMastery[testId] ?? 0) + gain)
+          [testId]: Math.min(MASTERY_CEILING, mastery + gain)
         }
       };
 
-      // Identity emerges: nothing is guessed, and nothing is clicked.
+      // Identity emerges from diagnostics only — a heavy stone is not a
+      // different mineral, so grading can never move a stone off the bench.
+      if (!onBench || GRADE_DEFS[testId]) return withReading;
       return stillConsistent(updated).length === 1
         ? resolveSpecimen(withReading, updated)
         : withReading;

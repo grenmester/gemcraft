@@ -628,3 +628,58 @@ describe('a dug stone settles at extraction when sight alone is enough', () => {
     expect(next.reputation).toBe(state.reputation);
   });
 });
+
+describe('grading through the reducer', () => {
+  const rough = {
+    instanceId: 'g1', stage: 'rough', trueSpeciesId: 'quartz', identifiedAs: null,
+    caratWeight: 2.4, clarity: 64, colorGrade: 78, origin: 'hidden_creek',
+    foundDepth: 1, form: 'waterworn', hue: 'colorless', revealed: {}
+  };
+  const identified = { ...rough, instanceId: 'g2', stage: 'identified', identifiedAs: 'quartz' };
+
+  it('records a grading reading on a stone still on the bench', () => {
+    const next = rockhoundReducer({ ...initialRockhoundState, rough: [rough] }, {
+      type: REVEAL_TRAIT, payload: { instanceId: 'g1', testId: 'weigh', byHand: true }
+    });
+    expect(next.rough[0].revealed.weigh.value).toBe(2.4);
+  });
+
+  it('grades a stone that has already been identified', () => {
+    // You grade a stone before selling or cutting it, and by then it has left
+    // the rough pile — so grading must reach the identified list too.
+    const next = rockhoundReducer({ ...initialRockhoundState, identified: [identified] }, {
+      type: REVEAL_TRAIT, payload: { instanceId: 'g2', testId: 'colour', byHand: true }
+    });
+    expect(next.identified[0].revealed.colour.center).toBe(78);
+  });
+
+  it('never resolves identity from a grading reading', () => {
+    // A heavy stone is not a different mineral. If grading could resolve, then
+    // weighing a stone would appear to identify it.
+    const next = rockhoundReducer({ ...initialRockhoundState, rough: [rough] }, {
+      type: REVEAL_TRAIT, payload: { instanceId: 'g1', testId: 'weigh', byHand: true }
+    });
+    expect(next.rough).toHaveLength(1);
+    expect(next.identified).toHaveLength(0);
+    expect(next.reputation).toBe(initialRockhoundState.reputation);
+  });
+
+  it('is deterministic, like every other reading', () => {
+    const act = { type: REVEAL_TRAIT, payload: { instanceId: 'g1', testId: 'colour', byHand: true } };
+    const base = { ...initialRockhoundState, rough: [rough] };
+    expect(rockhoundReducer(base, act)).toEqual(rockhoundReducer(base, act));
+  });
+
+  it('grades more precisely by hand than by shortcut', () => {
+    const base = { ...initialRockhoundState, rough: [rough] };
+    const hand = rockhoundReducer(base, { type: REVEAL_TRAIT, payload: { instanceId: 'g1', testId: 'colour', byHand: true } });
+    const auto = rockhoundReducer(base, { type: REVEAL_TRAIT, payload: { instanceId: 'g1', testId: 'colour', byHand: false } });
+    expect(hand.rough[0].revealed.colour.band).toBeLessThan(auto.rough[0].revealed.colour.band);
+  });
+
+  it('ignores a stone that is on neither list', () => {
+    const base = { ...initialRockhoundState, rough: [rough] };
+    const next = rockhoundReducer(base, { type: REVEAL_TRAIT, payload: { instanceId: 'nope', testId: 'weigh', byHand: true } });
+    expect(next).toBe(base);
+  });
+});
