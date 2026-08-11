@@ -55,6 +55,12 @@ export function traitPanel(specimen, species, speciesById, locality, identified 
   return {
     diagnostics,
     qualities,
+    // Temporary alias so the CURRENT Identify screen keeps behaving exactly as
+    // it did until Task 6 replaces it with the two-section sheet. Deliberately
+    // diagnostics only: including qualities here would half-introduce grading
+    // into a screen that cannot label or explain it. Delete this and its last
+    // consumer together — nothing new should read `rows`.
+    rows: diagnostics,
     consistent,
     resolved: consistent.length === RESOLVED_COUNT,
     rung,
