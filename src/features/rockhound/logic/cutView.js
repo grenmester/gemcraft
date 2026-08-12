@@ -1,5 +1,6 @@
 import { canApply, cutSuccessProbability, canShatter, formAllows, formYield } from './cut.js';
 import { FORM_LABELS, FORM_EFFECTS } from './forms.js';
+import { isMeasured, measuredQuality } from './grading.js';
 
 const round2 = (n) => Math.round(n * 100) / 100;
 const pct = (x) => Math.round(x * 100);
@@ -66,9 +67,14 @@ export function techniqueView(species, technique, level, specimen = null) {
   };
 }
 
-/** Carat the stone would retain, as a [low, high] range. */
+/**
+ * Carat the stone would retain, as a [low, high] range. Uses the MEASURED
+ * carat, not the true one — carat is exact, so the two coincide once
+ * weighed, but an unweighed stone must not yield a carat-based estimate from
+ * a weight the player never read.
+ */
 export function expectedCarat(specimen, technique) {
-  const w = specimen.caratWeight ?? 0;
+  const w = isMeasured(specimen, 'weigh') ? measuredQuality(specimen).caratWeight : 0;
   const yieldFactor = formYield(specimen.form, technique);
   return [round2(w * technique.yieldRange[0] * yieldFactor), round2(w * technique.yieldRange[1] * yieldFactor)];
 }

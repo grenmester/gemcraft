@@ -80,9 +80,19 @@ describe('techniqueView', () => {
   });
 });
 
+const weighed = (caratWeight, extra = {}) => ({
+  caratWeight,
+  ...extra,
+  revealed: {
+    weigh: { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: caratWeight }
+  }
+});
+
 describe('expectedCarat', () => {
   it('scales the yield range by the stone weight', () => {
-    expect(expectedCarat({ caratWeight: 2 }, CABOCHON)).toEqual([1.4, 1.8]);
+    // The estimate is only meaningful once the stone has actually been
+    // weighed — a full `revealed.weigh` record is what makes that so here.
+    expect(expectedCarat(weighed(2), CABOCHON)).toEqual([1.4, 1.8]);
   });
 
   it('scales a faceted band by crystal habit, so waterworn quotes lower than crystal', () => {
@@ -91,11 +101,18 @@ describe('expectedCarat', () => {
     // up (1.1x), so applyCut will deliver a lower band for the waterworn
     // stone. Quoting the same band for both would promise carat the Cut
     // screen will not pay out.
-    const waterworn = expectedCarat({ caratWeight: 2, form: 'waterworn' }, PRINCESS);
-    const crystal = expectedCarat({ caratWeight: 2, form: 'crystal' }, PRINCESS);
+    const waterworn = expectedCarat(weighed(2, { form: 'waterworn' }), PRINCESS);
+    const crystal = expectedCarat(weighed(2, { form: 'crystal' }), PRINCESS);
     expect(waterworn).toEqual([1.17, 1.53]);
     expect(crystal).toEqual([1.43, 1.87]);
     expect(waterworn[0]).toBeLessThan(crystal[0]);
     expect(waterworn[1]).toBeLessThan(crystal[1]);
+  });
+
+  it('does not yield a carat-based estimate from an unweighed stone\'s true weight', () => {
+    // No `revealed` record at all: the true caratWeight (2) is known only to
+    // the game. Quoting a real range from it would leak exactly the number
+    // the player has not measured.
+    expect(expectedCarat({ caratWeight: 2 }, CABOCHON)).toEqual([0, 0]);
   });
 });

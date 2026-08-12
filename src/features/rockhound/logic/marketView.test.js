@@ -92,9 +92,58 @@ describe('bestCutEstimate', () => {
   });
 });
 
+describe('bestCutEstimate does not leak unmeasured quality', () => {
+  // Same species and cut, only the TRUE colour/clarity/carat differ — and
+  // neither specimen carries a `revealed` record, so neither has been
+  // graded. Before this fix, scoreBreakdown read the true values straight
+  // off the specimen, so the "superb" stone quoted a much richer cut
+  // estimate than the "awful" one despite the player having measured
+  // nothing on either. A buyer (and the estimate that anticipates a buyer)
+  // cannot see what was never graded.
+  const superb = { instanceId: 'x1', trueSpeciesId: 'ruby', caratWeight: 4, colorGrade: 99, clarity: 99 };
+  const awful = { instanceId: 'x2', trueSpeciesId: 'ruby', caratWeight: 0.1, colorGrade: 2, clarity: 2 };
+
+  it('quotes the same estimate for an ungraded superb stone and an ungraded awful one', () => {
+    expect(bestCutEstimate(superb, RUBY, [CABOCHON])).toBe(bestCutEstimate(awful, RUBY, [CABOCHON]));
+  });
+
+  it('still quotes a real, non-zero estimate — cut quality and phenomena are not gated on grading', () => {
+    // The fix must not zero the estimate out entirely: a technique's own
+    // cut-quality potential and any phenomenon it reveals are known and
+    // legitimate regardless of whether the ROUGH stone has been graded.
+    expect(bestCutEstimate(superb, RUBY, [CABOCHON])).toBeGreaterThan(0);
+  });
+
+  it('leaves a fully graded stone\'s estimate exactly where it always was', () => {
+    // Once every trait is graded with a band of 0, the appraised edge and
+    // the stone's true value coincide, so this must reproduce the same
+    // number the pre-fix implementation (which read the true value
+    // directly) already produced for a fully known stone.
+    const graded = {
+      instanceId: 'g1', trueSpeciesId: 'ruby', caratWeight: 4, colorGrade: 95, clarity: 90,
+      revealed: {
+        weigh: { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 4 },
+        colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 95, band: 0 },
+        clarity: { testId: 'clarity', axis: 'quality', kind: 'quality-band', property: 'clarity', center: 90, band: 0 }
+      }
+    };
+    expect(bestCutEstimate(graded, RUBY, [CABOCHON])).toBe(1305);
+  });
+});
+
 describe('bestCutEstimate respects crystal habit', () => {
   const ruby = speciesById.ruby;
-  const base = { instanceId: 'r1', trueSpeciesId: 'ruby', caratWeight: 4, clarity: 90, colorGrade: 95 };
+  // A fully graded specimen (revealed matches its true values exactly), so
+  // these habit/form comparisons keep exercising a real colour/clarity/carat
+  // multiplier rather than the ungraded floor.
+  const base = {
+    instanceId: 'r1', trueSpeciesId: 'ruby', caratWeight: 4, clarity: 90, colorGrade: 95,
+    revealed: {
+      weigh: { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 4 },
+      colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 95, band: 5 },
+      clarity: { testId: 'clarity', axis: 'quality', kind: 'quality-band', property: 'clarity', center: 90, band: 5 }
+    }
+  };
 
   it('quotes nothing for a stone that can never be cut', () => {
     // A matrix specimen is sold as a mineral specimen; the Cut screen refuses

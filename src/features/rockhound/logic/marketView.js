@@ -59,14 +59,27 @@ export function roughPrice(specimen, species) {
  * Gated on the specimen, not just the species: a crystal on matrix can never
  * be cut, and a nodule takes only a cabochon. Quoting a species-level cut
  * value here would advertise a price the Cut screen refuses to deliver.
+ *
+ * This specimen is always ROUGH (the estimate exists to inform the
+ * sell-or-cut choice, which only applies before cutting), so its
+ * colour/clarity/carat are fed to scoreBreakdown as APPRAISED values, not the
+ * stone's true ones — an ungraded rough must not quote a cut value it earned
+ * only by the game secretly knowing its quality. This is exactly what
+ * roughGradeFactor uses for the eventual sale, so the estimate and the sale
+ * agree. scoreBreakdown itself is untouched: an already-cut stone's own
+ * price path (stonePrice) still passes it the stone's real, established
+ * grade.
  */
 export function bestCutEstimate(specimen, species, techniques) {
   const suitable = techniques.filter((t) => canApplyToSpecimen(specimen, species, t));
   if (suitable.length === 0) return null;
+  const appraised = appraisedQuality(specimen);
   return suitable.reduce((best, t) => {
     const cut = {
       ...specimen,
-      caratRetained: (specimen.caratWeight ?? 0) * mid(t.yieldRange) * formYield(specimen.form, t),
+      colorGrade: appraised.colorGrade,
+      clarity: appraised.clarity,
+      caratRetained: appraised.caratWeight * mid(t.yieldRange) * formYield(specimen.form, t),
       cutQuality: mid(t.cutQualityRange),
       phenomena: (species.phenomena ?? []).filter((p) => p.revealedBy === t.id).map((p) => p.type)
     };
