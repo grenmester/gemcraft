@@ -3,6 +3,14 @@ import { withEarnedGear } from '../domain/progression.js';
 
 export const STORAGE_KEY = 'rockhound_save_v1';
 
+export function saveState(state) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.warn('Failed to save rockhound state:', e);
+  }
+}
+
 export function loadInitialState() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
