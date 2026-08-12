@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Identify from './Identify.jsx';
-import { speciesById } from '../../../loaders/species.js';
-import { localitiesById } from '../../../loaders/localities.js';
+import { speciesById } from '../../../data/species/loader.js';
+import { localitiesById } from '../../../data/localities/loader.js';
 
 const STONE = {
   instanceId: 'r1', trueSpeciesId: 'ruby', origin: 'mogok_marble', foundDepth: 3,

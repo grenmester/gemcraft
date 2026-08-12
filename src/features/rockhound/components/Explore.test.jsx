@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Explore from './Explore.jsx';
-import { localities } from '../../../loaders/localities.js';
+import { localities } from '../../../data/localities/loader.js';
 import { xpThreshold } from '../logic/dive.js';
 
 const creek = localities.find((l) => l.id === 'hidden_creek');

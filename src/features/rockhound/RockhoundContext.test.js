@@ -9,10 +9,10 @@ import {
   PARK_SIEVE, COLLECT_SIEVE, DEBUG_REWIND_SIEVE
 } from './RockhoundContext.jsx';
 import { createRough } from './logic/rollRough.js';
-import { species, speciesById } from '../../loaders/species.js';
-import { localitiesById } from '../../loaders/localities.js';
-import { METHOD_ENUM } from '../../schemas/localities.js';
-import { cutTechniquesById } from '../../loaders/cutTechniques.js';
+import { species, speciesById } from '../../data/species/loader.js';
+import { localitiesById } from '../../data/localities/loader.js';
+import { METHOD_ENUM } from '../../data/localities/schema.js';
+import { cutTechniquesById } from '../../data/cutTechniques/loader.js';
 import { stoneValue, identifiedValue, gearPrice } from './logic/market.js';
 import { levelForXp, MAX_METHOD_LEVEL } from './logic/dive.js';
 import { BENCH_CAP } from './logic/bench.js';

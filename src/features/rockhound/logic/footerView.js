@@ -1,4 +1,4 @@
-import { METHOD_ENUM } from '../../../schemas/localities.js';
+import { METHOD_ENUM } from '../../../data/localities/schema.js';
 import { methodProgress } from './diveView.js';
 import { deepestBedrockByMethod } from './localityView.js';
 import { reachDepth, xpThreshold, effectiveReach, MAX_METHOD_LEVEL } from './dive.js';

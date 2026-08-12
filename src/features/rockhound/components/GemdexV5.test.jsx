@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import GemdexV5 from './GemdexV5.jsx';
-import { species } from '../../../loaders/species.js';
-import { localities } from '../../../loaders/localities.js';
-import { cutTechniquesById } from '../../../loaders/cutTechniques.js';
+import { species } from '../../../data/species/loader.js';
+import { localities } from '../../../data/localities/loader.js';
+import { cutTechniquesById } from '../../../data/cutTechniques/loader.js';
 
 function renderGemdex(overrides = {}) {
   render(

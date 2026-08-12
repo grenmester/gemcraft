@@ -5,7 +5,7 @@ import {
 } from './RockhoundContext.jsx';
 import { createRough } from './logic/rollRough.js';
 import { huesForSpecies } from './logic/hues.js';
-import { speciesById } from '../../loaders/species.js';
+import { speciesById } from '../../data/species/loader.js';
 
 const STORAGE_KEY = 'rockhound_save_v1';
 const wrapper = ({ children }) => <RockhoundProvider>{children}</RockhoundProvider>;

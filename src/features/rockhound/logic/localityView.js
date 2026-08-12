@@ -1,6 +1,6 @@
-import { RARITY_ENUM } from '../../../schemas/species.js';
-import { METHOD_ENUM } from '../../../schemas/localities.js';
-import { localities } from '../../../loaders/localities.js';
+import { RARITY_ENUM } from '../../../data/species/schema.js';
+import { METHOD_ENUM } from '../../../data/localities/schema.js';
+import { localities } from '../../../data/localities/loader.js';
 import { localitySetComplete, describeGate, describeGateSubject } from './progression.js';
 import { effectivePool } from './rollRough.js';
 

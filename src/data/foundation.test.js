@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
-import { species, speciesById } from '../loaders/species.js';
-import { cutTechniques, cutTechniquesById, cutSuccessAtLevel } from '../loaders/cutTechniques.js';
-import { localities, localitiesById, getFindPoolSpecies } from '../loaders/localities.js';
+import { species, speciesById } from './species/loader.js';
+import { cutTechniques, cutTechniquesById, cutSuccessAtLevel } from './cutTechniques/loader.js';
+import { localities, localitiesById, getFindPoolSpecies } from './localities/loader.js';
 
-import { RARITY_ENUM, speciesSchema } from '../schemas/species.js';
-import { localitySchema, findPoolEntrySchema, gateGroupSchema } from '../schemas/localities.js';
+import { RARITY_ENUM, speciesSchema } from './species/schema.js';
+import { localitySchema, findPoolEntrySchema, gateGroupSchema } from './localities/schema.js';
 
 import { huesForSpecies } from '../features/rockhound/logic/hues.js';
 import { consistentSpecies } from '../features/rockhound/logic/tests.js';

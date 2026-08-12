@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { gradeFactor, stoneValue, identifiedValue, roughGradeFactor, SHOP_GEAR, gearPrice, UNCUT_DISCOUNT, uncutDiscountFor } from './market.js';
 import { appraisedQuality } from './grading.js';
-import { speciesById } from '../../../loaders/species.js';
+import { speciesById } from '../../../data/species/loader.js';
 
 describe('gradeFactor', () => {
   it('maps score 0..100 to 0.5..1.5', () => {

@@ -5,8 +5,8 @@ import {
   familyComplete, completedFamilies,
   isLocalityUnlocked, earnedGear, describeGate, describeGateSubject
 } from './progression.js';
-import { species, speciesById } from '../../../loaders/species.js';
-import { localities, localitiesById } from '../../../loaders/localities.js';
+import { species, speciesById } from '../../../data/species/loader.js';
+import { localities, localitiesById } from '../../../data/localities/loader.js';
 
 describe('reputationTier', () => {
   it('maps reputation to the highest reached tier', () => {

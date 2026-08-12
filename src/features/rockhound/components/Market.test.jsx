@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Market from './Market.jsx';
-import { speciesById } from '../../../loaders/species.js';
-import { cutTechniques } from '../../../loaders/cutTechniques.js';
+import { speciesById } from '../../../data/species/loader.js';
+import { cutTechniques } from '../../../data/cutTechniques/loader.js';
 import { identifiedValue, stoneValue } from '../logic/market.js';
 
 // Value now follows what was MEASURED: an ungraded rough prices at the

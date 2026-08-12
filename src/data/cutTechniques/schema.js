@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TRANSPARENCY_ENUM, PHENOMENON_ENUM } from './species.js';
+import { TRANSPARENCY_ENUM, PHENOMENON_ENUM } from '../species/schema.js';
 
 // A cut technique is a lapidary style the player unlocks and levels (§7).
 // Its `successCurve` maps technique level → base success probability

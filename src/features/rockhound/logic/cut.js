@@ -1,4 +1,4 @@
-import { cutSuccessAtLevel } from '../../../loaders/cutTechniques.js';
+import { cutSuccessAtLevel } from '../../../data/cutTechniques/loader.js';
 import { FORM_EFFECTS } from './forms.js';
 import { clamp, round2 } from '../../../shared/math.js';
 

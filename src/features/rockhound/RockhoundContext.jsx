@@ -1,10 +1,10 @@
 // src/features/rockhound/RockhoundContext.jsx
 import { createContext, useContext, useReducer, useEffect } from 'react';
-import { species, speciesById } from '../../loaders/species.js';
-import { localities, localitiesById } from '../../loaders/localities.js';
+import { species, speciesById } from '../../data/species/loader.js';
+import { localities, localitiesById } from '../../data/localities/loader.js';
 import { identifyReward } from './logic/identifyResult.js';
 import { completedLocalityIds, completedFamilies, earnedGear, familiarityFactor } from './logic/progression.js';
-import { cutTechniquesById } from '../../loaders/cutTechniques.js';
+import { cutTechniquesById } from '../../data/cutTechniques/loader.js';
 import { applyCut, canApplyToSpecimen, specimenScore } from './logic/cut.js';
 import { identifiedValue, stoneValue, gearPrice } from './logic/market.js';
 import { xpThreshold, MAX_METHOD_LEVEL, levelForXp } from './logic/dive.js';

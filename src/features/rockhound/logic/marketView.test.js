@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { stonePrice, roughPrice, bestCutEstimate } from './marketView.js';
 import { stoneValue, identifiedValue } from './market.js';
-import { speciesById } from '../../../loaders/species.js';
-import { cutTechniques } from '../../../loaders/cutTechniques.js';
+import { speciesById } from '../../../data/species/loader.js';
+import { cutTechniques } from '../../../data/cutTechniques/loader.js';
 
 const RUBY = { id: 'ruby', name: 'Ruby', baseValue: 900, suitableCuts: ['cabochon'], phenomena: [{ type: 'asterism', revealedBy: 'cabochon' }] };
 const AGATE = { id: 'agate', name: 'Agate', baseValue: 15, suitableCuts: [], phenomena: [] };

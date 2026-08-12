@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Cut from './Cut.jsx';
-import { speciesById } from '../../../loaders/species.js';
-import { cutTechniques } from '../../../loaders/cutTechniques.js';
+import { speciesById } from '../../../data/species/loader.js';
+import { cutTechniques } from '../../../data/cutTechniques/loader.js';
 import { cutSuccessProbability } from '../logic/cut.js';
 
 const RUBY_ROUGH = { instanceId: 'i1', stage: 'identified', trueSpeciesId: 'ruby', caratWeight: 1.8, clarity: 82, colorGrade: 91, origin: 'mogok_marble' };

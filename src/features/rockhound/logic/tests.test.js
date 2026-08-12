@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { bandWidth, BASE_ERROR, HAND_LIVE_PLAY, AUTO_LIVE_PLAY } from './precision.js';
 import { runTest, TEST_DEFS, consistentWithSpecies, consistentSpecies, GRADE_DEFS, runGrading } from './tests.js';
-import { speciesById } from '../../../loaders/species.js';
+import { speciesById } from '../../../data/species/loader.js';
 import { familiarityFactor } from './progression.js';
 
 describe('precision', () => {

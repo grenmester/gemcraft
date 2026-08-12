@@ -2,7 +2,7 @@ import { haulSize } from './dive.js';
 import { rollForm } from './forms.js';
 import { huesForSpecies } from './hues.js';
 import { UNKNOWN_HUE } from './traits.js';
-import { speciesById } from '../../../loaders/species.js';
+import { speciesById } from '../../../data/species/loader.js';
 import { round2 } from '../../../shared/math.js';
 
 const lerp = ([lo, hi], t) => lo + (hi - lo) * t;

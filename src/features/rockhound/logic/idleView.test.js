@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { catchView, sieveView } from './idleView.js';
-import { localities, localitiesById } from '../../../loaders/localities.js';
+import { localities, localitiesById } from '../../../data/localities/loader.js';
 import { xpThreshold } from './dive.js';
 import { IDLE_CAP_HOURS, MS_PER_HOUR, pendingCount } from './idle.js';
 import { BENCH_CAP } from './bench.js';
