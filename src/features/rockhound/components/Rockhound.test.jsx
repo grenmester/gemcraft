@@ -396,4 +396,54 @@ describe('the bench', () => {
     fireEvent.click(screen.getByRole('button', { name: /measure scratch test/i }));
     expect(screen.getByRole('status').textContent).toMatch(/Almandine Garnet/);
   });
+
+  it('still announces resolution when Measure everything grades the stone in the same burst', () => {
+    // Regression for Finding 1: "Measure everything" fires the diagnostics
+    // and then the grades in one burst. On a bench holding a single fresh
+    // stone, the diagnostics resolve it and the grades immediately finish
+    // grading it, dropping it off the bench in the same batch — activeRough
+    // goes to null. The banner used to live inside the activeRough branch,
+    // so the screen read "Nothing on your bench" with no explanation at all,
+    // recreating the exact complaint this branch exists to fix.
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      rough: [stone({ instanceId: 'z2', trueSpeciesId: 'almandine_garnet', hue: 'red' })]
+    }));
+    renderRockhound();
+    fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /measure everything/i }));
+    expect(screen.getByRole('status').textContent).toMatch(/Almandine Garnet/);
+  });
+
+  it('shows no banner when grading an already-identified stone', () => {
+    // Regression for Finding 2(a): awaitingResolution used to arm on every
+    // reveal, grades included, so grading an already-settled stone falsely
+    // announced "That settles it."
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      rough: [],
+      identified: [stone({ instanceId: 'y3', stage: 'identified', identifiedAs: 'quartz' })]
+    }));
+    renderRockhound();
+    fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /measure grade colour/i }));
+    expect(screen.queryByRole('status')).toBe(null);
+  });
+
+  it('never leaves the banner naming a stone while a different stone\'s sheet is shown', () => {
+    // Regression for Finding 2(b): selecting away from a just-resolved stone
+    // must not leave the banner naming it above a different stone's sheet.
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      rough: [
+        stone({ instanceId: 'w1', trueSpeciesId: 'almandine_garnet', hue: 'red' }),
+        stone({ instanceId: 'w2', trueSpeciesId: 'quartz', hue: 'colorless' })
+      ]
+    }));
+    renderRockhound();
+    fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
+    const bench = screen.getByLabelText(/stones on your bench/i);
+    fireEvent.click(bench.querySelectorAll('button')[0]);
+    fireEvent.click(screen.getByRole('button', { name: /measure scratch test/i }));
+    screen.getByRole('status');
+    fireEvent.click(screen.getByLabelText(/stones on your bench/i).querySelectorAll('button')[1]);
+    expect(screen.queryByRole('status')).toBe(null);
+  });
 });

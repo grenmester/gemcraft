@@ -10,6 +10,7 @@ import Identify from './Identify.jsx';
 import BenchStrip from './BenchStrip.jsx';
 import { benchStrip } from '../logic/identifyView.js';
 import { isGraded } from '../logic/grading.js';
+import { GRADE_DEFS } from '../logic/tests.js';
 import Cut from './Cut.jsx';
 import Market from './Market.jsx';
 import GemdexV5 from './GemdexV5.jsx';
@@ -32,13 +33,23 @@ function RockhoundInner() {
   const [selectedCutId, setSelectedCutId] = useState(null);
   const [gemdexSub, setGemdexSub] = useState('Species');
   const [benchId, setBenchId] = useState(null);
-  const [justResolved, setJustResolved] = useState(null);
+  // Holds the instanceId of the stone whose identity most recently settled —
+  // never the species id — so the banner can look the specimen back up at
+  // render time and speak honestly about where it actually is (still on the
+  // bench, or already fully graded and gone to Cut) rather than freezing a
+  // location claim at the moment it resolved.
+  const [justResolvedId, setJustResolvedId] = useState(null);
   const awaitingResolution = useRef(null);
 
   // The bench holds every stone not yet fully known: unidentified rough, and
   // identified stones still missing a grade. A stone drops off once Graded.
   const benchStones = [...state.rough, ...state.identified.filter((s) => !isGraded(s))];
   const activeRough = benchStones.find((s) => s.instanceId === benchId) ?? benchStones[0] ?? null;
+  // A resolved stone always ends up in `identified` (rough is exactly the
+  // stones not yet resolved), whether or not it is still on the bench.
+  const justResolvedSpecimen = justResolvedId
+    ? state.identified.find((s) => s.instanceId === justResolvedId) ?? null
+    : null;
 
   const completedLocalities = completedLocalityIds(localities, state.gemdex);
   const completedFams = completedFamilies(species, state.gemdex);
@@ -71,12 +82,14 @@ function RockhoundInner() {
     // Announce only the stone the player just measured, and only on the
     // measurement that resolved it — otherwise reselecting an
     // already-identified stone would re-announce it as fresh news.
+    // `awaitingResolution` is armed only for a diagnostic reveal (see
+    // onReveal below), never a grade — grading cannot resolve identity.
     const id = awaitingResolution.current;
     if (!id) return;
-    const resolved = state.identified.find((s) => s.instanceId === id);
+    const resolved = state.identified.some((s) => s.instanceId === id);
     if (resolved && !state.rough.some((s) => s.instanceId === id)) {
       awaitingResolution.current = null;
-      setJustResolved(resolved.trueSpeciesId);
+      setJustResolvedId(id);
     }
   }, [state.rough, state.identified]);
 
@@ -132,18 +145,23 @@ function RockhoundInner() {
       )}
 
       {tab === 'Identify' && (
-        activeRough ? (
-          <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
+          {activeRough && (
             <BenchStrip
               entries={benchStrip(benchStones, speciesById)}
               selectedId={activeRough.instanceId}
-              onSelect={(id) => { setBenchId(id); setJustResolved(null); }}
+              onSelect={(id) => { setBenchId(id); setJustResolvedId(null); }}
             />
-            {justResolved && (
-              <p role="status" className="rounded border border-green-700 bg-green-950 p-3 text-sm text-green-200">
-                That settles it — {speciesById[justResolved].name}. It is on your bench, ready to grade.
-              </p>
-            )}
+          )}
+          {justResolvedSpecimen && (
+            <p role="status" className="rounded border border-green-700 bg-green-950 p-3 text-sm text-green-200">
+              That settles it — {speciesById[justResolvedSpecimen.trueSpeciesId].name}.{' '}
+              {isGraded(justResolvedSpecimen)
+                ? 'It is fully graded already — find it in Cut.'
+                : 'It is on your bench, ready to grade.'}
+            </p>
+          )}
+          {activeRough ? (
             <Identify
               key={activeRough.instanceId}
               specimen={activeRough}
@@ -152,14 +170,21 @@ function RockhoundInner() {
               identified={Boolean(activeRough.identifiedAs)}
               onReveal={(testId, byHand) => {
                 setBenchId(activeRough.instanceId);
-                awaitingResolution.current = activeRough.instanceId;
+                // Grading reads the specimen itself, never the species, so it
+                // can never resolve identity — only a diagnostic reveal arms
+                // the announcement, and only a diagnostic reveal clears a
+                // stale one left by a previously-resolved stone.
+                if (!GRADE_DEFS[testId]) {
+                  awaitingResolution.current = activeRough.instanceId;
+                  setJustResolvedId(null);
+                }
                 dispatch({ type: REVEAL_TRAIT, payload: { instanceId: activeRough.instanceId, testId, byHand } });
               }}
             />
-          </div>
-        ) : (
-          <p className="text-slate-400">Nothing on your bench — dig at a locality first.</p>
-        )
+          ) : (
+            <p className="text-slate-400">Nothing on your bench — dig at a locality first.</p>
+          )}
+        </div>
       )}
 
       {tab === 'Cut' && (
