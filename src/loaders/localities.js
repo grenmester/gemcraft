@@ -19,8 +19,6 @@ const localitiesData = loadYaml(rawYaml);
 export const localities = localitiesData.localities;
 export const localitiesById = Object.fromEntries(localities.map((l) => [l.id, l]));
 
-export const getLocality = (id) => localitiesById[id];
-
 // The set of species a locality can yield (used for Identify candidate seeding, §6.1).
 export const getFindPoolSpecies = (localityId) =>
   (localitiesById[localityId]?.findPool ?? []).map((entry) => entry.species);

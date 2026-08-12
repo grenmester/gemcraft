@@ -18,5 +18,3 @@ const speciesData = loadYaml(rawYaml);
 
 export const species = speciesData.species;
 export const speciesById = Object.fromEntries(species.map((s) => [s.id, s]));
-
-export const getSpecies = (id) => speciesById[id];

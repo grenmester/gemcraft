@@ -3,5 +3,11 @@ node_modules/
 dist/
 test-results/
 
+# generated knowledge graph — rebuildable from source, ~1.5MB of JSON/HTML
+graphify-out/
+
+# subagent-driven-development scratch (ledger, briefs, review packages)
+.superpowers/
+
 # opencode
 .worktrees/

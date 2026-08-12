@@ -19,8 +19,6 @@ const cutTechniquesData = loadYaml(rawYaml);
 export const cutTechniques = cutTechniquesData.techniques;
 export const cutTechniquesById = Object.fromEntries(cutTechniques.map((t) => [t.id, t]));
 
-export const getCutTechnique = (id) => cutTechniquesById[id];
-
 // Base success probability for a technique at a given level (§13.3).
 export const cutSuccessAtLevel = (technique, level) => {
   const { base, perLevel, maxLevel } = technique.successCurve;
