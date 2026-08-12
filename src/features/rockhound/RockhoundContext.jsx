@@ -1,9 +1,9 @@
 // src/features/rockhound/RockhoundContext.jsx
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import { species, speciesById } from '../../data/species/loader.js';
-import { localities, localitiesById } from '../../data/localities/loader.js';
+import { localitiesById } from '../../data/localities/loader.js';
 import { identifyReward } from '../../domain/identifyResult.js';
-import { completedLocalityIds, completedFamilies, earnedGear, familiarityFactor } from '../../domain/progression.js';
+import { completedFamilies, familiarityFactor } from '../../domain/progression.js';
 import { cutTechniquesById } from '../../data/cutTechniques/loader.js';
 import { applyCut, canApplyToSpecimen, specimenScore } from '../../domain/cut.js';
 import { identifiedValue, stoneValue, gearPrice } from '../../domain/market.js';
@@ -12,66 +12,25 @@ import { idleDepth, pendingCount, MS_PER_HOUR } from '../../domain/idle.js';
 import { benchFull } from '../../domain/bench.js';
 import { rollRough } from '../../domain/rollRough.js';
 import { runTest, consistentSpecies, GRADE_DEFS, runGrading } from '../../domain/gemTests.js';
-import { mergeReading, revealedReadings, UNKNOWN_HUE } from '../../domain/traits.js';
+import { mergeReading, revealedReadings } from '../../domain/traits.js';
 import { seedCandidates } from '../../domain/candidates.js';
-import { huesForSpecies } from '../../domain/hues.js';
 import { HAND_LIVE_PLAY, AUTO_LIVE_PLAY } from '../../domain/precision.js';
+import { ADD_ROUGH, REVEAL_TRAIT, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE,
+         APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, COLLECT_HAUL,
+         DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET, PARK_SIEVE,
+         COLLECT_SIEVE, DEBUG_REWIND_SIEVE } from '../../state/actions.js';
+import { initialRockhoundState, backfillRough } from '../../state/initialState.js';
+import { STORAGE_KEY, loadInitialState } from '../../state/persistence.js';
+import { withEarnedGear } from '../../domain/progression.js';
 
-export const ADD_ROUGH = 'ADD_ROUGH';
-export const REVEAL_TRAIT = 'REVEAL_TRAIT';
-export const CLEAR_NEW = 'CLEAR_NEW';
-export const UNLOCK_TECHNIQUE = 'UNLOCK_TECHNIQUE';
-export const LEVEL_TECHNIQUE = 'LEVEL_TECHNIQUE';
-export const APPLY_CUT = 'APPLY_CUT';
-export const SELL_IDENTIFIED = 'SELL_IDENTIFIED';
-export const SELL_STONE = 'SELL_STONE';
-export const BUY_GEAR = 'BUY_GEAR';
-export const COLLECT_HAUL = 'COLLECT_HAUL';
-export const DEBUG_SET_METHOD_LEVEL = 'DEBUG_SET_METHOD_LEVEL';
-export const DEBUG_ADD_CASH = 'DEBUG_ADD_CASH';
-export const DEBUG_RESET = 'DEBUG_RESET';
-export const PARK_SIEVE = 'PARK_SIEVE';
-export const COLLECT_SIEVE = 'COLLECT_SIEVE';
-export const DEBUG_REWIND_SIEVE = 'DEBUG_REWIND_SIEVE';
-
-export const STORAGE_KEY = 'rockhound_save_v1';
+export { ADD_ROUGH, REVEAL_TRAIT, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE,
+         APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, COLLECT_HAUL,
+         DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET, PARK_SIEVE,
+         COLLECT_SIEVE, DEBUG_REWIND_SIEVE, initialRockhoundState, backfillRough, STORAGE_KEY };
 
 const MASTERY_CEILING = 100;
 const MASTERY_PER_HAND_RUN = 8;
 const MASTERY_PER_AUTO_RUN = 2;
-
-export const initialRockhoundState = {
-  rough: [],
-  // { localityId, since } — where the rocker box (the idle device, gear id
-  // `rocker_box`) is working. Unrelated to the `sieve` gear id in
-  // domain/market.js's SHOP_GEAR, which is a different, ordinary shop item —
-  // do not gate idle behaviour on `gear.includes('sieve')`.
-  sieve: null,
-  exploreMethodXp: { panning: 0, hardrock: 0, geode: 0, surface: 0 },
-  identified: [],
-  gemdex: [],
-  newlyDiscovered: [],
-  reputation: 0,
-  gear: [],
-  testMastery: { scratch: 0, heft: 0, uv: 0 },
-  cutTechniqueLevel: {},
-  bestSpecimens: {},
-  lastCutResult: null,
-  cash: 0,
-  stones: []
-};
-
-// Union in any gear whose milestone is now satisfied by reputation + gemdex.
-function withEarnedGear(gemdex, reputation, currentGear) {
-  const ctx = {
-    reputation,
-    gear: currentGear,
-    completedLocalities: completedLocalityIds(localities, gemdex),
-    completedFamilies: completedFamilies(species, gemdex)
-  };
-  const merged = [...new Set([...currentGear, ...earnedGear(ctx)])];
-  return merged.length === currentGear.length ? currentGear : merged;
-}
 
 /**
  * The stone's identity has become certain, so move it to the bench of
@@ -360,46 +319,6 @@ export function rockhoundReducer(state, action) {
     default:
       return state;
   }
-}
-
-/**
- * Give a hue to rough that predates the hue field, or was saved with
- * UNKNOWN_HUE — rolled from the stone's own species with huesForSpecies, the
- * same draw rollRough itself makes, so a backfilled stone is indistinguishable
- * from a freshly dug one. Hue is the only thing that separates varieties
- * within a mineral family (see traits.js), so a rough that never gets one can
- * never resolve — see the guard in src/data/foundation.test.js.
- *
- * Also defaults `revealed` to {} on any rough that lacks it, for the same
- * "specimens saved before this shape existed" reason.
- *
- * Impure (Math.random) exactly like loadInitialState, which is the only
- * caller — never the reducer.
- */
-export function backfillRough(rough) {
-  const revealed = rough.revealed ?? {};
-  if (rough.hue && rough.hue !== UNKNOWN_HUE) return { ...rough, revealed };
-  const hues = huesForSpecies(speciesById[rough.trueSpeciesId]);
-  const hue = hues.length > 0 ? hues[Math.min(Math.floor(Math.random() * hues.length), hues.length - 1)] : UNKNOWN_HUE;
-  return { ...rough, hue, revealed };
-}
-
-function loadInitialState() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const merged = { ...initialRockhoundState, ...JSON.parse(saved) };
-      return {
-        ...merged,
-        rough: merged.rough.map(backfillRough),
-        gear: withEarnedGear(merged.gemdex, merged.reputation, merged.gear),
-        lastCutResult: null
-      };
-    }
-  } catch (e) {
-    console.error('Failed to load rockhound save:', e);
-  }
-  return initialRockhoundState;
 }
 
 const RockhoundContext = createContext(null);

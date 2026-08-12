@@ -1,3 +1,6 @@
+import { species } from '../data/species/loader.js';
+import { localities } from '../data/localities/loader.js';
+
 export const REPUTATION_TIERS = [0, 50, 120, 250, 450];
 export const FAMILIARITY_BONUS = 0.3;
 
@@ -129,4 +132,16 @@ export function describeGateSubject(gate) {
   if (gate.anyOf && gate.anyOf.length) return gate.anyOf.map(describeNodeSubject).join(' or ');
   if (gate.allOf && gate.allOf.length) return gate.allOf.map(describeNodeSubject).join(' and ');
   return '';
+}
+
+// Union in any gear whose milestone is now satisfied by reputation + gemdex.
+export function withEarnedGear(gemdex, reputation, currentGear) {
+  const ctx = {
+    reputation,
+    gear: currentGear,
+    completedLocalities: completedLocalityIds(localities, gemdex),
+    completedFamilies: completedFamilies(species, gemdex)
+  };
+  const merged = [...new Set([...currentGear, ...earnedGear(ctx)])];
+  return merged.length === currentGear.length ? currentGear : merged;
 }

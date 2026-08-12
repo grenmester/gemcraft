@@ -1,0 +1,16 @@
+export const ADD_ROUGH = 'ADD_ROUGH';
+export const REVEAL_TRAIT = 'REVEAL_TRAIT';
+export const CLEAR_NEW = 'CLEAR_NEW';
+export const UNLOCK_TECHNIQUE = 'UNLOCK_TECHNIQUE';
+export const LEVEL_TECHNIQUE = 'LEVEL_TECHNIQUE';
+export const APPLY_CUT = 'APPLY_CUT';
+export const SELL_IDENTIFIED = 'SELL_IDENTIFIED';
+export const SELL_STONE = 'SELL_STONE';
+export const BUY_GEAR = 'BUY_GEAR';
+export const COLLECT_HAUL = 'COLLECT_HAUL';
+export const DEBUG_SET_METHOD_LEVEL = 'DEBUG_SET_METHOD_LEVEL';
+export const DEBUG_ADD_CASH = 'DEBUG_ADD_CASH';
+export const DEBUG_RESET = 'DEBUG_RESET';
+export const PARK_SIEVE = 'PARK_SIEVE';
+export const COLLECT_SIEVE = 'COLLECT_SIEVE';
+export const DEBUG_REWIND_SIEVE = 'DEBUG_REWIND_SIEVE';
