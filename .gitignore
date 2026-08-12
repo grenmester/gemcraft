@@ -9,5 +9,8 @@ graphify-out/
 # subagent-driven-development scratch (ledger, briefs, review packages)
 .superpowers/
 
+# browser-automation snapshots and console logs, written per navigation
+.playwright-mcp/
+
 # opencode
 .worktrees/
