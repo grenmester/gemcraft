@@ -2,20 +2,20 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import { species, speciesById } from '../../data/species/loader.js';
 import { localities, localitiesById } from '../../data/localities/loader.js';
-import { identifyReward } from './logic/identifyResult.js';
-import { completedLocalityIds, completedFamilies, earnedGear, familiarityFactor } from './logic/progression.js';
+import { identifyReward } from '../../domain/identifyResult.js';
+import { completedLocalityIds, completedFamilies, earnedGear, familiarityFactor } from '../../domain/progression.js';
 import { cutTechniquesById } from '../../data/cutTechniques/loader.js';
-import { applyCut, canApplyToSpecimen, specimenScore } from './logic/cut.js';
-import { identifiedValue, stoneValue, gearPrice } from './logic/market.js';
-import { xpThreshold, MAX_METHOD_LEVEL, levelForXp } from './logic/dive.js';
-import { idleDepth, pendingCount, MS_PER_HOUR } from './logic/idle.js';
-import { benchFull } from './logic/bench.js';
-import { rollRough } from './logic/rollRough.js';
-import { runTest, consistentSpecies, GRADE_DEFS, runGrading } from './logic/tests.js';
-import { mergeReading, revealedReadings, UNKNOWN_HUE } from './logic/traits.js';
-import { seedCandidates } from './logic/candidates.js';
-import { huesForSpecies } from './logic/hues.js';
-import { HAND_LIVE_PLAY, AUTO_LIVE_PLAY } from './logic/precision.js';
+import { applyCut, canApplyToSpecimen, specimenScore } from '../../domain/cut.js';
+import { identifiedValue, stoneValue, gearPrice } from '../../domain/market.js';
+import { xpThreshold, MAX_METHOD_LEVEL, levelForXp } from '../../domain/dive.js';
+import { idleDepth, pendingCount, MS_PER_HOUR } from '../../domain/idle.js';
+import { benchFull } from '../../domain/bench.js';
+import { rollRough } from '../../domain/rollRough.js';
+import { runTest, consistentSpecies, GRADE_DEFS, runGrading } from '../../domain/gemTests.js';
+import { mergeReading, revealedReadings, UNKNOWN_HUE } from '../../domain/traits.js';
+import { seedCandidates } from '../../domain/candidates.js';
+import { huesForSpecies } from '../../domain/hues.js';
+import { HAND_LIVE_PLAY, AUTO_LIVE_PLAY } from '../../domain/precision.js';
 
 export const ADD_ROUGH = 'ADD_ROUGH';
 export const REVEAL_TRAIT = 'REVEAL_TRAIT';
@@ -44,7 +44,7 @@ export const initialRockhoundState = {
   rough: [],
   // { localityId, since } — where the rocker box (the idle device, gear id
   // `rocker_box`) is working. Unrelated to the `sieve` gear id in
-  // logic/market.js's SHOP_GEAR, which is a different, ordinary shop item —
+  // domain/market.js's SHOP_GEAR, which is a different, ordinary shop item —
   // do not gate idle behaviour on `gear.includes('sieve')`.
   sieve: null,
   exploreMethodXp: { panning: 0, hardrock: 0, geode: 0, surface: 0 },

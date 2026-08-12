@@ -1,5 +1,5 @@
 import { breakChance } from './dive.js';
-import { clamp } from '../../../shared/math.js';
+import { clamp } from '../shared/math.js';
 
 // The idle sieve (§1-§2 of the idle spec). It works the shallows and never
 // gambles: it descends only while the risk stays inside tolerance. That is

@@ -2,7 +2,7 @@
 // volume, quality and access; this module owns every number that depends on
 // it. View modules must delegate here rather than restate a formula.
 
-import { clamp, round2 } from '../../../shared/math.js';
+import { clamp, round2 } from '../shared/math.js';
 
 export const MAX_METHOD_LEVEL = 10;
 const LEVELS_PER_DEPTH = 2;

@@ -1,7 +1,7 @@
 import { METHOD_ENUM } from '../../../data/localities/schema.js';
 import { methodProgress } from './diveView.js';
 import { deepestBedrockByMethod } from './localityView.js';
-import { reachDepth, xpThreshold, effectiveReach, MAX_METHOD_LEVEL } from './dive.js';
+import { reachDepth, xpThreshold, effectiveReach, MAX_METHOD_LEVEL } from '../../../domain/dive.js';
 
 // Presentation shape for the status footer. Every number is produced by
 // dive.js / diveView.js — this module chooses what to show, never how to

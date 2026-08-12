@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { FORM_POOLS, FORM_EFFECTS, FORM_LABELS, rollForm } from './forms.js';
-import { METHOD_ENUM } from '../../../data/localities/schema.js';
+import { METHOD_ENUM } from '../data/localities/schema.js';
 
 describe('form pools', () => {
   it('covers every collection method', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { hueOf, huesForSpecies, HUE_BY_COLOUR } from './hues.js';
-import { species, speciesById } from '../../../data/species/loader.js';
+import { species, speciesById } from '../data/species/loader.js';
 
 describe('hueOf', () => {
   it('collapses shades of one colour onto a single hue', () => {

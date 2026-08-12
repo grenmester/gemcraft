@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RockhoundProvider } from '../../features/rockhound/RockhoundContext.jsx';
 import DebugPanel from './DebugPanel.jsx';
-import { effectiveReach } from '../../features/rockhound/logic/dive.js';
+import { effectiveReach } from '../../domain/dive.js';
 import { deepestBedrockByMethod } from '../../features/rockhound/logic/localityView.js';
 
 function open() {

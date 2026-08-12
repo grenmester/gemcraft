@@ -1,9 +1,9 @@
-import { TEST_DEFS, GRADE_DEFS, OBSERVED_TRAITS, consistentSpecies } from './tests.js';
-import { revealedReadings } from './traits.js';
-import { seedCandidates } from './candidates.js';
-import { stoneRung, rungLabel } from './rungs.js';
+import { TEST_DEFS, GRADE_DEFS, OBSERVED_TRAITS, consistentSpecies } from '../../../domain/gemTests.js';
+import { revealedReadings } from '../../../domain/traits.js';
+import { seedCandidates } from '../../../domain/candidates.js';
+import { stoneRung, rungLabel } from '../../../domain/rungs.js';
 
-// The stone sheet's shape. Every number comes from tests.js, traits.js,
+// The stone sheet's shape. Every number comes from gemTests.js, traits.js,
 // grading.js or rungs.js — this module decides what to show and what to call
 // it, never how to compute it.
 

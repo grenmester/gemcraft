@@ -1,4 +1,4 @@
-import { GRADE_DEFS } from './tests.js';
+import { GRADE_DEFS } from './gemTests.js';
 
 // What a stone is worth rests on what the player has actually measured. A
 // buyer cannot verify an ungraded trait, so they assume the worst — and that

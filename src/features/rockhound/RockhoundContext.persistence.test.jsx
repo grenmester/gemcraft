@@ -3,8 +3,8 @@ import { renderHook, act } from '@testing-library/react';
 import {
   RockhoundProvider, useRockhound, ADD_ROUGH, initialRockhoundState
 } from './RockhoundContext.jsx';
-import { createRough } from './logic/rollRough.js';
-import { huesForSpecies } from './logic/hues.js';
+import { createRough } from '../../domain/rollRough.js';
+import { huesForSpecies } from '../../domain/hues.js';
 import { speciesById } from '../../data/species/loader.js';
 
 const STORAGE_KEY = 'rockhound_save_v1';

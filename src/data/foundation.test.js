@@ -7,12 +7,12 @@ import { localities, localitiesById, getFindPoolSpecies } from './localities/loa
 import { RARITY_ENUM, speciesSchema } from './species/schema.js';
 import { localitySchema, findPoolEntrySchema, gateGroupSchema } from './localities/schema.js';
 
-import { huesForSpecies } from '../features/rockhound/logic/hues.js';
-import { consistentSpecies } from '../features/rockhound/logic/tests.js';
-import { bandWidth, HAND_LIVE_PLAY } from '../features/rockhound/logic/precision.js';
-import { numericProperty, fluorescenceKey } from '../features/rockhound/logic/properties.js';
+import { huesForSpecies } from '../domain/hues.js';
+import { consistentSpecies } from '../domain/gemTests.js';
+import { bandWidth, HAND_LIVE_PLAY } from '../domain/precision.js';
+import { numericProperty, fluorescenceKey } from '../domain/properties.js';
 import { backfillRough } from '../features/rockhound/RockhoundContext.jsx';
-import { UNKNOWN_HUE } from '../features/rockhound/logic/traits.js';
+import { UNKNOWN_HUE } from '../domain/traits.js';
 
 // Walk a gate tree collecting leaf conditions.
 function collectGateConditions(group, acc = []) {

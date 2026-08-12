@@ -1,7 +1,7 @@
 import {
   levelForXp, xpThreshold, effectiveReach, breakChance, severityAt,
   MAX_METHOD_LEVEL
-} from './dive.js';
+} from '../../../domain/dive.js';
 
 // Read-only presentation shapes for the run UI. Every number here is
 // produced by dive.js — this module chooses what to show and what to call

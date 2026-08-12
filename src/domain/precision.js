@@ -1,4 +1,4 @@
-import { clamp } from '../../../shared/math.js';
+import { clamp } from '../shared/math.js';
 
 // Hardness and specific gravity are instrument readings on small scales.
 // Colour and clarity are eye judgments on a 0-100 grade, so 5 points is a

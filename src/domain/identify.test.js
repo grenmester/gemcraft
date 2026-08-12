@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { seedCandidates } from './candidates.js';
 import { identifyReward } from './identifyResult.js';
-import { speciesById } from '../../../data/species/loader.js';
-import { localitiesById } from '../../../data/localities/loader.js';
+import { speciesById } from '../data/species/loader.js';
+import { localitiesById } from '../data/localities/loader.js';
 
 describe('seedCandidates', () => {
   it('returns the unique find-pool species for a locality', () => {

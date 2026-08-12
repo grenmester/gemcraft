@@ -1,7 +1,7 @@
-import { levelForXp } from './dive.js';
-import { idleDepth, pendingCount, accruedHours, IDLE_CAP_HOURS } from './idle.js';
-import { catchablePool } from './rollRough.js';
-import { benchFull } from './bench.js';
+import { levelForXp } from '../../../domain/dive.js';
+import { idleDepth, pendingCount, accruedHours, IDLE_CAP_HOURS } from '../../../domain/idle.js';
+import { catchablePool } from '../../../domain/rollRough.js';
+import { benchFull } from '../../../domain/bench.js';
 
 // Presentation shapes for the sieve. Every number is produced by idle.js,
 // bench.js or rollRough.js — this module chooses what to show and what to

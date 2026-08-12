@@ -8,14 +8,14 @@ import {
   DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET,
   PARK_SIEVE, COLLECT_SIEVE, DEBUG_REWIND_SIEVE
 } from './RockhoundContext.jsx';
-import { createRough } from './logic/rollRough.js';
+import { createRough } from '../../domain/rollRough.js';
 import { species, speciesById } from '../../data/species/loader.js';
 import { localitiesById } from '../../data/localities/loader.js';
 import { METHOD_ENUM } from '../../data/localities/schema.js';
 import { cutTechniquesById } from '../../data/cutTechniques/loader.js';
-import { stoneValue, identifiedValue, gearPrice } from './logic/market.js';
-import { levelForXp, MAX_METHOD_LEVEL } from './logic/dive.js';
-import { BENCH_CAP } from './logic/bench.js';
+import { stoneValue, identifiedValue, gearPrice } from '../../domain/market.js';
+import { levelForXp, MAX_METHOD_LEVEL } from '../../domain/dive.js';
+import { BENCH_CAP } from '../../domain/bench.js';
 
 const sapphireRough = createRough(
   { trueSpeciesId: 'sapphire', caratWeight: 1, clarity: 80, colorGrade: 80, origin: 'hidden_creek' },

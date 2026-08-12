@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { stonePrice, roughPrice, bestCutEstimate } from './marketView.js';
-import { stoneValue, identifiedValue } from './market.js';
+import { stoneValue, identifiedValue } from '../../../domain/market.js';
 import { speciesById } from '../../../data/species/loader.js';
 import { cutTechniques } from '../../../data/cutTechniques/loader.js';
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { revealedReadings, mergeReading, isRevealed } from './traits.js';
-import { speciesById } from '../../../data/species/loader.js';
+import { speciesById } from '../data/species/loader.js';
 
 const wide = { testId: 'scratch', kind: 'numeric', property: 'hardness', center: 9, band: 1.0 };
 const tight = { testId: 'scratch', kind: 'numeric', property: 'hardness', center: 9, band: 0.3 };

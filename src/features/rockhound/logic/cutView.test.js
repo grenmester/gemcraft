@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { techniqueView, expectedCarat } from './cutView.js';
-import { cutSuccessProbability } from './cut.js';
+import { cutSuccessProbability } from '../../../domain/cut.js';
 
 const RUBY = { id: 'ruby', name: 'Ruby', transparency: 'transparent', cleavage: 'none', cutDifficulty: 4, suitableCuts: ['cabochon', 'princess'], phenomena: [{ type: 'asterism', revealedBy: 'cabochon' }] };
 const TOPAZ = { id: 'topaz', name: 'Topaz', transparency: 'transparent', cleavage: 'perfect', cutDifficulty: 3, suitableCuts: ['princess'], phenomena: [] };

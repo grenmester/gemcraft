@@ -3,8 +3,8 @@ import {
   canApply, cutSuccessProbability, applyCut, specimenScore, scoreBreakdown, SCORE_WEIGHTS, canShatter,
   formAllows, canApplyToSpecimen, formYield
 } from './cut.js';
-import { speciesById } from '../../../data/species/loader.js';
-import { cutTechniquesById, cutTechniques } from '../../../data/cutTechniques/loader.js';
+import { speciesById } from '../data/species/loader.js';
+import { cutTechniquesById, cutTechniques } from '../data/cutTechniques/loader.js';
 
 const rough = (over = {}) => ({
   instanceId: 'c1', stage: 'identified', trueSpeciesId: 'sapphire', identifiedAs: 'sapphire',

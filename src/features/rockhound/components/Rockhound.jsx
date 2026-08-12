@@ -4,13 +4,13 @@ import { useRockhound, COLLECT_HAUL, REVEAL_TRAIT, CLEAR_NEW, UNLOCK_TECHNIQUE, 
 import { localities, localitiesById } from '../../../data/localities/loader.js';
 import { speciesById, species } from '../../../data/species/loader.js';
 import { cutTechniques, cutTechniquesById } from '../../../data/cutTechniques/loader.js';
-import { completedLocalityIds, completedFamilies, isLocalityUnlocked } from '../logic/progression.js';
+import { completedLocalityIds, completedFamilies, isLocalityUnlocked } from '../../../domain/progression.js';
 import Explore from './Explore.jsx';
 import Identify from './Identify.jsx';
 import BenchStrip from './BenchStrip.jsx';
 import { benchStrip } from '../logic/identifyView.js';
-import { isGraded } from '../logic/grading.js';
-import { GRADE_DEFS } from '../logic/tests.js';
+import { isGraded } from '../../../domain/grading.js';
+import { GRADE_DEFS } from '../../../domain/gemTests.js';
 import Cut from './Cut.jsx';
 import Market from './Market.jsx';
 import GemdexV5 from './GemdexV5.jsx';
@@ -20,8 +20,8 @@ import CareerPanel from './CareerPanel.jsx';
 import StatusFooter from './StatusFooter.jsx';
 import SievePanel from './SievePanel.jsx';
 import { sieveView, catchView } from '../logic/idleView.js';
-import { benchFull } from '../logic/bench.js';
-import { defaultId } from '../logic/rollRough.js';
+import { benchFull } from '../../../domain/bench.js';
+import { defaultId } from '../../../domain/rollRough.js';
 
 const TABS = ['Explore', 'Identify', 'Cut', 'Market', 'Gemdex'];
 const GEMDEX_SUBTABS = ['Species', 'Trophies', 'Career'];

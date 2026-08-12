@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { seedCandidates } from './candidates.js';
-import { localities } from '../../../data/localities/loader.js';
+import { localities } from '../data/localities/loader.js';
 
 const creek = localities.find((l) => l.id === 'hidden_creek');
 

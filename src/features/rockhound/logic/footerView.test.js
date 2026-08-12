@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { methodTracks } from './footerView.js';
-import { xpThreshold, reachDepth, MAX_METHOD_LEVEL } from './dive.js';
+import { xpThreshold, reachDepth, MAX_METHOD_LEVEL } from '../../../domain/dive.js';
 import { METHOD_ENUM } from '../../../data/localities/schema.js';
 import { localities } from '../../../data/localities/loader.js';
 

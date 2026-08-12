@@ -3,8 +3,8 @@ import GemGlyph from './GemGlyph.jsx';
 import TechniqueCard from './TechniqueCard.jsx';
 import TechniqueGuide from './TechniqueGuide.jsx';
 import { techniqueView } from '../logic/cutView.js';
-import { isMeasured, measuredQuality } from '../logic/grading.js';
-import { GRADE_DEFS } from '../logic/tests.js';
+import { isMeasured, measuredQuality } from '../../../domain/grading.js';
+import { GRADE_DEFS } from '../../../domain/gemTests.js';
 
 function Meter({ label, value, max = 100, unit = '' }) {
   return (

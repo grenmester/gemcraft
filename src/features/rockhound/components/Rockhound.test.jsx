@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { RockhoundProvider } from '../RockhoundContext.jsx';
 import Rockhound from './Rockhound.jsx';
 import App from '../../../App.jsx';
-import { BENCH_CAP } from '../logic/bench.js';
+import { BENCH_CAP } from '../../../domain/bench.js';
 
 // The provider now lives at the app root (src/App.jsx) rather than inside
 // Rockhound itself, so tests mounting the shell in isolation supply their own.

@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import Cut from './Cut.jsx';
 import { speciesById } from '../../../data/species/loader.js';
 import { cutTechniques } from '../../../data/cutTechniques/loader.js';
-import { cutSuccessProbability } from '../logic/cut.js';
+import { cutSuccessProbability } from '../../../domain/cut.js';
 
 const RUBY_ROUGH = { instanceId: 'i1', stage: 'identified', trueSpeciesId: 'ruby', caratWeight: 1.8, clarity: 82, colorGrade: 91, origin: 'mogok_marble' };
 const TOPAZ_ROUGH = { instanceId: 'i2', stage: 'identified', trueSpeciesId: 'topaz', caratWeight: 2.0, clarity: 70, colorGrade: 60, origin: 'old_quarry' };

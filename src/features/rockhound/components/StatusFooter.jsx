@@ -1,5 +1,5 @@
 import { methodTracks } from '../logic/footerView.js';
-import { BENCH_CAP } from '../logic/bench.js';
+import { BENCH_CAP } from '../../../domain/bench.js';
 
 const METHOD_ICON = { panning: '🥣', hardrock: '⛏️', geode: '🥚', surface: '🔎' };
 

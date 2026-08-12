@@ -1,8 +1,8 @@
 import { RARITY_ENUM } from '../../../data/species/schema.js';
 import { METHOD_ENUM } from '../../../data/localities/schema.js';
 import { localities } from '../../../data/localities/loader.js';
-import { localitySetComplete, describeGate, describeGateSubject } from './progression.js';
-import { effectivePool } from './rollRough.js';
+import { localitySetComplete, describeGate, describeGateSubject } from '../../../domain/progression.js';
+import { effectivePool } from '../../../domain/rollRough.js';
 
 // Read-only derivations for the Explore views. Locality set grouping lives here
 // (not in progression.js) because it is presentation shape, not game rules;

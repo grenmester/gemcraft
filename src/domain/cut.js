@@ -1,6 +1,6 @@
-import { cutSuccessAtLevel } from '../../../data/cutTechniques/loader.js';
+import { cutSuccessAtLevel } from '../data/cutTechniques/loader.js';
 import { FORM_EFFECTS } from './forms.js';
-import { clamp, round2 } from '../../../shared/math.js';
+import { clamp, round2 } from '../shared/math.js';
 
 export const CUT_DIFFICULTY_STEP = 0.08;
 

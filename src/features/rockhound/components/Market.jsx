@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import GemGlyph from './GemGlyph.jsx';
 import PriceBreakdown from './PriceBreakdown.jsx';
-import { SHOP_GEAR } from '../logic/market.js';
+import { SHOP_GEAR } from '../../../domain/market.js';
 import { stonePrice, roughPrice, bestCutEstimate } from '../logic/marketView.js';
 import { money, titleize } from '../../../shared/format.js';
 

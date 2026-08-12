@@ -3,8 +3,8 @@ import { numericProperty, fluorescenceKey } from './properties.js';
 import { createRough, rollRough, effectivePool, rollHaul, bestOf, catchablePool } from './rollRough.js';
 import { haulSize } from './dive.js';
 import { huesForSpecies } from './hues.js';
-import { speciesById } from '../../../data/species/loader.js';
-import { localitiesById, localities } from '../../../data/localities/loader.js';
+import { speciesById } from '../data/species/loader.js';
+import { localitiesById, localities } from '../data/localities/loader.js';
 
 describe('properties', () => {
   it('returns the midpoint for a hardness range', () => {
