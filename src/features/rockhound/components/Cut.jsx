@@ -36,14 +36,22 @@ export default function Cut({
     <section className="flex flex-col gap-6 md:flex-row">
       <div className="flex flex-col gap-2 md:w-1/3">
         <h3 className="text-xs font-bold uppercase tracking-wider text-yellow-400">Stone tray</h3>
-        {identified.map((sp) => {
+        {identified.map((sp, i) => {
           const s = speciesById[sp.trueSpeciesId];
           const isSel = sp.instanceId === selected?.instanceId;
+          const weighed = isMeasured(sp, 'weigh');
+          // The carat is only known to the player once weighed. Falling back
+          // to the true carat when it isn't would leak exactly the number
+          // this branch exists to hide — so an unweighed stone falls back to
+          // its position in the tray instead, which still keeps two
+          // unweighed same-species rows distinct. Mirrors Market.jsx's rough
+          // sell list.
+          const caratLabel = weighed ? `${measuredQuality(sp).caratWeight} carat` : `ungraded, item ${i + 1}`;
           return (
             <button
               key={sp.instanceId}
               type="button"
-              aria-label={`${s.name}, ${sp.caratWeight} carat`}
+              aria-label={`${s.name}, ${caratLabel}`}
               onClick={() => onSelectSpecimen(sp.instanceId)}
               className={`flex items-center gap-3 rounded-lg border p-2 text-left ${
                 isSel ? 'border-yellow-400 bg-slate-700' : 'border-slate-600 bg-slate-800 hover:border-slate-500'
@@ -52,7 +60,9 @@ export default function Cut({
               <GemGlyph speciesId={sp.trueSpeciesId} variant="row" />
               <span>
                 <span className="block text-slate-100">{s.name}</span>
-                <span className="block text-xs text-slate-400">{sp.caratWeight} ct</span>
+                <span className="block text-xs text-slate-400">
+                  {weighed ? `${measuredQuality(sp).caratWeight} ct` : 'not measured'}
+                </span>
               </span>
             </button>
           );

@@ -64,6 +64,27 @@ describe('Cut', () => {
     expect(screen.getAllByText(/not measured, so a buyer assumes the worst/i).length).toBeGreaterThan(0);
   });
 
+  it('does not show the true carat in the tray for an unweighed rough stone', () => {
+    // RUBY_ROUGH carries no revealed record, so its true carat (1.8) is
+    // known only to the game, not the player. The tray row must not print
+    // it, even though the row itself still needs to render.
+    renderCut();
+    const row = screen.getByRole('button', { name: /^Ruby,/ });
+    expect(row.textContent).not.toMatch(/1\.8/);
+    expect(row.textContent).toMatch(/Ruby/);
+  });
+
+  it('gives two unweighed same-species rough stones distinct tray aria-labels', () => {
+    const rubyTwo = { ...RUBY_ROUGH, instanceId: 'i3', caratWeight: 3.4 };
+    renderCut({ identified: [RUBY_ROUGH, rubyTwo], selectedId: 'i1' });
+    const rows = screen.getAllByRole('button', { name: /^Ruby,/ });
+    const labels = rows.map((r) => r.getAttribute('aria-label'));
+    expect(new Set(labels).size).toBe(labels.length);
+    // Neither label leaks the true (unmeasured) carat.
+    expect(labels.some((l) => l.includes('1.8'))).toBe(false);
+    expect(labels.some((l) => l.includes('3.4'))).toBe(false);
+  });
+
   it('shows the TRUE success odds, not the technique base rate', () => {
     renderCut();
     const truth = Math.round(cutSuccessProbability(speciesById.ruby, cutTechniques.find((t) => t.id === 'cabochon'), 4) * 100);
