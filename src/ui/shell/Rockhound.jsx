@@ -1,6 +1,7 @@
 // src/ui/shell/Rockhound.jsx
 import { useState, useEffect, useRef } from 'react';
-import { useRockhound, COLLECT_HAUL, REVEAL_TRAIT, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, PARK_SIEVE, COLLECT_SIEVE } from '../../features/rockhound/RockhoundContext.jsx';
+import { useRockhound } from '../../state/RockhoundProvider.jsx';
+import { COLLECT_HAUL, REVEAL_TRAIT, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, PARK_SIEVE, COLLECT_SIEVE } from '../../state/actions.js';
 import { localities, localitiesById } from '../../data/localities/loader.js';
 import { speciesById, species } from '../../data/species/loader.js';
 import { cutTechniques, cutTechniquesById } from '../../data/cutTechniques/loader.js';

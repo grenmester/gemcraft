@@ -1,7 +1,7 @@
 // src/ui/shell/Rockhound.test.jsx
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { RockhoundProvider } from '../../features/rockhound/RockhoundContext.jsx';
+import { RockhoundProvider } from '../../state/RockhoundProvider.jsx';
 import Rockhound from './Rockhound.jsx';
 import App from '../../App.jsx';
 import { BENCH_CAP } from '../../domain/bench.js';

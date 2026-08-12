@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { RockhoundProvider } from '../../features/rockhound/RockhoundContext.jsx';
+import { RockhoundProvider } from '../../state/RockhoundProvider.jsx';
 import DebugPanel from './DebugPanel.jsx';
 import { effectiveReach } from '../../domain/dive.js';
 import { deepestBedrockByMethod } from '../../viewmodels/localityView.js';

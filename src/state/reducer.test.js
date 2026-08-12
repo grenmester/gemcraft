@@ -1,21 +1,22 @@
-// src/features/rockhound/RockhoundContext.test.js
+// src/state/reducer.test.js
 import { describe, it, expect } from 'vitest';
+import { rockhoundReducer } from './reducer.js';
+import { initialRockhoundState } from './initialState.js';
 import {
-  rockhoundReducer, initialRockhoundState,
   ADD_ROUGH, REVEAL_TRAIT, CLEAR_NEW,
   UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT,
   SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, COLLECT_HAUL,
   DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET,
   PARK_SIEVE, COLLECT_SIEVE, DEBUG_REWIND_SIEVE
-} from './RockhoundContext.jsx';
-import { createRough } from '../../domain/rollRough.js';
-import { species, speciesById } from '../../data/species/loader.js';
-import { localitiesById } from '../../data/localities/loader.js';
-import { METHOD_ENUM } from '../../data/localities/schema.js';
-import { cutTechniquesById } from '../../data/cutTechniques/loader.js';
-import { stoneValue, identifiedValue, gearPrice } from '../../domain/market.js';
-import { levelForXp, MAX_METHOD_LEVEL } from '../../domain/dive.js';
-import { BENCH_CAP } from '../../domain/bench.js';
+} from './actions.js';
+import { createRough } from '../domain/rollRough.js';
+import { species, speciesById } from '../data/species/loader.js';
+import { localitiesById } from '../data/localities/loader.js';
+import { METHOD_ENUM } from '../data/localities/schema.js';
+import { cutTechniquesById } from '../data/cutTechniques/loader.js';
+import { stoneValue, identifiedValue, gearPrice } from '../domain/market.js';
+import { levelForXp, MAX_METHOD_LEVEL } from '../domain/dive.js';
+import { BENCH_CAP } from '../domain/bench.js';
 
 const sapphireRough = createRough(
   { trueSpeciesId: 'sapphire', caratWeight: 1, clarity: 80, colorGrade: 80, origin: 'hidden_creek' },

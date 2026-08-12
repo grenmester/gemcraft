@@ -11,7 +11,7 @@ import { huesForSpecies } from '../domain/hues.js';
 import { consistentSpecies } from '../domain/gemTests.js';
 import { bandWidth, HAND_LIVE_PLAY } from '../domain/precision.js';
 import { numericProperty, fluorescenceKey } from '../domain/properties.js';
-import { backfillRough } from '../features/rockhound/RockhoundContext.jsx';
+import { backfillRough } from '../state/initialState.js';
 import { UNKNOWN_HUE } from '../domain/traits.js';
 
 // Walk a gate tree collecting leaf conditions.

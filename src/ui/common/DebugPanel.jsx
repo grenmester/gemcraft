@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useRockhound, STORAGE_KEY, DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET, DEBUG_REWIND_SIEVE } from '../../features/rockhound/RockhoundContext.jsx';
+import { useRockhound } from '../../state/RockhoundProvider.jsx';
+import { STORAGE_KEY } from '../../state/persistence.js';
+import { DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET, DEBUG_REWIND_SIEVE } from '../../state/actions.js';
 import { METHOD_ENUM } from '../../data/localities/schema.js';
 import { levelForXp, MAX_METHOD_LEVEL, effectiveReach } from '../../domain/dive.js';
 import { deepestBedrockByMethod } from '../../viewmodels/localityView.js';

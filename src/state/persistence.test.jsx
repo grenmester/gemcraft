@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import {
-  RockhoundProvider, useRockhound, ADD_ROUGH, initialRockhoundState
-} from './RockhoundContext.jsx';
-import { createRough } from '../../domain/rollRough.js';
-import { huesForSpecies } from '../../domain/hues.js';
-import { speciesById } from '../../data/species/loader.js';
+import { RockhoundProvider, useRockhound } from './RockhoundProvider.jsx';
+import { ADD_ROUGH } from './actions.js';
+import { initialRockhoundState } from './initialState.js';
+import { createRough } from '../domain/rollRough.js';
+import { huesForSpecies } from '../domain/hues.js';
+import { speciesById } from '../data/species/loader.js';
 
 const STORAGE_KEY = 'rockhound_save_v1';
 const wrapper = ({ children }) => <RockhoundProvider>{children}</RockhoundProvider>;

@@ -1,4 +1,4 @@
-import { RockhoundProvider } from './features/rockhound/RockhoundContext.jsx';
+import { RockhoundProvider } from './state/RockhoundProvider.jsx';
 import Rockhound from './ui/shell/Rockhound.jsx';
 import DebugPanel from './ui/common/DebugPanel.jsx';
 
