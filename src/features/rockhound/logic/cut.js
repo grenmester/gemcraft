@@ -49,7 +49,7 @@ export function canShatter(species, technique) {
     && ['good', 'perfect'].includes(species?.cleavage);
 }
 
-export function applyCut(specimen, species, technique, level, rng = Math.random) {
+export function applyCut(specimen, species, technique, level, rng) {
   const p = cutSuccessProbability(species, technique, level);
   const roll = rng();
   const qualityRoll = rng();

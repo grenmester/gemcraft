@@ -120,6 +120,17 @@ describe('rockhoundReducer', () => {
     expect(s.bestSpecimens.sapphire).toBeUndefined();
   });
 
+  it('APPLY_CUT fails loudly rather than silently falling back to Math.random when rng is missing', () => {
+    // Finding 5 (pre-existing, predates this branch): the reducer used to
+    // do `rng ?? Math.random`, so a caller that forgot rng got a working
+    // but impure cut instead of a signal that something was wired wrong.
+    // Neither the reducer nor applyCut itself defaults rng any more, so a
+    // missing one now throws instead of silently succeeding.
+    let s = rockhoundReducer(withIdentified, { type: UNLOCK_TECHNIQUE, payload: { techniqueId: 'cabochon' } });
+    for (let i = 0; i < 9; i++) s = rockhoundReducer(s, { type: LEVEL_TECHNIQUE, payload: { techniqueId: 'cabochon' } });
+    expect(() => rockhoundReducer(s, { type: APPLY_CUT, payload: { instanceId: 'g1', techniqueId: 'cabochon' } })).toThrow();
+  });
+
   it('APPLY_CUT is a no-op for a missing specimen', () => {
     const unlocked = rockhoundReducer(withIdentified, { type: UNLOCK_TECHNIQUE, payload: { techniqueId: 'cabochon' } });
     const after = rockhoundReducer(unlocked, { type: APPLY_CUT, payload: { instanceId: 'nope', techniqueId: 'cabochon', rng: () => 0 } });

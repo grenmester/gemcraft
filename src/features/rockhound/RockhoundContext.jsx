@@ -232,7 +232,11 @@ export function rockhoundReducer(state, action) {
       const species = speciesById[specimen.trueSpeciesId];
       if (!canApplyToSpecimen(specimen, species, technique)) return state;
 
-      const result = applyCut(specimen, species, technique, level, rng ?? Math.random);
+      // No `?? Math.random` fallback — same purity guard as PARK_SIEVE and
+      // COLLECT_SIEVE. rng must arrive in the action payload; a missing one
+      // fails loudly (applyCut has no default of its own either) rather
+      // than silently taking the reducer impure.
+      const result = applyCut(specimen, species, technique, level, rng);
       const identified = state.identified.filter((s) => s.instanceId !== instanceId);
 
       let bestSpecimens = state.bestSpecimens;
