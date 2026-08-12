@@ -37,9 +37,11 @@ Scale: 60 source files, 46 test files, 4,518 source LOC. Roughly 60 files move.
 
 Explicitly out of scope, each for a stated reason:
 
-- **Pruning redundant tests.** The 622-test suite is the instrument that proves
-  this refactor safe. Removing tests in the same change that moves code removes
-  the net while walking the wire. A separate later pass, with explicit criteria.
+- **Pruning redundant tests *during the move*.** The 622-test suite is the
+  instrument that proves this refactor safe; removing tests in the same change
+  that moves code removes the net while walking the wire. Pruning remains a
+  goal — it is sequenced as the final phase, after every move commit is green.
+  See §11.
 - **Tightening leaky exports.** ~20 symbols (`WORST_CASE`, `RUNGS`, `FORM_POOLS`,
   `BASE_ERROR`, …) are exported solely for tests. Un-exporting them requires
   rewriting those tests, which contradicts §7. Recorded, not actioned.
@@ -174,3 +176,47 @@ re-pointed at `domain/cut.js` and `state/handlers/cut.js` before it is planned.
 This ordering was chosen deliberately: the two-axis work splits one conflated
 additive score into two multiplied factors, which lands far more cleanly into
 separate domain modules and a 40-line cut handler than into a 229-line reducer.
+
+## 11. Final phase — pruning redundant tests
+
+Runs **only after every move commit in §9 is green**. Never interleaved: the
+suite cannot simultaneously be the instrument proving the move safe and the
+thing being altered.
+
+A test is removed only on **evidence**, never on the impression that it looks
+similar to another. A candidate must meet both criteria:
+
+1. **It is not load-bearing.** Delete the behaviour it claims to guard; the test
+   still passes. This is the codebase's existing standard, stated in its own
+   constraints: never write a test that passes when the behaviour is removed. A
+   test that survives the removal of its own subject was never testing it.
+2. **It is genuinely covered elsewhere.** Removing it does not reduce line or
+   branch coverage (`pnpm test:coverage`), and the named test that still covers
+   the behaviour is identified in the commit message.
+
+   *Prerequisite:* the `test:coverage` script exists in `package.json` but its
+   provider does not — `@vitest/coverage-v8` is not installed, so the script
+   currently fails. This phase's first commit installs it as a devDependency.
+   Without it, criterion 2 cannot be evaluated and no test may be removed.
+
+Both criteria must hold. Criterion 1 alone finds vacuous tests; criterion 2
+alone finds duplicated ones; neither is sufficient because a vacuous test may
+still be the only thing touching a line, and a covered test may still be the
+only one asserting the *rule* rather than merely executing the code.
+
+Additionally removed, without needing the criteria above:
+
+- Tests for code this refactor deletes (`shared/utils/requirements.js` and the
+  three unused loader accessors) — the subject is gone.
+
+Explicitly **not** grounds for removal:
+
+- Length, age, or verbosity of a test.
+- Testing an internal rather than a public API. Those exports exist for tests
+  by deliberate trade (§3); that is not redundancy.
+- Two tests covering the same *function* — they are redundant only if they
+  assert the same *rule*. A pricing function legitimately needs a test per rule.
+
+Each removal is its own reviewable commit or a small grouped commit, with the
+count before and after stated, so the drop from 623 is auditable rather than a
+single unexplained collapse.
