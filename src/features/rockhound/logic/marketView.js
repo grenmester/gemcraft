@@ -5,7 +5,9 @@ import { measuredQuality, appraisedQuality, isMeasured, measuredBand } from './g
 const mid = ([lo, hi]) => (lo + hi) / 2;
 
 // A band divided by the mastery floor is a long float; the sheet is a price
-// explanation, not a readout, so round it for display.
+// explanation, not a readout, so round it for display. Band and appraised value
+// round the same way on purpose: the modal shows `centre ± band → priced as X`,
+// and rounding them differently made that line fail to add up.
 const round1 = (n) => Math.round(n * 10) / 10;
 
 /**
@@ -47,10 +49,10 @@ export function roughPrice(specimen, species) {
     caratWeight: isMeasured(specimen, 'weigh') ? q.caratWeight : null,
     colorGrade: colourMeasured ? q.colorGrade : null,
     colorGradeBand: colourMeasured ? round1(measuredBand(specimen, 'colour')) : null,
-    colorGradeAppraised: colourMeasured ? Math.round(a.colorGrade) : null,
+    colorGradeAppraised: colourMeasured ? round1(a.colorGrade) : null,
     clarity: clarityMeasured ? q.clarity : null,
     clarityBand: clarityMeasured ? round1(measuredBand(specimen, 'clarity')) : null,
-    clarityAppraised: clarityMeasured ? Math.round(a.clarity) : null,
+    clarityAppraised: clarityMeasured ? round1(a.clarity) : null,
     multiplier: roughGradeFactor(specimen),
     uncutDiscount: uncutDiscountFor(specimen)
   };

@@ -446,4 +446,38 @@ describe('the bench', () => {
     fireEvent.click(screen.getByLabelText(/stones on your bench/i).querySelectorAll('button')[1]);
     expect(screen.queryByRole('status')).toBe(null);
   });
+
+  it('withholds the banner when the bench falls back to another stone on its own', () => {
+    // The harder half of Finding 2(b): the player selects nothing. Measuring
+    // everything resolves AND fully grades the garnet, so it leaves the bench
+    // and `activeRough` slides to the quartz underneath — and the banner would
+    // name the garnet above the quartz's sheet.
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      rough: [
+        stone({ instanceId: 'v1', trueSpeciesId: 'almandine_garnet', hue: 'red' }),
+        stone({ instanceId: 'v2', trueSpeciesId: 'quartz', hue: 'colorless' })
+      ]
+    }));
+    renderRockhound();
+    fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /measure everything/i }));
+    // The garnet is gone and the quartz's sheet is showing...
+    expect(screen.getByLabelText(/^Hue:/).textContent).toMatch(/colorless/i);
+    // ...so nothing may still be announcing the garnet.
+    expect(screen.queryByRole('status')).toBe(null);
+  });
+
+  it('keeps the banner when the stone that resolved was the last on the bench', () => {
+    // The flip side: with no other sheet to contradict it, the banner is the
+    // only thing explaining where the stone went. This is the Critical the
+    // whole-branch review found, and it must not regress into silence.
+    localStorage.setItem('rockhound_save_v1', JSON.stringify({
+      rough: [stone({ instanceId: 'u1', trueSpeciesId: 'almandine_garnet', hue: 'red' })]
+    }));
+    renderRockhound();
+    fireEvent.click(screen.getByRole('button', { name: /^Identify$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /measure everything/i }));
+    expect(screen.getByRole('status').textContent).toMatch(/Almandine Garnet/);
+    expect(screen.getByRole('status').textContent).toMatch(/Cut/);
+  });
 });

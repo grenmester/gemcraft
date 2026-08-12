@@ -186,9 +186,15 @@ describe('Market', () => {
     renderMarket({ identified: [messy] });
     fireEvent.click(screen.getByRole('button', { name: /Why this price for rough Ruby/i }));
     const text = screen.getByRole('dialog').textContent;
-    expect(text).toMatch(/91 ± 83\.3 → priced as 8/);
     expect(text).not.toMatch(/83\.33333/);
     expect(text).not.toMatch(/7\.66666/);
+    // And the line must add up as shown: 91 − 83.3 = 7.7. Rounding the band and
+    // the appraised value differently printed "± 83.3 → priced as 8", which
+    // invites the player to conclude the game cannot subtract.
+    const shown = text.match(/(\d+(?:\.\d+)?) ± (\d+(?:\.\d+)?) → priced as (\d+(?:\.\d+)?)/);
+    expect(shown).not.toBe(null);
+    const [, centre, band, priced] = shown.map(Number);
+    expect(Number(priced)).toBeCloseTo(Math.max(0, centre - band), 5);
   });
 
   it('shows a rough multiplier precise enough to reconcile with the total', () => {

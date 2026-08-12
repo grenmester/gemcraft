@@ -47,7 +47,14 @@ function RockhoundInner() {
   const activeRough = benchStones.find((s) => s.instanceId === benchId) ?? benchStones[0] ?? null;
   // A resolved stone always ends up in `identified` (rough is exactly the
   // stones not yet resolved), whether or not it is still on the bench.
-  const justResolvedSpecimen = justResolvedId
+  //
+  // Withheld when the bench has silently fallen back to a *different* stone:
+  // grading a stone in the same burst that resolves it drops it off the bench,
+  // `activeRough` slides to whatever is next, and the banner would then name
+  // the departed stone above a stranger's sheet. An empty bench is the case
+  // worth keeping — there is no other sheet to contradict it.
+  const announcedElsewhere = activeRough != null && activeRough.instanceId !== justResolvedId;
+  const justResolvedSpecimen = justResolvedId && !announcedElsewhere
     ? state.identified.find((s) => s.instanceId === justResolvedId) ?? null
     : null;
 
