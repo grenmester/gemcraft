@@ -3,7 +3,7 @@
 // progression.js remains the authority on whether a family set is *complete*,
 // so `complete` below delegates to it rather than restating the rule.
 
-import { familyComplete } from '../../../domain/progression.js';
+import { familyComplete } from '../domain/progression.js';
 
 /**
  * Species grouped by family, families ordered by first appearance in

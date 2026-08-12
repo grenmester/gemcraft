@@ -1,4 +1,4 @@
-import { traitPanel } from '../logic/identifyView.js';
+import { traitPanel } from '../../../viewmodels/identifyView.js';
 
 function TraitRow({ row, onReveal, locked }) {
   const reading = row.measured

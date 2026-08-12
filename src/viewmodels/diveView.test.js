@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { methodProgress, siteView, descentView } from './diveView.js';
-import { xpThreshold, levelForXp, breakChance, reachDepth, MAX_METHOD_LEVEL } from '../../../domain/dive.js';
-import { localities } from '../../../data/localities/loader.js';
+import { xpThreshold, levelForXp, breakChance, reachDepth, MAX_METHOD_LEVEL } from '../domain/dive.js';
+import { localities } from '../data/localities/loader.js';
 
 const creek = localities.find((l) => l.id === 'hidden_creek');       // maxDepth 3, panning
 const pipe = localities.find((l) => l.id === 'kimberlite_pipe');     // maxDepth 5, hardrock

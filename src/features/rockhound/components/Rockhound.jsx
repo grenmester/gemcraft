@@ -8,7 +8,7 @@ import { completedLocalityIds, completedFamilies, isLocalityUnlocked } from '../
 import Explore from './Explore.jsx';
 import Identify from './Identify.jsx';
 import BenchStrip from './BenchStrip.jsx';
-import { benchStrip } from '../logic/identifyView.js';
+import { benchStrip } from '../../../viewmodels/identifyView.js';
 import { isGraded } from '../../../domain/grading.js';
 import { GRADE_DEFS } from '../../../domain/gemTests.js';
 import Cut from './Cut.jsx';
@@ -19,7 +19,7 @@ import TrophyCase from './TrophyCase.jsx';
 import CareerPanel from './CareerPanel.jsx';
 import StatusFooter from './StatusFooter.jsx';
 import SievePanel from './SievePanel.jsx';
-import { sieveView, catchView } from '../logic/idleView.js';
+import { sieveView, catchView } from '../../../viewmodels/idleView.js';
 import { benchFull } from '../../../domain/bench.js';
 import { defaultId } from '../../../domain/rollRough.js';
 

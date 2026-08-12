@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { familyGroups, collectionProgress } from '../logic/gemdexView.js';
+import { familyGroups, collectionProgress } from '../../../viewmodels/gemdexView.js';
 import SpeciesCard from './SpeciesCard.jsx';
 import GemdexEntry from './GemdexEntry.jsx';
 

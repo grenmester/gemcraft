@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRockhound, STORAGE_KEY, DEBUG_SET_METHOD_LEVEL, DEBUG_ADD_CASH, DEBUG_RESET, DEBUG_REWIND_SIEVE } from '../../features/rockhound/RockhoundContext.jsx';
 import { METHOD_ENUM } from '../../data/localities/schema.js';
 import { levelForXp, MAX_METHOD_LEVEL, effectiveReach } from '../../domain/dive.js';
-import { deepestBedrockByMethod } from '../../features/rockhound/logic/localityView.js';
+import { deepestBedrockByMethod } from '../../viewmodels/localityView.js';
 
 const LEGACY_STORAGE_KEY = 'gemstone_game_save';
 

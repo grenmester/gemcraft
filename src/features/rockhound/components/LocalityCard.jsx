@@ -1,7 +1,7 @@
 import { FaInfoCircle } from 'react-icons/fa';
 import { gemArt } from '../logic/gemArt.js';
 import { rarityColor } from '../logic/rarity.js';
-import { requirementText } from '../logic/localityView.js';
+import { requirementText } from '../../../viewmodels/localityView.js';
 
 export default function LocalityCard({
   locality, unlocked, selected, pool, methodLevel, progress, onSelect, onOpenInfo

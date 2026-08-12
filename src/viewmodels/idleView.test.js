@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { catchView, sieveView } from './idleView.js';
-import { localities, localitiesById } from '../../../data/localities/loader.js';
-import { xpThreshold } from '../../../domain/dive.js';
-import { IDLE_CAP_HOURS, MS_PER_HOUR, pendingCount } from '../../../domain/idle.js';
-import { BENCH_CAP } from '../../../domain/bench.js';
+import { localities, localitiesById } from '../data/localities/loader.js';
+import { xpThreshold } from '../domain/dive.js';
+import { IDLE_CAP_HOURS, MS_PER_HOUR, pendingCount } from '../domain/idle.js';
+import { BENCH_CAP } from '../domain/bench.js';
 
 const creek = localities.find((l) => l.id === 'hidden_creek');
 const zeroXp = { panning: 0, hardrock: 0, geode: 0, surface: 0 };

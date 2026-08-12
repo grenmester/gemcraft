@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { traitPanel, benchStrip } from './identifyView.js';
-import { speciesById } from '../../../data/species/loader.js';
-import { localitiesById } from '../../../data/localities/loader.js';
+import { speciesById } from '../data/species/loader.js';
+import { localitiesById } from '../data/localities/loader.js';
 
 // foundDepth 3 is not incidental: ruby has minDepth 3 at Mogok Marble, so a
 // depth-1 ruby there is a stone that cannot exist — and seedCandidates would

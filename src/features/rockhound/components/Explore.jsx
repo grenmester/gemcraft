@@ -2,7 +2,7 @@ import { useState } from 'react';
 import GemGlyph from './GemGlyph.jsx';
 import { rollHaul } from '../../../domain/rollRough.js';
 import { breakConsequence, xpForRun, levelForXp } from '../../../domain/dive.js';
-import { siteView, descentView, methodProgress } from '../logic/diveView.js';
+import { siteView, descentView, methodProgress } from '../../../viewmodels/diveView.js';
 import { FORM_LABELS } from '../../../domain/forms.js';
 
 const WORK_VERB = {

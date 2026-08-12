@@ -1,6 +1,6 @@
 import EntryModal, { Section, Row } from './EntryModal.jsx';
 import { colorHex } from '../logic/gemArt.js';
-import { localitiesForSpecies } from '../logic/gemdexView.js';
+import { localitiesForSpecies } from '../../../viewmodels/gemdexView.js';
 import GemGlyph from './GemGlyph.jsx';
 import { titleize } from '../../../shared/format.js';
 

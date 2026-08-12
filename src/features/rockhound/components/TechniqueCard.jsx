@@ -1,4 +1,4 @@
-import { expectedCarat } from '../logic/cutView.js';
+import { expectedCarat } from '../../../viewmodels/cutView.js';
 import { titleize } from '../../../shared/format.js';
 
 export default function TechniqueCard({

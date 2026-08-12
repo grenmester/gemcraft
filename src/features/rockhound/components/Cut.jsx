@@ -2,7 +2,7 @@ import { useState } from 'react';
 import GemGlyph from './GemGlyph.jsx';
 import TechniqueCard from './TechniqueCard.jsx';
 import TechniqueGuide from './TechniqueGuide.jsx';
-import { techniqueView } from '../logic/cutView.js';
+import { techniqueView } from '../../../viewmodels/cutView.js';
 import { isMeasured, measuredQuality } from '../../../domain/grading.js';
 import { GRADE_DEFS } from '../../../domain/gemTests.js';
 

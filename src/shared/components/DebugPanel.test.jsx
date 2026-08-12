@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { RockhoundProvider } from '../../features/rockhound/RockhoundContext.jsx';
 import DebugPanel from './DebugPanel.jsx';
 import { effectiveReach } from '../../domain/dive.js';
-import { deepestBedrockByMethod } from '../../features/rockhound/logic/localityView.js';
+import { deepestBedrockByMethod } from '../../viewmodels/localityView.js';
 
 function open() {
   render(<RockhoundProvider><DebugPanel /></RockhoundProvider>);
