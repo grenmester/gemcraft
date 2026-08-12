@@ -171,6 +171,26 @@ describe('Market', () => {
     expect(text).toMatch(/82 ± 5 → priced as 77/);
   });
 
+  it('rounds a real band instead of printing a raw float', () => {
+    // Real play never produces a whole-numbered band: bandWidth divides by the
+    // mastery floor, so a run-all grade at mastery 0 gives 5 / (0.1 × 0.6) =
+    // 83.333…, and the pessimistic edge lands on 7.666…. The fixture above
+    // uses a band of exactly 5, which is why integers hid this.
+    const messy = {
+      ...ROUGH,
+      revealed: {
+        ...ROUGH.revealed,
+        colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 91, band: 5 / (0.1 * 0.6) }
+      }
+    };
+    renderMarket({ identified: [messy] });
+    fireEvent.click(screen.getByRole('button', { name: /Why this price for rough Ruby/i }));
+    const text = screen.getByRole('dialog').textContent;
+    expect(text).toMatch(/91 ± 83\.3 → priced as 8/);
+    expect(text).not.toMatch(/83\.33333/);
+    expect(text).not.toMatch(/7\.66666/);
+  });
+
   it('shows a rough multiplier precise enough to reconcile with the total', () => {
     renderMarket();
     fireEvent.click(screen.getByRole('button', { name: /Why this price for rough Ruby/i }));

@@ -1,8 +1,12 @@
 import { stoneValue, identifiedValue, gradeFactor, roughGradeFactor, uncutDiscountFor } from './market.js';
 import { scoreBreakdown, specimenScore, canApplyToSpecimen, formYield } from './cut.js';
-import { measuredQuality, appraisedQuality, isMeasured } from './grading.js';
+import { measuredQuality, appraisedQuality, isMeasured, measuredBand } from './grading.js';
 
 const mid = ([lo, hi]) => (lo + hi) / 2;
+
+// A band divided by the mastery floor is a long float; the sheet is a price
+// explanation, not a readout, so round it for display.
+const round1 = (n) => Math.round(n * 10) / 10;
 
 /**
  * A cut stone's price with its arithmetic exposed. `total` comes from the
@@ -42,11 +46,11 @@ export function roughPrice(specimen, species) {
     base: species.baseValue,
     caratWeight: isMeasured(specimen, 'weigh') ? q.caratWeight : null,
     colorGrade: colourMeasured ? q.colorGrade : null,
-    colorGradeBand: colourMeasured ? specimen.revealed.colour.band : null,
-    colorGradeAppraised: colourMeasured ? a.colorGrade : null,
+    colorGradeBand: colourMeasured ? round1(measuredBand(specimen, 'colour')) : null,
+    colorGradeAppraised: colourMeasured ? Math.round(a.colorGrade) : null,
     clarity: clarityMeasured ? q.clarity : null,
-    clarityBand: clarityMeasured ? specimen.revealed.clarity.band : null,
-    clarityAppraised: clarityMeasured ? a.clarity : null,
+    clarityBand: clarityMeasured ? round1(measuredBand(specimen, 'clarity')) : null,
+    clarityAppraised: clarityMeasured ? Math.round(a.clarity) : null,
     multiplier: roughGradeFactor(specimen),
     uncutDiscount: uncutDiscountFor(specimen)
   };

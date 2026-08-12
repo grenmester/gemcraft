@@ -17,6 +17,16 @@ export function isMeasured(specimen, gradeId) {
 }
 
 /**
+ * How uncertain one measured quality reading is, or null where the trait was
+ * not measured or carries no band. Kept here so the reading's shape stays
+ * known to this module alone.
+ */
+export function measuredBand(specimen, gradeId) {
+  const reading = (specimen.revealed ?? {})[gradeId];
+  return reading?.band ?? null;
+}
+
+/**
  * Each quality trait as the market sees it: the measured value where one
  * exists, the worst case where none does. Never reads the specimen's true
  * value for an unmeasured trait — that is the point.
