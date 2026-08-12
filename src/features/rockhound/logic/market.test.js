@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { gradeFactor, stoneValue, identifiedValue, roughGradeFactor, SHOP_GEAR, gearPrice, UNCUT_DISCOUNT, uncutDiscountFor } from './market.js';
+import { appraisedQuality } from './grading.js';
 import { speciesById } from '../../../loaders/species.js';
 
 describe('gradeFactor', () => {
@@ -23,9 +24,10 @@ describe('identifiedValue', () => {
   it('is a discounted fraction of a good cut stone (cut is worth more)', () => {
     // Value now follows what was MEASURED, so this specimen must carry a full
     // revealed record to read as graded at all — an unmeasured stone prices
-    // at the floor. caratWeight 4 (of the 5-ct saturation) normalises to 80,
-    // matching colorGrade/clarity, so the three-way average is still exactly
-    // 80 and the multiplier is unchanged from before carat was folded in.
+    // at the floor. caratWeight 4 (of the 5-ct saturation) normalises to 80.
+    // Price now follows the APPRAISED edge, not the centre: a band of 5 on
+    // colour/clarity prices them at 75, not 80, so the three-way average is
+    // (80 + 75 + 75) / 3 = 76.667, not a flat 80.
     const specimen = {
       caratWeight: 4, colorGrade: 80, clarity: 80,
       revealed: {
@@ -34,27 +36,30 @@ describe('identifiedValue', () => {
         clarity: { testId: 'clarity', axis: 'quality', kind: 'quality-band', property: 'clarity', center: 80, band: 5 }
       }
     };
-    const idVal = identifiedValue(specimen, speciesById.sapphire); // 700 * 1.3 * 0.5 = 455
-    expect(idVal).toBe(455);
+    const idVal = identifiedValue(specimen, speciesById.sapphire); // 700 * 1.26667 * 0.5 = 443
+    expect(idVal).toBe(443);
     expect(idVal).toBeLessThan(stoneValue({ score: 80 }, speciesById.sapphire)); // cutting adds value
   });
 });
 
 describe('mineral specimens', () => {
-  // clarity/colorGrade 70/70 (not 80/80): with quartz's baseValue of 5, an
-  // 80/80 grade lands the full-value multiplier exactly on a .5 rounding
-  // boundary (6.5), which rounds opposite to the discounted-then-reversed
-  // path (round(3.25)/0.5 -> 6) and makes this assertion fail for ANY
-  // correct implementation, not just a broken one. 70/70 avoids the boundary.
+  // Price now follows the APPRAISED edge (center - band), not the centre, so
+  // a colorGrade/clarity centre of 90 with a band of 5 appraises at 85, not
+  // 90. carat 2 (of 5) normalises to 40, giving (40 + 85 + 85) / 3 = 70 and a
+  // factor of exactly 1.2 — chosen, like the 70/70 fixture this replaces, so
+  // that quartz's baseValue of 5 times the factor lands on a clean integer
+  // (6, halving to 3) rather than a .5 rounding boundary that would round
+  // opposite ways through the discounted-then-reversed path and fail this
+  // assertion for ANY correct implementation, not just a broken one.
   // A full revealed record is required too: value now follows what was
   // measured, and an ungraded specimen would price at the floor regardless
   // of these numbers, defeating the point of this fixture.
   const base = {
-    trueSpeciesId: 'quartz', caratWeight: 2, clarity: 70, colorGrade: 70,
+    trueSpeciesId: 'quartz', caratWeight: 2, clarity: 90, colorGrade: 90,
     revealed: {
       weigh: { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 2 },
-      colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 70, band: 5 },
-      clarity: { testId: 'clarity', axis: 'quality', kind: 'quality-band', property: 'clarity', center: 70, band: 5 }
+      colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 90, band: 5 },
+      clarity: { testId: 'clarity', axis: 'quality', kind: 'quality-band', property: 'clarity', center: 90, band: 5 }
     }
   };
 
@@ -140,5 +145,48 @@ describe('value follows what was measured', () => {
     const ungraded = identifiedValue({ ...base, revealed: {} }, quartz);
     const graded = identifiedValue({ ...base, revealed: fully }, quartz);
     expect(graded).toBeGreaterThan(ungraded);
+  });
+});
+
+describe('mastery moves money: the factor prices the pessimistic edge', () => {
+  // A colour-91 stone read at progressively narrower bands as mastery rises.
+  // Carat and clarity are held fixed throughout so only the colour band
+  // drives the difference between factors.
+  const bandedColour = (band) => ({
+    caratWeight: 2, colorGrade: 91, clarity: 50,
+    revealed: {
+      weigh: { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 2 },
+      clarity: { testId: 'clarity', axis: 'quality', kind: 'quality-band', property: 'clarity', center: 50, band: 5 },
+      ...(band == null ? {} : {
+        colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 91, band }
+      })
+    }
+  });
+
+  it('rises monotonically as the band narrows — a novice and an expert must not price the same', () => {
+    // Before this change, center was priced regardless of band, so a novice's
+    // 91±50 and an expert's 91±5 grade produced the identical price. That
+    // bug is exactly what this test would let slip back in.
+    const unmeasured = roughGradeFactor(bandedColour(null));
+    const novice = roughGradeFactor(bandedColour(50));
+    const improving = roughGradeFactor(bandedColour(20));
+    const expert = roughGradeFactor(bandedColour(5));
+    expect(unmeasured).toBeLessThan(novice);
+    expect(novice).toBeLessThan(improving);
+    expect(improving).toBeLessThan(expert);
+  });
+
+  it('leaves carat untouched by mastery, even while colour is heavily discounted', () => {
+    const wideband = { caratWeight: 4, colorGrade: 91, clarity: 50, revealed: {
+      weigh: { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 4 },
+      colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 91, band: 80 }
+    } };
+    const tightband = { ...wideband, revealed: { ...wideband.revealed,
+      colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 91, band: 1 }
+    } };
+    // Colour's band swings the price a lot; carat — the exact reading, with
+    // no band to narrow — must appraise identically either way.
+    expect(appraisedQuality(wideband).caratWeight).toBe(appraisedQuality(tightband).caratWeight);
+    expect(roughGradeFactor(wideband)).toBeLessThan(roughGradeFactor(tightband));
   });
 });

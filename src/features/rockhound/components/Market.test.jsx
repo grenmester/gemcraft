@@ -160,14 +160,27 @@ describe('Market', () => {
     expect(screen.getByRole('dialog').textContent).toMatch(/uncut/i);
   });
 
+  it('makes the pessimistic-edge pricing legible: what was read, its band, what it priced as', () => {
+    // ROUGH reads colour 91 and clarity 82, each with a band of 5, so a buyer
+    // prices them at the worst end — 86 and 77 — not the centre the player
+    // actually saw. The modal must show that step, not just a smaller number.
+    renderMarket();
+    fireEvent.click(screen.getByRole('button', { name: /Why this price for rough Ruby/i }));
+    const text = screen.getByRole('dialog').textContent;
+    expect(text).toMatch(/91 ± 5 → priced as 86/);
+    expect(text).toMatch(/82 ± 5 → priced as 77/);
+  });
+
   it('shows a rough multiplier precise enough to reconcile with the total', () => {
     renderMarket();
     fireEvent.click(screen.getByRole('button', { name: /Why this price for rough Ruby/i }));
-    // ROUGH is fully graded: caratWeight 1.8/5*100 = 36, colorGrade 91,
-    // clarity 82: 0.5 + ((36 + 91 + 82) / 3) / 100 = 1.19667 (toFixed(3):
-    // "1.197"). toFixed(2) would round this to 1.20, which no longer
-    // multiplies back to the shown total — the whole point of this modal.
-    expect(screen.getByRole('dialog').textContent).toMatch(/1\.197/);
+    // The multiplier prices the APPRAISED edge: colour 91 and clarity 82 each
+    // carry a band of 5, so they price at 86 and 77. caratWeight 1.8/5*100 =
+    // 36 (exact, no band to discount): 0.5 + ((36 + 86 + 77) / 3) / 100 =
+    // 1.16333 (toFixed(3): "1.163"). A coarser rounding would still lose
+    // enough precision to no longer reconcile with the shown total — the
+    // whole point of this modal.
+    expect(screen.getByRole('dialog').textContent).toMatch(/1\.163/);
   });
 
   it('says what each piece of gear opens, and marks what is owned', () => {

@@ -1,4 +1,4 @@
-import { measuredQuality } from './grading.js';
+import { appraisedQuality } from './grading.js';
 
 export const UNCUT_DISCOUNT = 0.5;
 
@@ -14,15 +14,18 @@ const QUALITY_AXES = 3;
 
 /**
  * How much a stone's own qualities are worth to a buyer — using what the
- * player has MEASURED, not what the stone truly is. An unmeasured trait counts
- * as its worst case, because a buyer cannot verify it. That substitution is
- * the entire ungraded discount; there is no separate constant.
+ * player has APPRAISED, not what the stone truly is, and not merely what they
+ * read. A buyer cannot verify anything narrower than the player's own band,
+ * so a banded reading prices at its worst end; an unmeasured trait counts as
+ * its worst case outright. That substitution is the entire ungraded
+ * discount, and mastery (which narrows the band) genuinely moves the price;
+ * there is no separate constant.
  *
  * Carat is included here. Rough value used to ignore it while cut value
  * weighted it, which was a long-standing inconsistency.
  */
 export function roughGradeFactor(specimen) {
-  const q = measuredQuality(specimen);
+  const q = appraisedQuality(specimen);
   const caratNorm = Math.min(q.caratWeight / CARAT_SATURATION, 1) * 100;
   return 0.5 + ((caratNorm + q.colorGrade + q.clarity) / QUALITY_AXES) / 100;
 }

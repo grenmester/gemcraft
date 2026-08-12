@@ -19,9 +19,22 @@ export default function PriceBreakdown({ title, price, kind, onClose }) {
           </>
         ) : (
           <>
+            {/* Carat has no band — there is no discount to explain, so it
+                stays a bare reading. */}
             <Row label="Carat">{price.caratWeight ?? 'not measured'}</Row>
-            <Row label="Colour">{price.colorGrade ?? 'not measured'}</Row>
-            <Row label="Clarity">{price.clarity ?? 'not measured'}</Row>
+            {/* Colour and clarity are judged under a loupe, so a buyer prices
+                the worst end of the player's own band, not its centre. Make
+                that step legible rather than just showing a smaller number. */}
+            <Row label="Colour">
+              {price.colorGrade != null
+                ? `${price.colorGrade} ± ${price.colorGradeBand} → priced as ${price.colorGradeAppraised}`
+                : 'not measured'}
+            </Row>
+            <Row label="Clarity">
+              {price.clarity != null
+                ? `${price.clarity} ± ${price.clarityBand} → priced as ${price.clarityAppraised}`
+                : 'not measured'}
+            </Row>
             <Row label="Multiplier">×{price.multiplier.toFixed(3)}</Row>
             <Row label="Uncut penalty">×{price.uncutDiscount}</Row>
           </>

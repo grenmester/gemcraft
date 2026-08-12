@@ -59,9 +59,11 @@ describe('roughPrice', () => {
   });
 
   it('exposes the grade multiplier the colour, clarity and carat produce', () => {
-    // carat 1.8/5 * 100 = 36 (of the 5-ct saturation); (36 + 91 + 82) / 3 =
-    // 69.667 -> 0.5 + 0.69667 = 1.19667
-    expect(roughPrice(ROUGH, RUBY).multiplier).toBeCloseTo(0.5 + (36 + 91 + 82) / 3 / 100, 10);
+    // The multiplier prices the APPRAISED edge, not the centre: colour 91 and
+    // clarity 82 each carry a band of 5, so they price at 86 and 77. carat
+    // 1.8/5 * 100 = 36 (of the 5-ct saturation, and exact — no band to
+    // discount); (36 + 86 + 77) / 3 = 66.333 -> 0.5 + 0.66333 = 1.16333
+    expect(roughPrice(ROUGH, RUBY).multiplier).toBeCloseTo(0.5 + (36 + 86 + 77) / 3 / 100, 10);
   });
 
   it('shows arithmetic that reconciles to the price it explains', () => {

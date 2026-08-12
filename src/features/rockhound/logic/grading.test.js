@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { measuredQuality, isGraded, gradedCount, isMeasured, WORST_CASE } from './grading.js';
+import { measuredQuality, appraisedQuality, isGraded, gradedCount, isMeasured, WORST_CASE } from './grading.js';
 
 const weighed = { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 2.4 };
 const colour = { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 78, band: 5 };
@@ -40,6 +40,51 @@ describe('measuredQuality', () => {
     const superb = measuredQuality({ caratWeight: 5, colorGrade: 99, clarity: 99, revealed: {} });
     const awful = measuredQuality({ caratWeight: 0.1, colorGrade: 3, clarity: 3, revealed: {} });
     expect(superb).toEqual(awful);
+  });
+});
+
+describe('appraisedQuality', () => {
+  // A colour-91 stone, read at progressively narrower bands as mastery rises.
+  const bandedColour = (band) => ({
+    caratWeight: 2, colorGrade: 91, clarity: 50,
+    revealed: band == null ? {} : {
+      colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 91, band }
+    }
+  });
+
+  it('prices the worst end of the band, not the centre — the full ladder', () => {
+    // The whole point of splitting appraisedQuality from measuredQuality: a
+    // novice's wide band and an expert's narrow one must price differently,
+    // even though both read the same true colour.
+    expect(appraisedQuality(bandedColour(null)).colorGrade).toBe(0);   // unmeasured
+    expect(appraisedQuality(bandedColour(50)).colorGrade).toBe(41);    // novice
+    expect(appraisedQuality(bandedColour(20)).colorGrade).toBe(71);    // improving
+    expect(appraisedQuality(bandedColour(5)).colorGrade).toBe(86);     // expert
+  });
+
+  it('floors the appraised value at 0 rather than going negative', () => {
+    const wide = { caratWeight: 1, colorGrade: 10, clarity: 50, revealed: {
+      colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 10, band: 50 }
+    } };
+    expect(appraisedQuality(wide).colorGrade).toBe(0);
+  });
+
+  it('prices an exact reading (carat) at its value, with no band to discount', () => {
+    const specimen = { caratWeight: 4, colorGrade: 91, clarity: 50, revealed: {
+      weigh: { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 4 },
+      colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 91, band: 50 }
+    } };
+    // Carat is untouched by mastery even though colour, right next to it, is
+    // discounted hard by the same reading's wide band.
+    expect(appraisedQuality(specimen).caratWeight).toBe(4);
+  });
+
+  it('agrees with measuredQuality once the band is (hypothetically) zero', () => {
+    // Continuity check: at band 0 there is nothing to be pessimistic about.
+    const sharp = { caratWeight: 2, colorGrade: 91, clarity: 50, revealed: {
+      colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 91, band: 0 }
+    } };
+    expect(appraisedQuality(sharp).colorGrade).toBe(measuredQuality(sharp).colorGrade);
   });
 });
 

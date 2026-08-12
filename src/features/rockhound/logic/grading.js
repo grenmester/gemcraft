@@ -31,6 +31,30 @@ export function measuredQuality(specimen) {
   );
 }
 
+/**
+ * Each quality trait as a buyer prices it: the pessimistic edge of what the
+ * player has read, never its centre. A banded reading (colour, clarity)
+ * prices at its worst end — `center - band`, floored at 0 — because a buyer
+ * cannot rule out anything the band admits. An exact reading (carat) has no
+ * band, so it prices at the value it is. An unmeasured trait prices at
+ * WORST_CASE, which is exactly the limit of the banded rule as the band
+ * widens to swallow the centre — no separate constant is needed for it.
+ *
+ * This drives PRICE. Display (Cut's meters, Market's detail line) must keep
+ * using measuredQuality's centre — that is genuinely what the player read.
+ */
+export function appraisedQuality(specimen) {
+  const revealed = specimen.revealed ?? {};
+  return Object.fromEntries(
+    Object.values(GRADE_DEFS).map((def) => {
+      if (!isMeasured(specimen, def.id)) return [def.property, WORST_CASE];
+      const reading = revealed[def.id];
+      const value = reading.kind === 'quality-exact' ? reading.value : Math.max(0, reading.center - reading.band);
+      return [def.property, value];
+    })
+  );
+}
+
 export function gradedCount(specimen) {
   return Object.values(GRADE_DEFS).filter((def) => isMeasured(specimen, def.id)).length;
 }
