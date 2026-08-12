@@ -98,6 +98,13 @@ export default function Identify({ specimen, locality, speciesById, identified =
         <span className="text-slate-500">Consistent with: </span>
         {panel.consistent.map((id) => speciesById[id].name).join(', ')}
       </p>
+
+      {unmeasured.length === 0 && !panel.resolved && (
+        <p className="rounded border border-amber-700 bg-amber-950 p-3 text-sm text-amber-200">
+          Your readings are still too imprecise to separate these. Measure again — each
+          careful measurement sharpens your eye, and a narrower reading replaces a wider one.
+        </p>
+      )}
     </section>
   );
 }

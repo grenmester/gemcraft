@@ -106,4 +106,38 @@ describe('the stone sheet', () => {
     expect(readout).toMatch(/Ruby/);
     expect(readout).toMatch(/Spinel/);
   });
+
+  it('hints that re-measuring narrows the band when every row is read but rivals still fit', () => {
+    // Finding 3: ruby (hardness 9, SG 4.00) and spinel (hardness 8, SG 3.60)
+    // share the same UV key, so wide-enough bands on scratch and heft leave
+    // both consistent even with every row measured — the exact situation
+    // that used to leave a low-mastery player with no hint that a sharper
+    // reading would narrow the field.
+    const allMeasuredStillAmbiguous = {
+      scratch: { testId: 'scratch', kind: 'numeric', property: 'hardness', center: 9, band: 1 },
+      heft: { testId: 'heft', kind: 'numeric', property: 'specificGravity', center: 4.0, band: 0.5 },
+      uv: { testId: 'uv', kind: 'categorical', property: 'fluorescence', key: 'red/none' },
+      weigh: { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 2.4 },
+      colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 78, band: 5 },
+      clarity: { testId: 'clarity', axis: 'quality', kind: 'quality-band', property: 'clarity', center: 64, band: 5 }
+    };
+    renderIdentify({ specimen: { ...STONE, revealed: allMeasuredStillAmbiguous } });
+    screen.getByText(/measure again/i);
+  });
+
+  it('does not show the re-measure hint once resolved', () => {
+    // Same six rows, but a narrow heft band (0.3) excludes spinel (SG 3.60 is
+    // 0.4 away from center 4.0), so exactly one species fits — the hint must
+    // not appear here even though every row is measured.
+    const allMeasuredResolved = {
+      scratch: { testId: 'scratch', kind: 'numeric', property: 'hardness', center: 9, band: 1 },
+      heft: { testId: 'heft', kind: 'numeric', property: 'specificGravity', center: 4.0, band: 0.3 },
+      uv: { testId: 'uv', kind: 'categorical', property: 'fluorescence', key: 'red/none' },
+      weigh: { testId: 'weigh', axis: 'quality', kind: 'quality-exact', property: 'caratWeight', value: 2.4 },
+      colour: { testId: 'colour', axis: 'quality', kind: 'quality-band', property: 'colorGrade', center: 78, band: 5 },
+      clarity: { testId: 'clarity', axis: 'quality', kind: 'quality-band', property: 'clarity', center: 64, band: 5 }
+    };
+    renderIdentify({ specimen: { ...STONE, revealed: allMeasuredResolved } });
+    expect(screen.queryByText(/measure again/i)).toBe(null);
+  });
 });
