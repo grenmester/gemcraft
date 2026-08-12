@@ -113,6 +113,18 @@ describe('the stone sheet', () => {
     expect(onReveal.mock.calls.every((c) => c[1] === false)).toBe(true);
   });
 
+  it('measures only grades in bulk once identified — diagnostics are settled, not re-runnable', () => {
+    // Finding 4 already hid the per-row diagnostic Measure buttons once a
+    // stone is identified, since re-measuring a settled identity cannot
+    // change it. The bulk button must not contradict those per-row buttons
+    // by firing diagnostic reveals anyway. GRADE_DEFS (weigh/colour/clarity)
+    // is the authority on what still counts as an action here.
+    const { onReveal } = renderIdentify({ identified: true });
+    fireEvent.click(screen.getByRole('button', { name: /measure everything/i }));
+    const ids = onReveal.mock.calls.map((c) => c[0]).sort();
+    expect(ids).toEqual(['clarity', 'colour', 'weigh']);
+  });
+
   it('has nothing left to run once everything is measured', () => {
     const all = {
       scratch: { testId: 'scratch', axis: 'diagnostic', kind: 'numeric', property: 'hardness', center: 9, band: 0.5 },

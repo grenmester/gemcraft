@@ -50,7 +50,14 @@ function Section({ title, blurb, rows, onReveal, locked }) {
 export default function Identify({ specimen, locality, speciesById, identified = false, onReveal }) {
   const species = speciesById[specimen.trueSpeciesId];
   const panel = traitPanel(specimen, species, speciesById, locality, identified);
-  const unmeasured = [...panel.diagnostics, ...panel.qualities].filter((r) => !r.free && !r.measured);
+  // Once identified, re-measuring a diagnostic could never change a settled
+  // identity — the per-row buttons already reflect that (locked={identified}
+  // above). The bulk button must offer no more than those rows do, so once
+  // identified it only ever measures grades (panel.qualities, which
+  // identifyView.js builds from GRADE_DEFS — the authority on what counts as
+  // a grade, never hardcoded here).
+  const measurable = identified ? panel.qualities : [...panel.diagnostics, ...panel.qualities];
+  const unmeasured = measurable.filter((r) => !r.free && !r.measured);
 
   return (
     <section className="flex flex-col gap-5">
