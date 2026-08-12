@@ -1,3 +1,5 @@
+import { clamp } from '../../../shared/math.js';
+
 // Hardness and specific gravity are instrument readings on small scales.
 // Colour and clarity are eye judgments on a 0-100 grade, so 5 points is a
 // sharp grade and — divided by the 0.1 mastery floor — 50 points is a
@@ -8,8 +10,6 @@ export const BASE_ERROR = {
   colorGrade: 5,
   clarity: 5
 };
-
-const clamp = (x, lo, hi) => Math.min(Math.max(x, lo), hi);
 
 export function bandWidth({ property, mastery, instrument = 1, labPrep = 1, familiarity = 1, livePlay }) {
   const m = clamp(mastery / 100, 0.1, 1);

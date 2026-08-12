@@ -1,6 +1,5 @@
 import { expectedCarat } from '../logic/cutView.js';
-
-const titleize = (s) => s.replace(/_/g, ' ');
+import { titleize } from '../../../shared/format.js';
 
 export default function TechniqueCard({
   technique, view, specimen, onUnlock, onLevel, onApply, onOpenGuide

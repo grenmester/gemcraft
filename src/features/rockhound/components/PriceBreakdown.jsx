@@ -1,6 +1,5 @@
 import EntryModal, { Section, Row } from './EntryModal.jsx';
-
-const money = (n) => `💰 ${Math.round(n).toLocaleString()}`;
+import { money } from '../../../shared/format.js';
 
 export default function PriceBreakdown({ title, price, kind, onClose }) {
   return (

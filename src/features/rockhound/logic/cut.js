@@ -1,11 +1,10 @@
 import { cutSuccessAtLevel } from '../../../loaders/cutTechniques.js';
 import { FORM_EFFECTS } from './forms.js';
+import { clamp, round2 } from '../../../shared/math.js';
 
 export const CUT_DIFFICULTY_STEP = 0.08;
 
-const clamp = (x, lo, hi) => Math.min(Math.max(x, lo), hi);
 const lerp = ([lo, hi], t) => lo + (hi - lo) * t;
-const round2 = (n) => Math.round(n * 100) / 100;
 
 export function canApply(species, technique) {
   return species.suitableCuts.includes(technique.id);

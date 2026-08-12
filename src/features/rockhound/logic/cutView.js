@@ -1,8 +1,8 @@
 import { canApply, cutSuccessProbability, canShatter, formAllows, formYield } from './cut.js';
 import { FORM_LABELS, FORM_EFFECTS } from './forms.js';
 import { isMeasured, measuredQuality } from './grading.js';
+import { round2 } from '../../../shared/math.js';
 
-const round2 = (n) => Math.round(n * 100) / 100;
 const pct = (x) => Math.round(x * 100);
 
 const STYLE_PHRASE = { cabochon: 'a cabochon', faceted: 'faceting' };

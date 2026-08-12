@@ -1,6 +1,5 @@
 import EntryModal, { Section, Row } from './EntryModal.jsx';
-
-const titleize = (s) => s.replace(/_/g, ' ');
+import { titleize } from '../../../shared/format.js';
 
 export default function TechniqueGuide({ technique, view, onClose }) {
   return (

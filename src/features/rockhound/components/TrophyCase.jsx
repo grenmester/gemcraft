@@ -1,6 +1,5 @@
 import GemGlyph from './GemGlyph.jsx';
-
-const titleize = (s) => s.replace(/_/g, ' ');
+import { titleize } from '../../../shared/format.js';
 
 export default function TrophyCase({ bestSpecimens, speciesById }) {
   const entries = Object.entries(bestSpecimens)

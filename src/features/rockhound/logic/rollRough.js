@@ -3,9 +3,9 @@ import { rollForm } from './forms.js';
 import { huesForSpecies } from './hues.js';
 import { UNKNOWN_HUE } from './traits.js';
 import { speciesById } from '../../../loaders/species.js';
+import { round2 } from '../../../shared/math.js';
 
 const lerp = ([lo, hi], t) => lo + (hi - lo) * t;
-const round2 = (n) => Math.round(n * 100) / 100;
 let idCounter = 0;
 export const defaultId = () => `spec-${Date.now()}-${(++idCounter).toString(36)}`;
 
