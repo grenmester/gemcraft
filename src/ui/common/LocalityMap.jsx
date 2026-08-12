@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import LocalityCard from './LocalityCard.jsx';
 import LocalityEntry from './LocalityEntry.jsx';
-import { findPoolView, localitySetProgress } from '../../../viewmodels/localityView.js';
-import { levelForXp } from '../../../domain/dive.js';
+import { findPoolView, localitySetProgress } from '../../viewmodels/localityView.js';
+import { levelForXp } from '../../domain/dive.js';
 
 export default function LocalityMap({
   localities, unlockedIds, selectedId, onSelect, speciesById, gemdex, exploreMethodXp

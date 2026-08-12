@@ -1,10 +1,10 @@
-// src/features/rockhound/components/Rockhound.test.jsx
+// src/ui/shell/Rockhound.test.jsx
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { RockhoundProvider } from '../RockhoundContext.jsx';
+import { RockhoundProvider } from '../../features/rockhound/RockhoundContext.jsx';
 import Rockhound from './Rockhound.jsx';
-import App from '../../../App.jsx';
-import { BENCH_CAP } from '../../../domain/bench.js';
+import App from '../../App.jsx';
+import { BENCH_CAP } from '../../domain/bench.js';
 
 // The provider now lives at the app root (src/App.jsx) rather than inside
 // Rockhound itself, so tests mounting the shell in isolation supply their own.

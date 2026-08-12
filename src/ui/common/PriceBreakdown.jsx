@@ -1,5 +1,5 @@
 import EntryModal, { Section, Row } from './EntryModal.jsx';
-import { money } from '../../../shared/format.js';
+import { money } from '../../shared/format.js';
 
 export default function PriceBreakdown({ title, price, kind, onClose }) {
   return (

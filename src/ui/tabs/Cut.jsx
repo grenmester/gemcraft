@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import GemGlyph from './GemGlyph.jsx';
-import TechniqueCard from './TechniqueCard.jsx';
-import TechniqueGuide from './TechniqueGuide.jsx';
-import { techniqueView } from '../../../viewmodels/cutView.js';
-import { isMeasured, measuredQuality } from '../../../domain/grading.js';
-import { GRADE_DEFS } from '../../../domain/gemTests.js';
+import GemGlyph from '../common/GemGlyph.jsx';
+import TechniqueCard from '../common/TechniqueCard.jsx';
+import TechniqueGuide from '../common/TechniqueGuide.jsx';
+import { techniqueView } from '../../viewmodels/cutView.js';
+import { isMeasured, measuredQuality } from '../../domain/grading.js';
+import { GRADE_DEFS } from '../../domain/gemTests.js';
 
 function Meter({ label, value, max = 100, unit = '' }) {
   return (

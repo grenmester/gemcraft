@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import StatusFooter from './StatusFooter.jsx';
-import { xpThreshold } from '../../../domain/dive.js';
-import { BENCH_CAP } from '../../../domain/bench.js';
+import { xpThreshold } from '../../domain/dive.js';
+import { BENCH_CAP } from '../../domain/bench.js';
 
 const props = {
   cash: 1234,

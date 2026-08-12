@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import GemdexV5 from './GemdexV5.jsx';
-import { species } from '../../../data/species/loader.js';
-import { localities } from '../../../data/localities/loader.js';
-import { cutTechniquesById } from '../../../data/cutTechniques/loader.js';
+import Gemdex from './Gemdex.jsx';
+import { species } from '../../data/species/loader.js';
+import { localities } from '../../data/localities/loader.js';
+import { cutTechniquesById } from '../../data/cutTechniques/loader.js';
 
 function renderGemdex(overrides = {}) {
   render(
-    <GemdexV5
+    <Gemdex
       species={species}
       gemdex={['sapphire']}
       newlyDiscovered={[]}
@@ -20,7 +20,7 @@ function renderGemdex(overrides = {}) {
   );
 }
 
-describe('GemdexV5', () => {
+describe('Gemdex', () => {
   it('shows an X / Y discovered header', () => {
     renderGemdex();
     screen.getByText(new RegExp(`1 / ${species.length}`));

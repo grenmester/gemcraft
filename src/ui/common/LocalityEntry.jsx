@@ -2,7 +2,7 @@ import EntryModal, { Section, Row } from './EntryModal.jsx';
 import {
   findPoolView, rarityCeiling, localitySetProgress, localitiesGatedBy, titleizeWords,
   requirementText
-} from '../../../viewmodels/localityView.js';
+} from '../../viewmodels/localityView.js';
 import GemGlyph from './GemGlyph.jsx';
 
 export default function LocalityEntry({

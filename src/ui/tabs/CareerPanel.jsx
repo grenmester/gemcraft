@@ -1,4 +1,4 @@
-import { reputationTier, REPUTATION_TIERS, GEAR_MILESTONES } from '../../../domain/progression.js';
+import { reputationTier, REPUTATION_TIERS, GEAR_MILESTONES } from '../../domain/progression.js';
 
 export default function CareerPanel({
   reputation, gear, familySetsComplete, familySetsTotal, localitySetsComplete, localitySetsTotal

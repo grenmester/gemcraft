@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import GemGlyph from './GemGlyph.jsx';
-import PriceBreakdown from './PriceBreakdown.jsx';
-import { SHOP_GEAR } from '../../../domain/market.js';
-import { stonePrice, roughPrice, bestCutEstimate } from '../../../viewmodels/marketView.js';
-import { money, titleize } from '../../../shared/format.js';
+import GemGlyph from '../common/GemGlyph.jsx';
+import PriceBreakdown from '../common/PriceBreakdown.jsx';
+import { SHOP_GEAR } from '../../domain/market.js';
+import { stonePrice, roughPrice, bestCutEstimate } from '../../viewmodels/marketView.js';
+import { money, titleize } from '../../shared/format.js';
 
 // What each purchase actually gets you — a bare price list says nothing.
 const GEAR_OPENS = {

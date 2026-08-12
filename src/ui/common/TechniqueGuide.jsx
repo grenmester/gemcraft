@@ -1,5 +1,5 @@
 import EntryModal, { Section, Row } from './EntryModal.jsx';
-import { titleize } from '../../../shared/format.js';
+import { titleize } from '../../shared/format.js';
 
 export default function TechniqueGuide({ technique, view, onClose }) {
   return (

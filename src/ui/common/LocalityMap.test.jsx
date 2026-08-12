@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import LocalityMap from './LocalityMap.jsx';
-import { localities } from '../../../data/localities/loader.js';
-import { speciesById } from '../../../data/species/loader.js';
-import { xpThreshold } from '../../../domain/dive.js';
+import { localities } from '../../data/localities/loader.js';
+import { speciesById } from '../../data/species/loader.js';
+import { xpThreshold } from '../../domain/dive.js';
 
 function renderMap(overrides = {}) {
   const props = {

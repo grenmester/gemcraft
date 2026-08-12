@@ -1,5 +1,5 @@
-import { expectedCarat } from '../../../viewmodels/cutView.js';
-import { titleize } from '../../../shared/format.js';
+import { expectedCarat } from '../../viewmodels/cutView.js';
+import { titleize } from '../../shared/format.js';
 
 export default function TechniqueCard({
   technique, view, specimen, onUnlock, onLevel, onApply, onOpenGuide

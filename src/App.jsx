@@ -1,6 +1,6 @@
 import { RockhoundProvider } from './features/rockhound/RockhoundContext.jsx';
-import Rockhound from './features/rockhound/components/Rockhound.jsx';
-import DebugPanel from './shared/components/DebugPanel.jsx';
+import Rockhound from './ui/shell/Rockhound.jsx';
+import DebugPanel from './ui/common/DebugPanel.jsx';
 
 // The provider sits at the root rather than inside the feature so that state
 // loads once at startup and the debug panel can dispatch into it.

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { familyGroups, collectionProgress } from '../../../viewmodels/gemdexView.js';
-import SpeciesCard from './SpeciesCard.jsx';
-import GemdexEntry from './GemdexEntry.jsx';
+import { familyGroups, collectionProgress } from '../../viewmodels/gemdexView.js';
+import SpeciesCard from '../common/SpeciesCard.jsx';
+import GemdexEntry from '../common/GemdexEntry.jsx';
 
-export default function GemdexV5({
+export default function Gemdex({
   species, gemdex, newlyDiscovered, localities, unlockedIds, cutTechniquesById, bestSpecimens
 }) {
   const [openId, setOpenId] = useState(null);

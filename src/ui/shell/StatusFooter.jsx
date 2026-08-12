@@ -1,5 +1,5 @@
-import { methodTracks } from '../../../viewmodels/footerView.js';
-import { BENCH_CAP } from '../../../domain/bench.js';
+import { methodTracks } from '../../viewmodels/footerView.js';
+import { BENCH_CAP } from '../../domain/bench.js';
 
 const METHOD_ICON = { panning: '🥣', hardrock: '⛏️', geode: '🥚', surface: '🔎' };
 

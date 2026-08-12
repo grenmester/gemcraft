@@ -1,27 +1,27 @@
-// src/features/rockhound/components/Rockhound.jsx
+// src/ui/shell/Rockhound.jsx
 import { useState, useEffect, useRef } from 'react';
-import { useRockhound, COLLECT_HAUL, REVEAL_TRAIT, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, PARK_SIEVE, COLLECT_SIEVE } from '../RockhoundContext.jsx';
-import { localities, localitiesById } from '../../../data/localities/loader.js';
-import { speciesById, species } from '../../../data/species/loader.js';
-import { cutTechniques, cutTechniquesById } from '../../../data/cutTechniques/loader.js';
-import { completedLocalityIds, completedFamilies, isLocalityUnlocked } from '../../../domain/progression.js';
-import Explore from './Explore.jsx';
-import Identify from './Identify.jsx';
-import BenchStrip from './BenchStrip.jsx';
-import { benchStrip } from '../../../viewmodels/identifyView.js';
-import { isGraded } from '../../../domain/grading.js';
-import { GRADE_DEFS } from '../../../domain/gemTests.js';
-import Cut from './Cut.jsx';
-import Market from './Market.jsx';
-import GemdexV5 from './GemdexV5.jsx';
-import LocalityMap from './LocalityMap.jsx';
-import TrophyCase from './TrophyCase.jsx';
-import CareerPanel from './CareerPanel.jsx';
+import { useRockhound, COLLECT_HAUL, REVEAL_TRAIT, CLEAR_NEW, UNLOCK_TECHNIQUE, LEVEL_TECHNIQUE, APPLY_CUT, SELL_IDENTIFIED, SELL_STONE, BUY_GEAR, PARK_SIEVE, COLLECT_SIEVE } from '../../features/rockhound/RockhoundContext.jsx';
+import { localities, localitiesById } from '../../data/localities/loader.js';
+import { speciesById, species } from '../../data/species/loader.js';
+import { cutTechniques, cutTechniquesById } from '../../data/cutTechniques/loader.js';
+import { completedLocalityIds, completedFamilies, isLocalityUnlocked } from '../../domain/progression.js';
+import Explore from '../tabs/Explore.jsx';
+import Identify from '../tabs/Identify.jsx';
+import BenchStrip from '../common/BenchStrip.jsx';
+import { benchStrip } from '../../viewmodels/identifyView.js';
+import { isGraded } from '../../domain/grading.js';
+import { GRADE_DEFS } from '../../domain/gemTests.js';
+import Cut from '../tabs/Cut.jsx';
+import Market from '../tabs/Market.jsx';
+import Gemdex from '../tabs/Gemdex.jsx';
+import LocalityMap from '../common/LocalityMap.jsx';
+import TrophyCase from '../tabs/TrophyCase.jsx';
+import CareerPanel from '../tabs/CareerPanel.jsx';
 import StatusFooter from './StatusFooter.jsx';
-import SievePanel from './SievePanel.jsx';
-import { sieveView, catchView } from '../../../viewmodels/idleView.js';
-import { benchFull } from '../../../domain/bench.js';
-import { defaultId } from '../../../domain/rollRough.js';
+import SievePanel from '../common/SievePanel.jsx';
+import { sieveView, catchView } from '../../viewmodels/idleView.js';
+import { benchFull } from '../../domain/bench.js';
+import { defaultId } from '../../domain/rollRough.js';
 
 const TABS = ['Explore', 'Identify', 'Cut', 'Market', 'Gemdex'];
 const GEMDEX_SUBTABS = ['Species', 'Trophies', 'Career'];
@@ -243,7 +243,7 @@ function RockhoundInner() {
           </nav>
 
           {gemdexSub === 'Species' && (
-            <GemdexV5
+            <Gemdex
               species={species}
               gemdex={state.gemdex}
               newlyDiscovered={state.newlyDiscovered}

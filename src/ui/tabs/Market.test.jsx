@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Market from './Market.jsx';
-import { speciesById } from '../../../data/species/loader.js';
-import { cutTechniques } from '../../../data/cutTechniques/loader.js';
-import { identifiedValue, stoneValue } from '../../../domain/market.js';
+import { speciesById } from '../../data/species/loader.js';
+import { cutTechniques } from '../../data/cutTechniques/loader.js';
+import { identifiedValue, stoneValue } from '../../domain/market.js';
 
 // Value now follows what was MEASURED: an ungraded rough prices at the
 // floor, which would defeat the tests below that exercise a real multiplier.

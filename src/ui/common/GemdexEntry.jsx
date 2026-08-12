@@ -1,8 +1,8 @@
 import EntryModal, { Section, Row } from './EntryModal.jsx';
-import { colorHex } from '../../../ui/theme/gemArt.js';
-import { localitiesForSpecies } from '../../../viewmodels/gemdexView.js';
+import { colorHex } from '../theme/gemArt.js';
+import { localitiesForSpecies } from '../../viewmodels/gemdexView.js';
 import GemGlyph from './GemGlyph.jsx';
-import { titleize } from '../../../shared/format.js';
+import { titleize } from '../../shared/format.js';
 
 const RARITY_COLOR = {
   Common: 'text-slate-300',

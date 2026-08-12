@@ -1,4 +1,4 @@
-import { gemArt } from '../../../ui/theme/gemArt.js';
+import { gemArt } from '../theme/gemArt.js';
 
 // Variants reproduce the four tile sizes already used across the module, so
 // migrating existing call sites is a no-op visually.
