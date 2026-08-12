@@ -56,7 +56,7 @@ Explicitly out of scope, each for a stated reason:
 src/
   main.jsx · App.jsx
   data/
-    yaml.js                          shared loadYaml (replaces 3 copies)
+    yaml.js                          loadYaml(raw, schema, filename) — see note below
     species/{species.yaml, schema.js, loader.js}
     localities/{localities.yaml, schema.js, loader.js}
     cutTechniques/{cutTechniques.yaml, schema.js, loader.js}
@@ -75,13 +75,31 @@ src/
     handlers/{exploration,identify,cut,economy,debug}.js
     RockhoundProvider.jsx            provider + useRockhound hook
   ui/
-    tabs/{Explore,Identify,Cut,Market,Gemdex,Rockhound,...}
-    common/{GemGlyph,EntryModal,TechniqueCard,LocalityCard,PriceBreakdown,...}
+    shell/{Rockhound, StatusFooter}
+    tabs/{Explore,Identify,Cut,Market,Gemdex,TrophyCase,CareerPanel}
+    common/{GemGlyph,EntryModal,TechniqueCard,LocalityCard,PriceBreakdown,
+            BenchStrip,SievePanel,GemdexEntry,LocalityEntry,LocalityMap,
+            SpeciesCard,TechniqueGuide,DebugPanel}
     theme/{rarity.js, gemArt.js}
   shared/
-    math.js                          clamp, round1, round2
+    math.js                          clamp, round2
     format.js                        money, titleize
 ```
+
+Two measured corrections to the duplication claim in §2, found while planning:
+
+- **`loadYaml` is not byte-identical across the three loaders** — the copies
+  differ in schema binding and error message (three distinct checksums). It
+  extracts as a helper *parameterized* over schema and filename, not as a
+  copy-paste deletion.
+- **`round1` and `mid` are single-use**, in `marketView.js` only. They are not
+  duplicated and stay where they are. Only `clamp` (×4), `round2` (×4),
+  `titleize` (×5) and `money` (×2) have byte-identical copies to remove.
+
+The `ui/` split follows `Rockhound.jsx`, which declares
+`TABS = ['Explore', 'Identify', 'Cut', 'Market', 'Gemdex']` and
+`GEMDEX_SUBTABS = ['Species', 'Trophies', 'Career']`. Tab-level screens are
+those eight; everything else is a leaf.
 
 `src/features/rockhound/` is removed. It wrapped the entire application, so it
 bought one level of nesting and no isolation.
