@@ -71,6 +71,32 @@ describe('the stone sheet', () => {
     expect(screen.getByLabelText(/rung/i).textContent).toMatch(/identified/i);
   });
 
+  it('drops the Measure buttons on diagnostic rows once identified', () => {
+    // Finding 4: re-measuring a diagnostic on an identified stone cannot
+    // change its identity, so once settled it must be presented as a
+    // settled reading, not an actionable one.
+    renderIdentify({ identified: true });
+    expect(screen.queryByRole('button', { name: /measure scratch test/i })).toBe(null);
+    expect(screen.queryByRole('button', { name: /measure heft in water/i })).toBe(null);
+    expect(screen.queryByRole('button', { name: /measure uv light/i })).toBe(null);
+  });
+
+  it('keeps grading rows fully actionable on an identified stone', () => {
+    // Grading is the whole point of keeping an identified stone on the
+    // bench, so its buttons must survive the diagnostics losing theirs.
+    renderIdentify({ identified: true });
+    screen.getByRole('button', { name: /measure weigh/i });
+    screen.getByRole('button', { name: /measure grade colour/i });
+    screen.getByRole('button', { name: /measure grade clarity/i });
+  });
+
+  it('replaces the consistent-with list with the established identity once identified', () => {
+    renderIdentify({ identified: true });
+    expect(screen.queryByLabelText(/still consistent/i)).toBe(null);
+    const readout = screen.getByLabelText(/identified as/i).textContent;
+    expect(readout).toMatch(/Ruby/);
+  });
+
   it('measures a single trait by hand when its button is pressed', () => {
     const { onReveal } = renderIdentify();
     fireEvent.click(screen.getByRole('button', { name: /measure grade colour/i }));

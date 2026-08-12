@@ -1,6 +1,6 @@
 import { traitPanel } from '../logic/identifyView.js';
 
-function TraitRow({ row, onReveal }) {
+function TraitRow({ row, onReveal, locked }) {
   const reading = row.measured
     ? row.uncertainty != null
       ? `${row.value} ± ${row.uncertainty}`
@@ -15,6 +15,10 @@ function TraitRow({ row, onReveal }) {
       </span>
       {row.free ? (
         <span className="w-24 shrink-0 text-right text-xs text-slate-600">observed</span>
+      ) : locked ? (
+        // Identity is settled, so re-measuring a diagnostic could never
+        // change it — present it as a settled reading, not an action.
+        <span className="w-24 shrink-0 text-right text-xs text-slate-600">settled</span>
       ) : (
         <button
           type="button"
@@ -29,14 +33,14 @@ function TraitRow({ row, onReveal }) {
   );
 }
 
-function Section({ title, blurb, rows, onReveal }) {
+function Section({ title, blurb, rows, onReveal, locked }) {
   return (
     <div>
       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">{title}</h3>
       <p className="mb-1 text-xs text-slate-500">{blurb}</p>
       <ul className="flex flex-col">
         {rows.map((row) => (
-          <TraitRow key={row.id} row={row} onReveal={onReveal} />
+          <TraitRow key={row.id} row={row} onReveal={onReveal} locked={locked} />
         ))}
       </ul>
     </div>
@@ -66,6 +70,7 @@ export default function Identify({ specimen, locality, speciesById, identified =
         blurb="Every stone of this mineral reads the same. These say what you are holding."
         rows={panel.diagnostics}
         onReveal={onReveal}
+        locked={identified}
       />
 
       <Section
@@ -94,10 +99,17 @@ export default function Identify({ specimen, locality, speciesById, identified =
         </span>
       </div>
 
-      <p aria-label="Still consistent with" className="text-sm text-slate-400">
-        <span className="text-slate-500">Consistent with: </span>
-        {panel.consistent.map((id) => speciesById[id].name).join(', ')}
-      </p>
+      {identified ? (
+        <p aria-label="Identified as" className="text-sm text-slate-400">
+          <span className="text-slate-500">Identified as: </span>
+          {species.name}
+        </p>
+      ) : (
+        <p aria-label="Still consistent with" className="text-sm text-slate-400">
+          <span className="text-slate-500">Consistent with: </span>
+          {panel.consistent.map((id) => speciesById[id].name).join(', ')}
+        </p>
+      )}
 
       {unmeasured.length === 0 && !panel.resolved && (
         <p className="rounded border border-amber-700 bg-amber-950 p-3 text-sm text-amber-200">
