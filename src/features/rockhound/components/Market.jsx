@@ -56,19 +56,25 @@ export default function Market({
             <span className="ml-auto text-xs text-slate-500">uncut stones sell at half</span>
           </div>
           <ul className="flex flex-col gap-2">
-            {identified.map((sp) => {
+            {identified.map((sp, i) => {
               const species = speciesById[sp.trueSpeciesId];
               const price = roughPrice(sp, species);
               const estimate = bestCutEstimate(sp, species, techniques);
+              // The carat is only known to the player once measured. Falling
+              // back to the true carat when it isn't would leak exactly the
+              // number this branch exists to hide — so an ungraded stone
+              // falls back to its position in the list instead, which still
+              // keeps two ungraded same-species rows distinct.
+              const caratLabel = price.caratWeight != null ? `${price.caratWeight} carat` : `ungraded, item ${i + 1}`;
               return (
                 <SellRow
                   key={sp.instanceId}
                   glyphId={sp.trueSpeciesId}
                   name={species.name}
-                  detail={`${sp.caratWeight} ct · colour ${sp.colorGrade} · clarity ${sp.clarity}`}
+                  detail={`${price.caratWeight != null ? `${price.caratWeight} ct` : 'not measured'} · colour ${price.colorGrade ?? 'not measured'} · clarity ${price.clarity ?? 'not measured'}`}
                   total={price.total}
-                  sellLabel={`Sell rough ${species.name}, ${sp.caratWeight} carat`}
-                  whyLabel={`Why this price for rough ${species.name}, ${sp.caratWeight} carat`}
+                  sellLabel={`Sell rough ${species.name}, ${caratLabel}`}
+                  whyLabel={`Why this price for rough ${species.name}, ${caratLabel}`}
                   onSell={() => onSellIdentified(sp.instanceId)}
                   onWhy={() => setExplain({ title: `${species.name} (rough)`, price, kind: 'rough' })}
                 >
