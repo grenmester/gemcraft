@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { gemArt, colorHex } from './gemArt.js';
-import { species } from '../../../data/species/loader.js';
+import { species } from '../../data/species/loader.js';
 
 describe('gemArt', () => {
   it('gives every species in the roster its own art entry', () => {

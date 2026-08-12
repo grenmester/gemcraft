@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import GemGlyph from './GemGlyph.jsx';
-import { gemArt } from '../logic/gemArt.js';
+import { gemArt } from '../../../ui/theme/gemArt.js';
 
 describe('GemGlyph', () => {
   it("renders the species' glyph and tint", () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { rarityColor } from './rarity.js';
-import { RARITY_ENUM } from '../../../data/species/schema.js';
+import { RARITY_ENUM } from '../../data/species/schema.js';
 
 describe('rarityColor', () => {
   it('gives every tier its own colour', () => {

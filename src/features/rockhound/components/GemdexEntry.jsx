@@ -1,5 +1,5 @@
 import EntryModal, { Section, Row } from './EntryModal.jsx';
-import { colorHex } from '../logic/gemArt.js';
+import { colorHex } from '../../../ui/theme/gemArt.js';
 import { localitiesForSpecies } from '../../../viewmodels/gemdexView.js';
 import GemGlyph from './GemGlyph.jsx';
 import { titleize } from '../../../shared/format.js';
